@@ -1,3 +1,4 @@
+package com.jeffreymanzione.jef.tokenizing;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
