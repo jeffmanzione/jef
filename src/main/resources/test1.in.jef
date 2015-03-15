@@ -1,0 +1,36 @@
+
+type : COORDINATE_INT (INT, INT) /* This will be a built-in type */
+type : UNIT (STRING, COORDINATE)
+type : RGB (INT, INT, INT)
+enum : NATION_TYPE of [city_state, kingdom, empire]
+enum : SETTLEMENT_LEVEL of [village, city, large_city]
+type : SETTLEMENT {STRING name, STRING lvl, INT population, COORDINATE_INT loc, UNIT<> units}
+enum : TERRAIN of [deep_sea, sea, shallow, sea, river, beach, grass, forest, grass_low, forest_low, plain, desert, swamp, mountain, mt_low, mt_peak, mt_cap]
+type : NATION {STRING name, NATION_TYPE nation_type, RGB primary, RGB secondary, SETTLEMENT{} settlements}
+
+
+properties = {
+	standard = 1.0
+	size = (1200, 800)
+}
+
+entities = {
+	attica : NATION = {
+		name = 'Attica'
+		primary = (0, 0, 0)
+		secondary = (0, 0, 0)
+		nation_type = 'city_state'
+		settlements = {
+			athens  = { 
+				lvl = 'large_city'
+				population = 1200
+				loc = (121, 96)
+				units = <
+					('Army', (120, 97))
+					('Trireme', (126, 95))
+					('ColonyShip', (141, 98))
+				>
+			}
+		}
+	}
+}
