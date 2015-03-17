@@ -2,6 +2,7 @@ package com.jeffreymanzione.jef.parsing;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Queue;
 
 import com.jeffreymanzione.jef.parsing.value.FloatValue;
@@ -126,7 +127,7 @@ public class Parser {
 			if (name.getType() == TokenType.VAR) {
 				def.add(name.getText());
 			} else {
-				throw new ParsingException(name, "Expected VAR within an enumaration.");
+				throw new ParsingException(name, "Invalid within an enumaration.", TokenType.VAR);
 			}
 		} while (tokens.peek().getType() == TokenType.COMMA && tokens.remove().getType() == TokenType.COMMA);
 
@@ -142,10 +143,10 @@ public class Parser {
 			if (defName.getType() == TokenType.DEF) {
 				return this.parseTypeInner(tokens).setName(defName.getText());
 			} else {
-				throw new ParsingException(defName, "Expected DEFINITION after keyword type and ':'.");
+				throw new ParsingException(defName, "Expected definition constrictions after ':'.", TokenType.DEF);
 			}
 		} else {
-			throw new ParsingException(colon, "Expected ':' after keyword type.");
+			throw new ParsingException(colon, "For some reason we expected a ':'.", TokenType.COLON);
 		}
 	}
 
@@ -186,7 +187,8 @@ public class Parser {
 
 					return new Declaration(outerDef, name.getText());
 				} else {
-					throw new ParsingException(name, "Unexpected token. Expected token VAR_NAME after TYPE.");
+					throw new ParsingException(name, "Unexpected token. Expected token VAR_NAME after TYPE.",
+							TokenType.VAR);
 				}
 
 			} else {
@@ -195,12 +197,13 @@ public class Parser {
 				if (name.getType() == TokenType.VAR) {
 					return new Declaration(definitions.get(type.getText()), name.getText());
 				} else {
-					throw new ParsingException(name, "Unexpected token. Expected token VAR_NAME after TYPE.");
+					throw new ParsingException(name, "Unexpected token. Expected token VAR_NAME after TYPE.",
+							TokenType.VAR);
 				}
 			}
 
 		} else {
-			throw new ParsingException(type, "Unexpected token. Expected token TYPE.");
+			throw new ParsingException(type, "Unexpected token.", TokenType.TYPE);
 		}
 	}
 
@@ -215,7 +218,7 @@ public class Parser {
 		} else if (type.getType() == TokenType.LTHAN && tokens.remove().getType() == TokenType.GTHAN) {
 			mod = Modification.LIST;
 		} else {
-			throw new ParsingException(type, "Unexpected token. Expected mod token.");
+			throw new ParsingException(type, "Unexpected token. Expected mod.");
 		}
 
 		return mod;
@@ -227,7 +230,7 @@ public class Parser {
 		if (type.getType() == TokenType.DEF) {
 			return definitions.get(type.getText());
 		} else {
-			throw new ParsingException(type, "Unexpected token. Expected token TYPE.");
+			throw new ParsingException(type, "Unexpected token.", TokenType.TYPE);
 		}
 	}
 
@@ -247,7 +250,7 @@ public class Parser {
 		if (end.getType() == TokenType.RBRCE) {
 			return def;
 		} else {
-			throw new ParsingException(end, "Expected '}' ending map declaration.");
+			throw new ParsingException(end, "Missing '}' ending map declaration.", TokenType.RBRAC);
 		}
 	}
 
@@ -264,7 +267,7 @@ public class Parser {
 		if (end.getType() == TokenType.RPAREN) {
 			return format;
 		} else {
-			throw new ParsingException(end, "Expected ')' ending tuple declaration.");
+			throw new ParsingException(end, "Missing ')' ending tuple declaration.", TokenType.RPAREN);
 		}
 	}
 
@@ -293,16 +296,20 @@ public class Parser {
 				val = parseTuple(tokens);
 				break;
 			default:
-				throw new ParsingException(open, "Expected struct block type in parseStructures.");
+				throw new ParsingException(open, "Expected struct block type.");
 		}
 
-		Token close = tokens.remove();
+		try {
+			Token close = tokens.remove();
 
-		if (close.getType() != closeToken) {
-			throw new ParsingException(close, "Expected close token of " + closeToken);
+			if (close.getType() != closeToken) {
+				throw new ParsingException(close, "Struct closure missmatch.", closeToken);
+			}
+
+			return val;
+		} catch (NoSuchElementException e) {
+			throw new ParsingException("Unexpected EOF.", closeToken);
 		}
-
-		return val;
 	}
 
 	private TupleValue parseTuple(Queue<Token> tokens) throws ParsingException, DoesNotConformToDefintionException {
@@ -364,20 +371,21 @@ public class Parser {
 							val = parseValues(tokens);
 							Definition.check(def, val);
 						} else {
-							throw new ParsingException(eq1, "Expect EQUALS in parseAssignment.");
+							throw new ParsingException(eq1, "How can something be assigned without '='?",
+									TokenType.EQUALS);
 						}
 
 					} else {
 						throw new ParsingException(className, "ClassName is undefined.");
 					}
 				} else {
-					throw new ParsingException(className, "Expect ClassName in parseAssignment.");
+					throw new ParsingException(className, "Expect ClassName.");
 				}
 			} else {
-				throw new ParsingException(eq, "Expect EQUALS in parseAssignment.");
+				throw new ParsingException(eq, "How can something be assigned without '='?", TokenType.EQUALS);
 			}
 		} else {
-			throw new ParsingException(var, "Expect VAR in parseAssignment.");
+			throw new ParsingException(var, "Where is the variable name?", TokenType.VAR);
 		}
 		return new Pair(var.getText(), val);
 

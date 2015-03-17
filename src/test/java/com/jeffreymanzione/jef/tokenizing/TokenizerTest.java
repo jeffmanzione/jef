@@ -1,4 +1,5 @@
 package com.jeffreymanzione.jef.tokenizing;
+
 import static org.junit.Assert.*;
 
 import java.io.IOException;
@@ -13,7 +14,7 @@ import com.jeffreymanzione.jef.tokenizing.Token;
 import com.jeffreymanzione.jef.tokenizing.TokenizeException;
 import com.jeffreymanzione.jef.tokenizing.Tokenizer;
 
-public class TokenizerTests {
+public class TokenizerTest {
 
 	@Before
 	public void setUp() throws Exception {
@@ -25,19 +26,24 @@ public class TokenizerTests {
 
 	@Test
 	public void test1() throws IOException, TokenizeException {
-		Queue<Token> tokens = Tokenizer.tokenize(TokenizerTests.class.getResourceAsStream("test1.in.jef"), true);
+		Queue<Token> tokens = Tokenizer.tokenize(TokenizerTest.class.getResourceAsStream("/test1.in.jef"), false);
 
-		try (Scanner scanner = new Scanner(TokenizerTests.class.getResourceAsStream("test1.out"))) {
+		try (Scanner scanner = new Scanner(TokenizerTest.class.getResourceAsStream("/test1.out"))) {
 
 			for (Token token : tokens) {
 				if (scanner.hasNext()) {
-					//System.out.println(scanner.nextLine());
-					if (!scanner.nextLine().equals(token.toString())) {
+					String line = scanner.nextLine();
+					if (!line.equals(token.toString())) {
 						fail();
 					}
 				} else {
+					System.err.println("Expected another token " + token);
 					fail();
 				}
+			}
+
+			if (scanner.hasNext()) {
+				fail();
 			}
 		}
 

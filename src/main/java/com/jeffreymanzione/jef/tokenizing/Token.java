@@ -1,18 +1,26 @@
 package com.jeffreymanzione.jef.tokenizing;
 
-public class Token {
+public final class Token {
 
-	final String text;
-	final TokenType type;
+	private final Word word;
+	private final TokenType type;
 
-	public Token(String text, TokenType type) {
+	public Token(Word text, TokenType type) {
 		super();
-		this.text = text;
+		this.word = text;
 		this.type = type;
 	}
 
 	public String getText() {
-		return text;
+		return word.getText();
+	}
+	
+	public int getLine() {
+		return word.getLine();
+	}
+	
+	public int getColumn() {
+		return word.getColumn();
 	}
 
 	public TokenType getType() {
@@ -21,6 +29,6 @@ public class Token {
 
 	@Override
 	public String toString() {
-		return "Token [text='" + text + "', type=" + type + "]";
+		return "Token [text='" + word.getText() + "', type=" + type + "]";
 	}
 }

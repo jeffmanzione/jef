@@ -43,11 +43,11 @@ public abstract class Definition {
 			MapDefinition mapDef = (MapDefinition) def;
 			if (val.getType() == ValueType.MAP) {
 				MapValue mapVal = (MapValue) val;
-				//System.out.println("MAP=" + mapVal);
+				// System.out.println("MAP=" + mapVal);
 				for (String key : mapDef) {
 					Value<?> subVal = mapVal.get(key);
 					if (subVal != null) {
-						//System.out.println(key + " " + subVal.toString());
+						// System.out.println(key + " " + subVal.toString());
 						Definition subDef = mapDef.get(key);
 						Definition.check(subDef, subVal);
 					} else {
@@ -66,11 +66,11 @@ public abstract class Definition {
 
 				for (int index = 0; index < tupleDef.length(); index++) {
 					if (tupleVal.getValue().size() <= index) {
-						throw new DoesNotConformToDefintionException("Improper number of arguments, " + val.getType()
-								+ ".");
+						throw new DoesNotConformToDefintionException("Improper number of arguments, Expected "
+								+ tupleDef.toString() + " and was " + tupleVal.toStringType() + ".");
 					} else if (tupleDef.getTypeAt(index) != tupleVal.getValue().get(index).getType()) {
-						throw new DoesNotConformToDefintionException("Expected different tupled expression, "
-								+ tupleDef.toString() + " and " + tupleVal.toStringType() + ".");
+						throw new DoesNotConformToDefintionException("Expected different tupled expression, Expected "
+								+ tupleDef.toString() + " and was " + tupleVal.toStringType() + ".");
 					} else {
 						if (tupleDef.getTypeAt(index) == ValueType.MAP) {
 							// Do something

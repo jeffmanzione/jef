@@ -14,12 +14,12 @@ public class Tokenizer {
 	private Tokenizer() {
 		throw new RuntimeException("You have no business using this constructor!");
 	}
-	
+
 	public static Queue<Token> tokenize(InputStream stream, boolean verbose) throws IOException, TokenizeException {
 		return Tokenizer.tokenizeWords(Tokenizer.split(Tokenizer.fileToString(stream)), verbose);
 	}
 
-	private static Queue<Token> tokenizeWords(List<String> words, boolean verbose) throws TokenizeException {
+	private static Queue<Token> tokenizeWords(List<Word> words, boolean verbose) throws TokenizeException {
 		LinkedList<Token> tokens = verbose ? new LinkedList<Token>() {
 			private static final long serialVersionUID = 1L;
 
@@ -33,21 +33,21 @@ public class Tokenizer {
 		} : new LinkedList<>();
 
 		for (int index = 0; index < words.size(); index++) {
-			String word = words.get(index);
+			Word word = words.get(index);
 			Token token = null;
 
-			if (TokenType.isKeyword(word)) {
-				token = new Token(word, TokenType.getToken(word));
+			if (TokenType.isKeyword(word.getText())) {
+				token = new Token(word, TokenType.getToken(word.getText()));
 			} else {
-				if (word.startsWith("'") && word.endsWith("'")) {
+				if (word.getText().startsWith("'") && word.getText().endsWith("'")) {
 					token = new Token(word, TokenType.QUOTE);
-				} else if (Character.isDigit(word.toCharArray()[0])) {
-					if (word.contains(".")) {
+				} else if (Character.isDigit(word.getText().toCharArray()[0])) {
+					if (word.getText().contains(".")) {
 						token = new Token(word, TokenType.FLOAT);
 					} else {
 						token = new Token(word, TokenType.LONG);
 					}
-				} else if (word.equals(word.toUpperCase())) {
+				} else if (word.getText().equals(word.getText().toUpperCase())) {
 					token = new Token(word, TokenType.DEF);
 				} else if (tokens.size() > 0 && tokens.get(tokens.size() - 1).getType() == TokenType.QUOTE) {
 					tokens.remove(tokens.size() - 1);
@@ -87,8 +87,8 @@ public class Tokenizer {
 		return str;
 	}
 
-	private static List<String> split(String line) {
-		List<String> words = new ArrayList<>();
+	private static List<Word> split(String line) {
+		List<Word> words = new ArrayList<>();
 
 		String buffer = "";
 
@@ -96,7 +96,16 @@ public class Tokenizer {
 		boolean dQuote = false;
 		boolean isComment = false;
 
+		int lineNumber = 1;
+		int column = 0;
+
 		for (char c : line.toCharArray()) {
+			if (c == '\t') {
+				column += 4;
+			} else {
+				column++;
+			}
+			
 			if (!isComment) {
 				if (c == '\'') {
 					sQuote = !sQuote;
@@ -111,23 +120,25 @@ public class Tokenizer {
 						// if (buffer.equals("*/")) {
 						// isComment = false;
 						// } else {
-						words.add(buffer);
+						words.add(new Word(buffer, lineNumber, column));
 						// }
 					}
 
 					if (c == '\n') {
-						if (words.size() != 0 && !preline.contains(words.get(words.size() - 1))) {
-							words.add(",");
+						lineNumber++;
+						column = 0;
+						if (words.size() != 0 && !preline.contains(words.get(words.size() - 1).getText())) {
+							words.add(new Word(",", lineNumber, column));
 						}
 					} else {
-						words.add(c + "");
+						words.add(new Word(c + "", lineNumber, column));
 					}
 					buffer = "";
 				} else if (Character.isWhitespace(c) && !sQuote && !dQuote) {
 					if (buffer.equals("/*")) {
 						isComment = true;
 					} else if (!buffer.equals("") && !isComment) {
-						words.add(buffer);
+						words.add(new Word(buffer, lineNumber, column));
 					}
 					buffer = "";
 				} else {
@@ -145,7 +156,7 @@ public class Tokenizer {
 
 		}
 
-		if (words.get(words.size() - 1).equals(",")) {
+		if (words.get(words.size() - 1).getText().equals(",")) {
 			words.remove(words.size() - 1);
 		}
 
@@ -155,7 +166,7 @@ public class Tokenizer {
 	private static List<String> splitters = Arrays.asList("\'", "\"", "[", "]", "{", "}", "(", ")", "=", "<", ">",
 			"\n", ",");
 
-	private static List<String> preline = Arrays.asList("[", "{", "(", "<", ",");
+	private static List<String> preline = Arrays.asList("[", "{", "(", "<", ",", "=", ":");
 
 	private static List<TokenType> closers = Arrays.asList(TokenType.RBRCE, TokenType.RBRAC, TokenType.RPAREN,
 			TokenType.GTHAN);
