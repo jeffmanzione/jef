@@ -1,14 +1,20 @@
 package com.jeffreymanzione.jef.parsing;
 
-public class StringDefinition extends Definition {
-	
-	public static final StringDefinition singleton = new StringDefinition();
-	
+public class StringDefinition extends SingletonDefintion {
+
+	public static volatile StringDefinition instance;
+
 	private StringDefinition() {
-		
+		super("STRING");
 	}
-	
-	public static StringDefinition instance() {
-		return singleton;
+
+	public static Definition instance() {
+		synchronized (StringDefinition.class) {
+			if (instance == null) {
+				instance = new StringDefinition();
+			}
+		}
+
+		return instance;
 	}
 }

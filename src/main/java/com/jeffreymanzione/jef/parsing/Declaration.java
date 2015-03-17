@@ -16,4 +16,8 @@ public class Declaration {
 	public String getName() {
 		return name;
 	}
+	
+	public String toString() {
+		return "Declaration(name=" + name + ",def=" + type + ")";
+	}
 }

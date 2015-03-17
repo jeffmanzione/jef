@@ -166,9 +166,13 @@ public class Parser {
 	private Declaration parseDeclaration(Queue<Token> tokens) throws ParsingException {
 		Token type = tokens.remove();
 
+		//System.out.println("\tTYPE " + type.getText());
+
 		if (type.getType() == TokenType.DEF) {
 
 			Token mods = tokens.peek();
+
+			// System.out.println("\tDEC " + mods.getText());
 
 			if (mods.getType() != TokenType.VAR) {
 
@@ -176,14 +180,21 @@ public class Parser {
 
 				Token name = tokens.remove();
 
+				//System.out.println("\tMOD " + mod);
+				//System.out.println("\tNAM " + name.getText());
+
 				if (name.getType() == TokenType.VAR) {
 					Definition outerDef;
 					if (mod == Modification.LIST) {
 						outerDef = new ListDefinition(definitions.get(type.getText()));
 					} else /* if (mod == Modification.MAP) */{
 						// NEED TO MAKE THIS STRICT
+
 						outerDef = new MapDefinition();
+						((MapDefinition) outerDef).setRestricted(definitions.get(type.getText()));
 					}
+
+					//System.out.println("\tDEF " + outerDef);
 
 					return new Declaration(outerDef, name.getText());
 				} else {
@@ -194,6 +205,9 @@ public class Parser {
 			} else {
 
 				Token name = tokens.remove();
+
+				//System.out.println("\tDEF " + definitions.get(type.getText()));
+
 				if (name.getType() == TokenType.VAR) {
 					return new Declaration(definitions.get(type.getText()), name.getText());
 				} else {
@@ -228,6 +242,8 @@ public class Parser {
 		Token type = tokens.remove();
 
 		if (type.getType() == TokenType.DEF) {
+			//System.out.println("EXISTING DEFS " + definitions);
+			//System.out.println("\tTYPE TEXT " + type + " " + type.getText() + " " + definitions.get(type.getText()));
 			return definitions.get(type.getText());
 		} else {
 			throw new ParsingException(type, "Unexpected token.", TokenType.TYPE);
@@ -242,6 +258,7 @@ public class Parser {
 		do {
 
 			Declaration dec = parseDeclaration(tokens);
+			//System.out.println("DEC " + dec);
 			def.add(dec.getName(), dec.getDefinition());
 		} while (tokens.peek().getType() == TokenType.COMMA && tokens.remove().getType() == TokenType.COMMA);
 
@@ -369,7 +386,7 @@ public class Parser {
 							// // Do something to check that the format matches the definition.
 
 							val = parseValues(tokens);
-							Definition.check(def, val);
+							Definition.check(def, val, eq1.getLine(), eq1.getColumn());
 						} else {
 							throw new ParsingException(eq1, "How can something be assigned without '='?",
 									TokenType.EQUALS);

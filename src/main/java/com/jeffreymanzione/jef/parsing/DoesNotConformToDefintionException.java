@@ -2,8 +2,8 @@ package com.jeffreymanzione.jef.parsing;
 
 public class DoesNotConformToDefintionException extends Exception {
 
-	public DoesNotConformToDefintionException(String string) {
-		super(string);
+	public DoesNotConformToDefintionException(int line, int column, String string) {
+		super("On line " + line + " column " + column + ": " + string);
 	}
 
 	/**

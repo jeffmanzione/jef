@@ -11,4 +11,8 @@ public class ListDefinition extends Definition {
 	public Definition getType() {
 		return type;
 	}
+	
+	public String toString() {
+		return "<" + type.toString() + ", ...>";
+	}
 }
