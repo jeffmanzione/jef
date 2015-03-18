@@ -1,6 +1,6 @@
 package com.jeffreymanzione.jef.tokenizing;
 
-import java.util.Arrays;
+//import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,7 +25,12 @@ public enum TokenType {
 
 	static {
 		tokens = new HashMap<>();
-		Arrays.asList(TokenType.values()).forEach(t -> tokens.put(t.seq, t));
+
+		//Arrays.asList(TokenType.values()).forEach(t -> tokens.put(t.seq, t));
+		for (TokenType type : TokenType.values()) {
+			tokens.put(type.seq,  type);
+		}
+		
 	}
 	
 	private String seq;

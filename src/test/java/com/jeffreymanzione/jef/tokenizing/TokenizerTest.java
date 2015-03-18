@@ -32,7 +32,6 @@ public class TokenizerTest {
 	// out.println(token);
 	// }
 	// }
-	//
 	// }
 
 	@Test

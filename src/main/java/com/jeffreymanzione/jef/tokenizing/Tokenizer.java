@@ -30,7 +30,7 @@ public class Tokenizer {
 
 				return token;
 			}
-		} : new LinkedList<>();
+		} : new LinkedList<Token>();
 
 		for (int index = 0; index < words.size(); index++) {
 			Word word = words.get(index);
