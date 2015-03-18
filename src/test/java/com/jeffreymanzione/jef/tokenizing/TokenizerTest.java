@@ -24,6 +24,17 @@ public class TokenizerTest {
 	public void tearDown() throws Exception {
 	}
 
+	// @Test
+	// public void build() throws IOException, TokenizeException {
+	// Queue<Token> tokens = Tokenizer.tokenize(TokenizerTest.class.getResourceAsStream("/test1.in.jef"), false);
+	// try (PrintWriter out = new PrintWriter("C://Users/Jeff/git/jef/src/main/resources/test1.out")) {
+	// for (Token token : tokens) {
+	// out.println(token);
+	// }
+	// }
+	//
+	// }
+
 	@Test
 	public void test1() throws IOException, TokenizeException {
 		Queue<Token> tokens = Tokenizer.tokenize(TokenizerTest.class.getResourceAsStream("/test1.in.jef"), false);
@@ -34,6 +45,8 @@ public class TokenizerTest {
 				if (scanner.hasNext()) {
 					String line = scanner.nextLine();
 					if (!line.equals(token.toString())) {
+						// System.out.println(line);
+						// System.out.println(token.toString());
 						fail();
 					}
 				} else {

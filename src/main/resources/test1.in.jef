@@ -7,60 +7,62 @@ enum : SETTLEMENT_LEVEL of [village, city, large_city]
 type : SETTLEMENT {STRING name, SETTLEMENT_LEVEL lvl, INT population, COORDINATE loc, UNIT<> units}
 enum : TERRAIN of [deep_sea, sea, shallow, sea, river, beach, grass, forest, grass_low, forest_low, plain, desert, swamp, mountain, mt_low, mt_peak, mt_cap]
 type : NATION {STRING name, NATION_TYPE nation_type, RGB primary, RGB secondary, SETTLEMENT{} settlements}
-
+type : ENTITIES {NATION{} nations}
 
 properties = {
 	standard = 1.0
 	size = (1200, 800)
 }
 
-entities = {
-	attica : NATION = {
-		name = 'Attica'
-		primary = (0, 0, 0)
-		secondary = (0, 0, 0)
-		nation_type = 'city_state'
-		settlements = {
-			athens = {
-				name = 'Athens' 
-				lvl = 'large_city'
-				population = 1200
-				loc = (121, 96)
-				units = <
-					('Army', (120, 97))
-					('Trireme', (126, 95))
-					('ColonyShip', (141, 98))
-				>
-			}
-			test2 = {
-				name = 'Test' 
-				lvl = 'city'
-				population = 800
-				loc = (0, 0)
-				units = <
-					('Army', (0, 0))
-					('Trireme', (0, 0))
-					('ColonyShip', (0, 0))
-				>
+entities : ENTITIES = {
+	nations = {
+		attica = {
+			name = 'Attica'
+			primary = (0, 0, 0)
+			secondary = (0, 0, 0)
+			nation_type = 'city_state'
+			settlements = {
+				athens = {
+					name = 'Athens' 
+					lvl = 'large_city'
+					population = 1200
+					loc = (121, 96)
+					units = <
+						('Army', (120, 97))
+						('Trireme', (126, 95))
+						('ColonyShip', (141, 98))
+					>
+				}
+				test2 = {
+					name = 'Test' 
+					lvl = 'city'
+					population = 800
+					loc = (0, 0)
+					units = <
+						('Army', (0, 0))
+						('Trireme', (0, 0))
+						('ColonyShip', (0, 0))
+					>
+				}
 			}
 		}
-	}
-	sparta : NATION = {
-		name = 'Sparta'
-		primary = (0, 0, 0)
-		secondary = (0, 0, 0)
-		nation_type = 'city_state'
-		settlements = {
-			sparta = {
-				name = 'Sparta' 
-				lvl = 'city'
-				population = 800
-				loc = (0, 0)
-				units = <
-					('Army', (120, 97))
-					('Trireme', (126, 95))
-					('ColonyShip', (141, 98))
-				>
+		sparta = {
+			name = 'Sparta'
+			primary = (0, 0, 0)
+			secondary = (0, 0, 0)
+			nation_type = 'city_state'
+			settlements = {
+				sparta = {
+					name = 'Sparta' 
+					lvl = 'city'
+					population = 800
+					loc = (0, 0)
+					units = <
+						('Army', (120, 97))
+						('Trireme', (126, 95))
+						('ColonyShip', (141, 98))
+					>
+				}
 			}
 		}
 	}
