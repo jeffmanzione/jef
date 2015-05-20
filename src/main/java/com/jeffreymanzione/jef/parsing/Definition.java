@@ -114,10 +114,13 @@ public abstract class Definition {
 						} else {
 
 							if (tupleDef.getTypeAt(index) == ValueType.MAP) {
-
+								// FIGURE OUT WHY WE PUT THIS HERE? IT NEVER GETS CALLED
+								System.out.println("HUH1");
 								// Do something
 
 							} else if (tupleDef.getTypeAt(index) == ValueType.LIST) {
+								// FIGURE OUT WHY WE PUT THIS HERE? IT NEVER GETS CALLED
+								System.out.println("HUH2");
 								// Do something
 							}
 						}
