@@ -27,11 +27,11 @@ public class ParsingTest {
 
 	@Test
 	public void test() throws ParsingException, DoesNotConformToDefintionException, IOException, TokenizeException {
-		Queue<Token> tokens = Tokenizer.tokenize(TokenizerTest.class.getResourceAsStream("/test1.in.jef"), false);
+		Queue<Token> tokens = new Tokenizer().tokenize(TokenizerTest.class.getResourceAsStream("/test1.in.jef"));
 
 		Parser parser = new Parser();
 
-		MapValue mappings = parser.parseFile(tokens, false);
+		MapValue mappings = parser.parse(tokens, false);
 		if (mappings.get("entities") == null || mappings.get("properties") == null) {
 			fail();
 		}

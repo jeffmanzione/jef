@@ -28,7 +28,7 @@ public class Parser {
 
 	}
 
-	public MapValue parseFile(Queue<Token> tokens, boolean verbose) throws ParsingException,
+	public MapValue parse(Queue<Token> tokens, boolean verbose) throws ParsingException,
 			DoesNotConformToDefintionException {
 		return this.parseTopLevel(tokens, verbose);
 	}
@@ -313,7 +313,7 @@ public class Parser {
 				val = parseTuple(tokens);
 				break;
 			default:
-				throw new ParsingException(open, "Expected struct block type.");
+				throw new ParsingException(open, "Was: " + open.getText() + ". Expected struct block type.");
 		}
 
 		try {
@@ -387,6 +387,7 @@ public class Parser {
 
 							val = parseValues(tokens);
 							Definition.check(def, val, eq1.getLine(), eq1.getColumn());
+							val.setEntityID(def.getName());
 						} else {
 							throw new ParsingException(eq1, "How can something be assigned without '='?",
 									TokenType.EQUALS);

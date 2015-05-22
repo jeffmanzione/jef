@@ -21,6 +21,22 @@ public abstract class Value<T> {
 		return value;
 	}
 
+
+	private String entityID;
+
+	public String getEntityID() {
+		return entityID;
+	}
+
+	public void setEntityID(String entityID) {
+		this.entityID = entityID;
+	}
+
+	public boolean hasEntityID() {
+		return entityID != null;
+	}
+
+	
 	public String toStringType() {
 		return type.toString();
 	}

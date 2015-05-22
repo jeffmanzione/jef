@@ -1,5 +1,7 @@
 package com.jeffreymanzione.jef.tokenizing;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -11,16 +13,30 @@ import java.util.Scanner;
 
 public class Tokenizer {
 
-	private Tokenizer() {
-		throw new RuntimeException("You have no business using this constructor!");
+	private boolean isVerbose;
+
+	public void setVerbose(boolean isVerbose) {
+		this.isVerbose = isVerbose;
 	}
 
-	public static Queue<Token> tokenize(InputStream stream, boolean verbose) throws IOException, TokenizeException {
-		return Tokenizer.tokenizeWords(Tokenizer.split(Tokenizer.fileToString(stream)), verbose);
+	public boolean isVerbose() {
+		return isVerbose;
 	}
 
-	private static Queue<Token> tokenizeWords(List<Word> words, boolean verbose) throws TokenizeException {
-		LinkedList<Token> tokens = verbose ? new LinkedList<Token>() {
+	public Queue<Token> tokenize(String string) throws IOException, TokenizeException {
+		return this.tokenizeWords(Tokenizer.split(string));
+	}
+
+	public Queue<Token> tokenize(InputStream stream) throws IOException, TokenizeException {
+		return this.tokenize(Tokenizer.fileToString(stream));
+	}
+
+	public Queue<Token> tokenize(File file) throws IOException, TokenizeException {
+		return this.tokenize(new FileInputStream(file));
+	}
+
+	private Queue<Token> tokenizeWords(List<Word> words) throws TokenizeException {
+		LinkedList<Token> tokens = isVerbose ? new LinkedList<Token>() {
 			private static final long serialVersionUID = 1L;
 
 			public Token remove() {
@@ -105,7 +121,7 @@ public class Tokenizer {
 			} else {
 				column++;
 			}
-			
+
 			if (!isComment) {
 				if (c == '\'') {
 					sQuote = !sQuote;

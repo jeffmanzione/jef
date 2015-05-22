@@ -73,6 +73,7 @@ public abstract class Definition {
 
 							for (Value<?> listVal : subListVal) {
 								Definition.check(subDef, listVal, line, column);
+								listVal.setEntityID(subDef.getName());
 							}
 
 						} else {

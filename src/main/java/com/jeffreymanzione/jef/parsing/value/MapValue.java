@@ -10,7 +10,7 @@ public class MapValue extends Value<Map<String, Value<?>>> implements Iterable<P
 	public MapValue() {
 		super(ValueType.MAP);
 	}
-
+	
 	private Map<String, Value<?>> map = new HashMap<>();
 
 	public void add(Pair<?> pair) {

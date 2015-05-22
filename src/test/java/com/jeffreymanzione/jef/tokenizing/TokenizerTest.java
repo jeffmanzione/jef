@@ -36,7 +36,7 @@ public class TokenizerTest {
 
 	@Test
 	public void test1() throws IOException, TokenizeException {
-		Queue<Token> tokens = Tokenizer.tokenize(TokenizerTest.class.getResourceAsStream("/test1.in.jef"), false);
+		Queue<Token> tokens = new Tokenizer().tokenize(TokenizerTest.class.getResourceAsStream("/test1.in.jef"));
 
 		try (Scanner scanner = new Scanner(TokenizerTest.class.getResourceAsStream("/test1.out"))) {
 

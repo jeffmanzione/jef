@@ -15,12 +15,12 @@ public class AbstractJeffEntity implements JEFEntity {
 	}
 
 	private boolean setFieldAnnot(Field field, String fieldName, Object val) {
-		if (field.isAnnotationPresent(JEF.class)) {
-			JEF annot = field.getAnnotation(JEF.class);
+		if (field.isAnnotationPresent(JEFField.class)) {
+			JEFField annot = field.getAnnotation(JEFField.class);
 			if (annot.key().equals(fieldName)) {
 				field.setAccessible(true);
 
-				if (val.getClass().isInstance(field.getType())) {
+				if (field.getType().isInstance(val)) {
 					try {
 						field.set(this, val);
 						return true;
@@ -30,40 +30,66 @@ public class AbstractJeffEntity implements JEFEntity {
 				} else {
 
 				}
+			}
+		}
+		return false;
+	}
+
+	private boolean matches(Field field, Object val) {
+		if (field.getType().isInstance(val)) {
+			return true;
+		} else {
+			if ((field.getType().equals(int.class) || field.getType().equals(long.class)) && val instanceof Long) {
+				return true;
+			} else if ((field.getType().equals(float.class) || field.getType().equals(double.class))
+					&& val instanceof Double) {
+				return true;
 			}
 		}
 		return false;
 	}
 
 	private boolean setField(Field field, String fieldName, Object val) {
-		if (field.isAnnotationPresent(JEF.class)) {
-			if (field.getName().equals(fieldName)) {
-				field.setAccessible(true);
+		if (field.getName().equals(fieldName)) {
+			field.setAccessible(true);
 
-				if (val.getClass().isInstance(field.getType())) {
-					try {
-						field.set(this, val);
-						return true;
-					} catch (IllegalArgumentException | IllegalAccessException e) {
-						e.printStackTrace();
-					}
-				} else {
-
+			//System.out.println(field.getType() + " " + val.getClass().getName());
+			if (matches(field, val)) {
+				// System.out.println(field.getName() + " " + fieldName);
+				try {
+					setSafe(field, val);
+					return true;
+				} catch (IllegalArgumentException | IllegalAccessException e) {
+					e.printStackTrace();
 				}
+			} else {
+
 			}
 		}
 		return false;
 	}
 
+	private void setSafe(Field field, Object val) throws IllegalArgumentException, IllegalAccessException {
+		if (field.getType().equals(int.class)) {
+			field.set(this, ((Long) val).intValue());
+		} else if (field.getType().equals(float.class)) {
+			field.set(this, ((Double) val).floatValue());
+		} else {
+			field.set(this, val);
+		}
+
+	}
+
 	@Override
 	public boolean addToMap(String fieldName, Object val) {
-		for (Field field : this.getClass().getFields()) {
+		for (Field field : this.getClass().getDeclaredFields()) {
 			if (this.setFieldAnnot(field, fieldName, val)) {
 				return true;
 			}
 		}
 		try {
 			Field field = this.getClass().getDeclaredField(fieldName);
+			//System.out.println(">|< " + field.getName() + ", " + fieldName + ", " + val);
 			if (field != null && this.setField(field, fieldName, val)) {
 				return true;
 			}
@@ -92,8 +118,8 @@ public class AbstractJeffEntity implements JEFEntity {
 	@Override
 	public Object getFromMap(String fieldName) throws IllegalArgumentException, IllegalAccessException {
 		for (Field field : this.getClass().getFields()) {
-			if (field.isAnnotationPresent(JEF.class)) {
-				JEF annot = field.getAnnotation(JEF.class);
+			if (field.isAnnotationPresent(JEFField.class)) {
+				JEFField annot = field.getAnnotation(JEFField.class);
 				if (annot.key().equals(fieldName)) {
 					field.setAccessible(true);
 					return field.get(fieldName);
@@ -125,8 +151,8 @@ public class AbstractJeffEntity implements JEFEntity {
 	@Override
 	public Class<?> getFromMapType(String fieldName) {
 		for (Field field : this.getClass().getFields()) {
-			if (field.isAnnotationPresent(JEF.class)) {
-				JEF annot = field.getAnnotation(JEF.class);
+			if (field.isAnnotationPresent(JEFField.class)) {
+				JEFField annot = field.getAnnotation(JEFField.class);
 				if (annot.key().equals(fieldName)) {
 					field.setAccessible(true);
 					return field.getClass();

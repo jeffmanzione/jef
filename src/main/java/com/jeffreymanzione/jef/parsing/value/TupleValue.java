@@ -43,6 +43,14 @@ public class TupleValue extends Value<List<Value<?>>> {
 		return result + ")";
 	}
 	
+	public Value<?> get(int index) {
+		return values.get(index);
+	}
+	
+	public int size() {
+		return values.size();
+	}
+	
 	@Override
 	public String toString() {
 		String result = "(" + values.get(0).toString();

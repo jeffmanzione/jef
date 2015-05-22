@@ -1,0 +1,25 @@
+type : TEST1 {INT int1, FLOAT float1, STRING string1} /* This will be a built-in type */
+type : TEST2 {STRING name, INT x, INT y, TEST1 a, TEST1<> test1List}
+
+a1 : TEST1 = {
+	int1 = 5
+	float1 = 0.1
+	string1 = 'test string'
+}
+
+a2 : TEST2 = {
+	name = 'Doge'
+	x = 5
+	y = 200
+	a : TEST1 = {
+		int1 = 5
+		float1 = 0.1
+		string1 = 'test string1'
+	}
+	
+	test1List = <
+		{ int1 = 1, float1 = 0.2, string1 = 'test string2' }
+		{ int1 = 1, float1 = 1.1, string1 = 'test string3' }
+		{ int1 = 1000, float1 = 5.1, string1 = 'test string4' }
+	>
+}
