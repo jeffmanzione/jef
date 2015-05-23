@@ -31,7 +31,7 @@ public class ParsingTest {
 
 		Parser parser = new Parser();
 
-		MapValue mappings = parser.parse(tokens, false);
+		MapValue mappings = parser.parse(tokens);
 		if (mappings.get("entities") == null || mappings.get("properties") == null) {
 			fail();
 		}

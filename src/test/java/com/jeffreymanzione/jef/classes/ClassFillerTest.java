@@ -1,4 +1,4 @@
-package classes;
+package com.jeffreymanzione.jef.classes;
 
 import java.io.IOException;
 import java.util.Queue;
@@ -39,12 +39,12 @@ public class ClassFillerTest {
 		
 		Queue<Token> tokens = new Tokenizer().tokenize(TokenizerTest.class.getResourceAsStream("/test2.in.jef"));
 
-		MapValue mappings = parser.parse(tokens, false);
+		MapValue mappings = parser.parse(tokens);
 		
 		//System.out.println(mappings.get("a1"));
 		
-		Test1 a1 = cf.create((MapValue) mappings.get("a1"), Test1.class);
-		Test2 a2 = cf.create((MapValue) mappings.get("a2"), Test2.class);
+		Test1 a1 = cf.parseToObject((MapValue) mappings.get("a1"));
+		Test2 a2 = cf.parseToObject((MapValue) mappings.get("a2"));
 
 		System.out.println(a1);
 

@@ -22,11 +22,16 @@ public class ClassFiller {
 		classes = new HashMap<String, Class<? extends JEFEntity>>();
 	}
 
-	public boolean addEntityClass(Class<? extends JEFEntity> cls) {
-		return classes.put(cls.getAnnotation(JEFClass.class).name(), cls) != null;
+	@SafeVarargs
+	public final boolean addEntityClass(Class<? extends JEFEntity>... cls) {
+		boolean success = true;
+		for (Class<? extends JEFEntity> cl : cls) {
+			success &= classes.put(cl.getAnnotation(JEFClass.class).name(), cl) != null;
+		}
+		return success;
 	}
 
-	public <T extends JEFEntity> T create(MapValue val, Class<T> cls) throws InstantiationException,
+	private <T extends JEFEntity> T create(MapValue val, Class<T> cls) throws InstantiationException,
 			IllegalAccessException {
 		T obj = cls.newInstance();
 
@@ -38,42 +43,43 @@ public class ClassFiller {
 		return obj;
 	}
 
-	private Object parseToObject(Value<?> value) throws InstantiationException, IllegalAccessException {
+	@SuppressWarnings("unchecked")
+	public <T> T parseToObject(Value<?> value) throws InstantiationException, IllegalAccessException {
 		// System.out.println(value.getClass());
 		if (value instanceof PrimitiveValue) {
 			// System.out.println(">>> " + value.getValue());
-			return value.getValue();
+			return (T) value.getValue();
 		} else if (value instanceof ListValue) {
 			ListValue listVal = (ListValue) value;
 			List<Object> list = new ArrayList<>();
 			for (Value<?> val : listVal) {
 				list.add(parseToObject(val));
 			}
-			return list;
+			return (T) list;
 		} else if (value instanceof SetValue) {
 			SetValue setVal = (SetValue) value;
 			Set<Object> result = new HashSet<Object>();
 			for (Value<?> val : setVal) {
 				result.add(parseToObject(val));
 			}
-			return result;
+			return (T) result;
 		} else if (value instanceof TupleValue) {
 			TupleValue tupVal = (TupleValue) value;
 			Object[] objs = new Object[tupVal.size()];
 			for (int i = 0; i < objs.length; i++) {
 				objs[i] = tupVal.get(i);
 			}
-			return objs;
+			return (T) objs;
 		} else /* if MapValue */{
 			MapValue mapVal = (MapValue) value;
 			if (classes.containsKey(mapVal.getEntityID())) {
-				return create(mapVal, classes.get(mapVal.getEntityID()));
+				return (T) create(mapVal, classes.get(mapVal.getEntityID()));
 			} else {
 				Map<String, Object> result = new HashMap<String, Object>();
 				for (Pair<?> pair : mapVal) {
 					result.put(pair.getKey(), parseToObject(pair.getValue()));
 				}
-				return result;
+				return (T) result;
 			}
 		}
 	}

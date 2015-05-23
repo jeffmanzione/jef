@@ -21,20 +21,27 @@ public class Parser {
 
 	Map<String, Definition> definitions = new HashMap<>();
 
+	private boolean isVerbose;
+
+	public void setVerbose(boolean isVerbose) {
+		this.isVerbose = isVerbose;
+	}
+
+	public boolean isVerbose() {
+		return isVerbose;
+	}
+
 	public Parser() {
 		definitions.put("INT", IntDefinition.instance());
 		definitions.put("FLOAT", FloatDefinition.instance());
 		definitions.put("STRING", StringDefinition.instance());
-
 	}
 
-	public MapValue parse(Queue<Token> tokens, boolean verbose) throws ParsingException,
-			DoesNotConformToDefintionException {
-		return this.parseTopLevel(tokens, verbose);
+	public MapValue parse(Queue<Token> tokens) throws ParsingException, DoesNotConformToDefintionException {
+		return this.parseTopLevel(tokens);
 	}
 
-	private MapValue parseTopLevel(Queue<Token> tokens, boolean verbose) throws ParsingException,
-			DoesNotConformToDefintionException {
+	private MapValue parseTopLevel(Queue<Token> tokens) throws ParsingException, DoesNotConformToDefintionException {
 
 		defCheck: do {
 			Definition def = null;
@@ -45,7 +52,7 @@ public class Parser {
 					tokens.remove();
 					def = this.parseType(tokens);
 					definitions.put(def.getName(), def);
-					if (verbose) {
+					if (isVerbose) {
 						System.out.println("Parsed def: " + def.getName());
 					}
 					break;
@@ -166,7 +173,7 @@ public class Parser {
 	private Declaration parseDeclaration(Queue<Token> tokens) throws ParsingException {
 		Token type = tokens.remove();
 
-		//System.out.println("\tTYPE " + type.getText());
+		// System.out.println("\tTYPE " + type.getText());
 
 		if (type.getType() == TokenType.DEF) {
 
@@ -180,8 +187,8 @@ public class Parser {
 
 				Token name = tokens.remove();
 
-				//System.out.println("\tMOD " + mod);
-				//System.out.println("\tNAM " + name.getText());
+				// System.out.println("\tMOD " + mod);
+				// System.out.println("\tNAM " + name.getText());
 
 				if (name.getType() == TokenType.VAR) {
 					Definition outerDef;
@@ -194,7 +201,7 @@ public class Parser {
 						((MapDefinition) outerDef).setRestricted(definitions.get(type.getText()));
 					}
 
-					//System.out.println("\tDEF " + outerDef);
+					// System.out.println("\tDEF " + outerDef);
 
 					return new Declaration(outerDef, name.getText());
 				} else {
@@ -206,7 +213,7 @@ public class Parser {
 
 				Token name = tokens.remove();
 
-				//System.out.println("\tDEF " + definitions.get(type.getText()));
+				// System.out.println("\tDEF " + definitions.get(type.getText()));
 
 				if (name.getType() == TokenType.VAR) {
 					return new Declaration(definitions.get(type.getText()), name.getText());
@@ -242,8 +249,8 @@ public class Parser {
 		Token type = tokens.remove();
 
 		if (type.getType() == TokenType.DEF) {
-			//System.out.println("EXISTING DEFS " + definitions);
-			//System.out.println("\tTYPE TEXT " + type + " " + type.getText() + " " + definitions.get(type.getText()));
+			// System.out.println("EXISTING DEFS " + definitions);
+			// System.out.println("\tTYPE TEXT " + type + " " + type.getText() + " " + definitions.get(type.getText()));
 			return definitions.get(type.getText());
 		} else {
 			throw new ParsingException(type, "Unexpected token.", TokenType.TYPE);
@@ -258,7 +265,7 @@ public class Parser {
 		do {
 
 			Declaration dec = parseDeclaration(tokens);
-			//System.out.println("DEC " + dec);
+			// System.out.println("DEC " + dec);
 			def.add(dec.getName(), dec.getDefinition());
 		} while (tokens.peek().getType() == TokenType.COMMA && tokens.remove().getType() == TokenType.COMMA);
 

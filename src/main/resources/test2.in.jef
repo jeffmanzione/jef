@@ -1,4 +1,4 @@
-type : TEST1 {INT int1, FLOAT float1, STRING string1} /* This will be a built-in type */
+type : TEST1 {INT int1, FLOAT float1, STRING string1}
 type : TEST2 {STRING name, INT x, INT y, TEST1 a, TEST1<> test1List}
 
 a1 : TEST1 = {

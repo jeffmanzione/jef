@@ -23,7 +23,7 @@ public class Tokenizer {
 		return isVerbose;
 	}
 
-	public Queue<Token> tokenize(String string) throws IOException, TokenizeException {
+	public Queue<Token> tokenize(String string) throws TokenizeException {
 		return this.tokenizeWords(Tokenizer.split(string));
 	}
 

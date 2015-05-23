@@ -5,4 +5,4 @@
  * @author Jeff
  *
  */
-package assembly;
+package com.jeffreymanzione.jef.assembly;
