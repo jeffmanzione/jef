@@ -20,10 +20,17 @@ public class Test2 extends AbstractJeffEntity {
 	
 	private List<Test1> test1List;
 
+	private Doge doge;
+
 	@Override
 	public String toString() {
-		return "Test2 [nombre='" + nombre + "', x=" + x + ", y=" + y + ", a=" + a + ", test1List=" + test1List + "]";
+		return "Test2 [nombre=" + nombre + ", x=" + x + ", y=" + y + ", a=" + a + ", test1List=" + test1List
+				+ ", doge=" + doge + "]";
 	}
+	
+	
+
+	
 	
 	
 }

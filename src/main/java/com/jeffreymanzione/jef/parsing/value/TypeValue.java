@@ -2,6 +2,7 @@ package com.jeffreymanzione.jef.parsing.value;
 
 import com.jeffreymanzione.jef.parsing.Definition;
 
+@Deprecated
 public class TypeValue {
 	private final Definition def;
 	

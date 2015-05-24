@@ -10,7 +10,7 @@ public enum TokenType {
 	TYPE("type"), ENUM("enum"), OF("of"),
 	/* Operators */
 	COLON(":"), COMMA(","), LPAREN("("), RPAREN(")"), LBRAC("["), RBRAC("]"), LTHAN(
-			"<"), GTHAN(">"), EQUALS("="), LBRCE("{"), RBRCE("}"),
+			"<"), GTHAN(">"), EQUALS("="), LBRCE("{"), RBRCE("}"), DOLLAR("$"),
 	/* Syntactical */
 	STRING(null),
 
@@ -18,7 +18,9 @@ public enum TokenType {
 
 	QUOTE(null),
 	
-	DEF(null), VAR(null);
+	DEF(null), VAR(null),
+	ENUMVAL(null);
+	
 
 
 	private static Map<String, TokenType> tokens;

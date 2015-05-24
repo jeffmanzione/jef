@@ -14,7 +14,7 @@ public class AbstractJeffEntity implements JEFEntity {
 		classes = new HashMap<>();
 	}
 
-	private boolean setFieldAnnot(Field field, String fieldName, Object val) {
+	private boolean setFieldAnnot(Field field, String fieldName, Object val) throws CouldNotUpdateEntityMapException {
 		if (field.isAnnotationPresent(JEFField.class)) {
 			JEFField annot = field.getAnnotation(JEFField.class);
 			if (annot.key().equals(fieldName)) {
@@ -25,10 +25,13 @@ public class AbstractJeffEntity implements JEFEntity {
 						field.set(this, val);
 						return true;
 					} catch (IllegalArgumentException | IllegalAccessException e) {
-						e.printStackTrace();
+						throw new CouldNotUpdateEntityMapException("Could not set object " + this + " with field "
+								+ field + " to val " + val
+								+ ". Either the security settings prevented it or you did something silly.");
 					}
 				} else {
-
+					throw new CouldNotUpdateEntityMapException("Could not set object " + this + " with field " + field
+							+ " to val " + val + ". Value was not instanceof field.");
 				}
 			}
 		}
@@ -49,39 +52,42 @@ public class AbstractJeffEntity implements JEFEntity {
 		return false;
 	}
 
-	private boolean setField(Field field, String fieldName, Object val) {
+	private boolean setField(Field field, String fieldName, Object val) throws CouldNotUpdateEntityMapException {
 		if (field.getName().equals(fieldName)) {
 			field.setAccessible(true);
 
-			//System.out.println(field.getType() + " " + val.getClass().getName());
+			// System.out.println(field.getType() + " " + val.getClass().getName());
 			if (matches(field, val)) {
 				// System.out.println(field.getName() + " " + fieldName);
-				try {
-					setSafe(field, val);
-					return true;
-				} catch (IllegalArgumentException | IllegalAccessException e) {
-					e.printStackTrace();
-				}
-			} else {
 
+				setSafe(field, val);
+				return true;
+
+			} else {
+				throw new CouldNotUpdateEntityMapException("Could not match types between field " + field + " and val "
+						+ val + ".");
 			}
 		}
 		return false;
 	}
 
-	private void setSafe(Field field, Object val) throws IllegalArgumentException, IllegalAccessException {
-		if (field.getType().equals(int.class)) {
-			field.set(this, ((Long) val).intValue());
-		} else if (field.getType().equals(float.class)) {
-			field.set(this, ((Double) val).floatValue());
-		} else {
-			field.set(this, val);
+	private void setSafe(Field field, Object val) throws CouldNotUpdateEntityMapException {
+		try {
+			if (field.getType().equals(int.class)) {
+				field.set(this, ((Long) val).intValue());
+			} else if (field.getType().equals(float.class)) {
+				field.set(this, ((Double) val).floatValue());
+			} else {
+				field.set(this, val);
+			}
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			throw new CouldNotUpdateEntityMapException("Could not set object " + this + " with field " + field
+					+ " to val " + val + ". Either the security settings prevented it or you did something silly.");
 		}
-
 	}
 
 	@Override
-	public boolean addToMap(String fieldName, Object val) {
+	public boolean addToMap(String fieldName, Object val) throws CouldNotUpdateEntityMapException {
 		for (Field field : this.getClass().getDeclaredFields()) {
 			if (this.setFieldAnnot(field, fieldName, val)) {
 				return true;
@@ -89,7 +95,7 @@ public class AbstractJeffEntity implements JEFEntity {
 		}
 		try {
 			Field field = this.getClass().getDeclaredField(fieldName);
-			//System.out.println(">|< " + field.getName() + ", " + fieldName + ", " + val);
+			// System.out.println(">|< " + field.getName() + ", " + fieldName + ", " + val);
 			if (field != null && this.setField(field, fieldName, val)) {
 				return true;
 			}
@@ -99,30 +105,40 @@ public class AbstractJeffEntity implements JEFEntity {
 					mappings.put(fieldName, val);
 					return true;
 				} else {
-					System.out.println("Could not set field's value in map as it was already set to a different type "
-							+ " nor in the map: fieldName='" + fieldName + "' and val=" + val + " expected="
-							+ mappings.get(fieldName) + ".");
+					throw new CouldNotUpdateEntityMapException(
+							"Could not set field's value in map as it was already set to a different type "
+									+ " nor in the map: fieldName='" + fieldName + "' and val=" + val + " expected="
+									+ mappings.get(fieldName) + ".");
 				}
 			} else {
+				System.err.println("Suspicious: Tried to add (key=" + fieldName + ",val=" + val + ") to a "
+						+ this.getClass().getName()
+						+ ", but it does not have a field that matches it. Going to add it to the auxilliary map, "
+						+ "but check to see if this is a mistake.");
 				classes.put(fieldName, val.getClass());
 				mappings.put(fieldName, val);
 			}
 		} catch (SecurityException e) {
-			System.out.println("Unexpected security exception: fieldName='" + fieldName + "' and val=" + val
-					+ ".\n See Exception in the stack trace.");
-			e.printStackTrace();
+			throw new CouldNotUpdateEntityMapException("Unexpected security exception: fieldName='" + fieldName
+					+ "' and val=" + val + ".\n See Exception in the stack trace.");
 		}
 		return false;
 	}
 
 	@Override
-	public Object getFromMap(String fieldName) throws IllegalArgumentException, IllegalAccessException {
+	public Object getFromMap(String fieldName) throws CouldNotUpdateEntityMapException {
 		for (Field field : this.getClass().getFields()) {
 			if (field.isAnnotationPresent(JEFField.class)) {
 				JEFField annot = field.getAnnotation(JEFField.class);
 				if (annot.key().equals(fieldName)) {
 					field.setAccessible(true);
-					return field.get(fieldName);
+					try {
+						return field.get(this);
+					} catch (IllegalArgumentException | IllegalAccessException e) {
+						throw new CouldNotUpdateEntityMapException("Field " + field + " in " + this
+								+ " could not be read. Check the security settings.");
+
+					}
 				}
 			}
 		}
@@ -131,25 +147,29 @@ public class AbstractJeffEntity implements JEFEntity {
 			if (field != null) {
 				if (field.getName().equals(fieldName)) {
 					field.setAccessible(true);
-					return field.get(fieldName);
+					try {
+						return field.get(this);
+					} catch (IllegalArgumentException | IllegalAccessException e) {
+						throw new CouldNotUpdateEntityMapException("Field " + field + " in " + this
+								+ " could not be read. Check the security settings.");
+					}
 				}
 			}
 		} catch (NoSuchFieldException e) {
 			if (mappings.containsKey(fieldName)) {
 				return mappings.get(fieldName);
 			} else {
-				System.out.println("Could not set field's value in map as it was not a field"
+				throw new CouldNotUpdateEntityMapException("Could not set field's value in map as it was not a field"
 						+ " nor in the map: fieldName='" + fieldName + ".");
 			}
 		} catch (SecurityException e) {
-			System.out.println("Unexpected security exception: fieldName='" + fieldName + ".");
-			e.printStackTrace();
+			throw new CouldNotUpdateEntityMapException("Unexpected security exception: fieldName='" + fieldName + ".");
 		}
 		return false;
 	}
 
 	@Override
-	public Class<?> getFromMapType(String fieldName) {
+	public Class<?> getFromMapType(String fieldName) throws CouldNotUpdateEntityMapException {
 		for (Field field : this.getClass().getFields()) {
 			if (field.isAnnotationPresent(JEFField.class)) {
 				JEFField annot = field.getAnnotation(JEFField.class);
@@ -171,12 +191,12 @@ public class AbstractJeffEntity implements JEFEntity {
 			if (mappings.containsKey(fieldName)) {
 				return classes.get(fieldName);
 			} else {
-				System.out.println("Could not set field's value in map as it was not a field"
+				throw new CouldNotUpdateEntityMapException("Could not set field's value in map as it was not a field"
 						+ " nor in the map: fieldName='" + fieldName + ".");
 			}
 		} catch (SecurityException e) {
-			System.out.println("Unexpected security exception: fieldName='" + fieldName + ".");
-			e.printStackTrace();
+			throw new CouldNotUpdateEntityMapException("Unexpected security exception: fieldName='" + fieldName + ".");
+			// e.printStackTrace();
 		}
 		return null;
 	}

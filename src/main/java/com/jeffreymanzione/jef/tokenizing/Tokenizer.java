@@ -57,7 +57,8 @@ public class Tokenizer {
 			} else {
 				if (word.getText().startsWith("'") && word.getText().endsWith("'")) {
 					token = new Token(word, TokenType.QUOTE);
-				} else if (Character.isDigit(word.getText().toCharArray()[0])) {
+				} else if (word.getText().startsWith("-") || word.getText().startsWith(".")
+						|| Character.isDigit(word.getText().toCharArray()[0])) {
 					if (word.getText().contains(".")) {
 						token = new Token(word, TokenType.FLOAT);
 					} else {
@@ -65,6 +66,9 @@ public class Tokenizer {
 					}
 				} else if (word.getText().equals(word.getText().toUpperCase())) {
 					token = new Token(word, TokenType.DEF);
+				} else if (tokens.size() > 0 && tokens.get(tokens.size() - 1).getType() == TokenType.DOLLAR) {
+					tokens.remove(tokens.size() - 1);
+					token = new Token(word, TokenType.ENUMVAL);
 				} else if (tokens.size() > 0 && tokens.get(tokens.size() - 1).getType() == TokenType.QUOTE) {
 					tokens.remove(tokens.size() - 1);
 					token = new Token(word, TokenType.STRING);
@@ -180,7 +184,7 @@ public class Tokenizer {
 	}
 
 	private static List<String> splitters = Arrays.asList("\'", "\"", "[", "]", "{", "}", "(", ")", "=", "<", ">",
-			"\n", ",");
+			"\n", ",", "$");
 
 	private static List<String> preline = Arrays.asList("[", "{", "(", "<", ",", "=", ":");
 

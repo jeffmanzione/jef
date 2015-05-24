@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Queue;
 
 import com.jeffreymanzione.jef.classes.ClassFiller;
+import com.jeffreymanzione.jef.classes.ClassFillingException;
 import com.jeffreymanzione.jef.parsing.DoesNotConformToDefintionException;
 import com.jeffreymanzione.jef.parsing.Parser;
 import com.jeffreymanzione.jef.parsing.ParsingException;
@@ -95,9 +96,7 @@ public class Assembler {
 					try {
 						Map<String, Object> map = filler.parseToObject(parsedMap);
 						return map;
-					} catch (InstantiationException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
+					} catch (ClassFillingException e) {
 						e.printStackTrace();
 					}
 

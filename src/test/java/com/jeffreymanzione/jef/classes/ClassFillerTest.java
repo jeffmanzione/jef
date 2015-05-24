@@ -1,6 +1,5 @@
 package com.jeffreymanzione.jef.classes;
 
-import java.io.IOException;
 import java.util.Queue;
 
 import org.junit.After;
@@ -8,16 +7,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.jeffreymanzione.jef.classes.ClassFiller;
-import com.jeffreymanzione.jef.parsing.DoesNotConformToDefintionException;
 import com.jeffreymanzione.jef.parsing.Parser;
-import com.jeffreymanzione.jef.parsing.ParsingException;
 import com.jeffreymanzione.jef.parsing.value.MapValue;
+import com.jeffreymanzione.jef.test.entities.Doge;
 import com.jeffreymanzione.jef.test.entities.Test1;
 import com.jeffreymanzione.jef.test.entities.Test2;
 import com.jeffreymanzione.jef.tokenizing.Token;
-import com.jeffreymanzione.jef.tokenizing.TokenizeException;
 import com.jeffreymanzione.jef.tokenizing.Tokenizer;
-import com.jeffreymanzione.jef.tokenizing.TokenizerTest;
 
 public class ClassFillerTest {
 
@@ -30,14 +26,15 @@ public class ClassFillerTest {
 	}
 
 	@Test
-	public void test() throws IOException, TokenizeException, ParsingException, DoesNotConformToDefintionException, InstantiationException, IllegalAccessException {
+	public void test() throws Exception {
 		ClassFiller cf = new ClassFiller();
 		cf.addEntityClass(Test1.class);
 		cf.addEntityClass(Test2.class);
+		cf.addEnumClass(Doge.class);
 		
 		Parser parser = new Parser();
 		
-		Queue<Token> tokens = new Tokenizer().tokenize(TokenizerTest.class.getResourceAsStream("/test2.in.jef"));
+		Queue<Token> tokens = new Tokenizer().tokenize(ClassFillerTest.class.getResourceAsStream("/test2.in.jef"));
 
 		MapValue mappings = parser.parse(tokens);
 		

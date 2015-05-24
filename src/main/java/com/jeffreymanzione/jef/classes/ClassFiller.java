@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.jeffreymanzione.jef.parsing.value.EnumValue;
 import com.jeffreymanzione.jef.parsing.value.ListValue;
 import com.jeffreymanzione.jef.parsing.value.MapValue;
 import com.jeffreymanzione.jef.parsing.value.Pair;
@@ -17,9 +18,10 @@ import com.jeffreymanzione.jef.parsing.value.Value;
 
 public class ClassFiller {
 	private Map<String, Class<? extends JEFEntity>> classes;
-
+	private Map<String, Class<?>> enums;
 	{
 		classes = new HashMap<String, Class<? extends JEFEntity>>();
+		enums = new HashMap<String, Class<?>>();
 	}
 
 	@SafeVarargs
@@ -31,24 +33,56 @@ public class ClassFiller {
 		return success;
 	}
 
-	private <T extends JEFEntity> T create(MapValue val, Class<T> cls) throws InstantiationException,
-			IllegalAccessException {
-		T obj = cls.newInstance();
+	@SafeVarargs
+	public final boolean addEnumClass(Class<?>... enums) throws Exception {
+		boolean success = true;
+		for (Class<?> enu : enums) {
+			if (enu.isEnum()) {
+				success &= this.enums.put(enu.getAnnotation(JEFClass.class).name(), enu) != null;
+			} else {
+				throw new Exception("Expected enum class, but was not an enum: " + enu);
+			}
+		}
+		return success;
+	}
 
-		for (Pair<?> p : val) {
-			obj.addToMap(p.getKey(), parseToObject(p.getValue()));
+	private <T extends JEFEntity> T create(MapValue val, Class<T> cls) throws ClassFillingException {
+		T obj;
+		try {
+			obj = cls.newInstance();
+			for (Pair<?> p : val) {
+				obj.addToMap(p.getKey(), parseToObject(p.getValue()));
+			}
 
+			return obj;
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new CouldNotAssembleClassException("Failed on newInstance() for val=" + val + ", class=" + cls
+					+ " Are we allowed to use the default constructor?");
 		}
 
-		return obj;
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T parseToObject(Value<?> value) throws InstantiationException, IllegalAccessException {
+	public <T> T parseToObject(Value<?> value) throws ClassFillingException {
 		// System.out.println(value.getClass());
 		if (value instanceof PrimitiveValue) {
 			// System.out.println(">>> " + value.getValue());
 			return (T) value.getValue();
+		} else if (value instanceof EnumValue) {
+			EnumValue enumVal = (EnumValue) value;
+			if (enums.containsKey(enumVal.getEntityID())) {
+				for (Object enu : enums.get(enumVal.getEntityID()).getEnumConstants()) {
+					if (((Enum<?>) enu).name().equals(enumVal.getValue())) {
+						return (T) enu;
+					}
+				}
+				throw new CouldNotAssembleClassException("Could not find '" + enumVal.getValue() + "' in enum "
+						+ enums.get(enumVal.getEntityID() + "."));
+			} else {
+				throw new CouldNotAssembleClassException("Could not find enum " + enumVal.getEntityID()
+						+ " in enums. Did you add the enum class to the ClassFiller with ClassFiller.addEnumClass()?");
+
+			}
 		} else if (value instanceof ListValue) {
 			ListValue listVal = (ListValue) value;
 			List<Object> list = new ArrayList<>();
@@ -83,5 +117,4 @@ public class ClassFiller {
 			}
 		}
 	}
-
 }

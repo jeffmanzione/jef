@@ -1,5 +1,7 @@
+enum : DOGE of [a, b, c, d, e]
 type : TEST1 {INT int1, FLOAT float1, STRING string1}
-type : TEST2 {STRING name, INT x, INT y, TEST1 a, TEST1<> test1List}
+type : TEST2 {STRING name, INT x, INT y, TEST1 a, TEST1<> test1List, DOGE doge}
+
 
 a1 : TEST1 = {
 	int1 = 5
@@ -16,6 +18,7 @@ a2 : TEST2 = {
 		float1 = 0.1
 		string1 = 'test string1'
 	}
+	doge = $b
 	
 	test1List = <
 		{ int1 = 1, float1 = 0.2, string1 = 'test string2' }

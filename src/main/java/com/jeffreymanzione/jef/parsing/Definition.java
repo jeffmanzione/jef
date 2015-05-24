@@ -30,13 +30,14 @@ public abstract class Definition {
 			throws DoesNotConformToDefintionException {
 		if (def instanceof EnumDefinition) {
 			EnumDefinition enumDef = (EnumDefinition) def;
-			if (val.getType() == ValueType.STRING) {
-				if (enumDef.contains(((StringValue) val).getValue())) {
+			if (val.getType() == ValueType.ENUM) {
+				if (enumDef.contains(val.getValue().toString())) {
 					// System.out.println("SUCCESS!!!");
+					val.setEntityID(enumDef.getName());
 					return true;
 				} else {
 					throw new DoesNotConformToDefintionException(line, column, "Unexpected enum value. Was '"
-							+ ((StringValue) val).getValue() + "' but expected one of the following: "
+							+ val.getValue() + "' but expected one of the following: "
 							+ enumDef.toString() + ".");
 				}
 			} else {

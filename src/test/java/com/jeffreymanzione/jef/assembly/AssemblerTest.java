@@ -12,7 +12,6 @@ import com.jeffreymanzione.jef.parsing.Parser;
 import com.jeffreymanzione.jef.test.entities.Test1;
 import com.jeffreymanzione.jef.test.entities.Test2;
 import com.jeffreymanzione.jef.tokenizing.Tokenizer;
-import com.jeffreymanzione.jef.tokenizing.TokenizerTest;
 
 public class AssemblerTest {
 
@@ -32,7 +31,7 @@ public class AssemblerTest {
 		ClassFiller cf = new ClassFiller();
 		cf.addEntityClass(Test1.class, Test2.class);
 		assembler.setFiller(cf);
-		assembler.setSource(TokenizerTest.class.getResourceAsStream("/test2.in.jef"));
+		assembler.setSource(AssemblerTest.class.getResourceAsStream("/test2.in.jef"));
 		Map<String, Object> map = assembler.assemble();
 		
 		for (Entry<String, Object> entry : map.entrySet()) {

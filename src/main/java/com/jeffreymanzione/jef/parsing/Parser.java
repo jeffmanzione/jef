@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 
+import com.jeffreymanzione.jef.parsing.value.EnumValue;
 import com.jeffreymanzione.jef.parsing.value.FloatValue;
 import com.jeffreymanzione.jef.parsing.value.ListValue;
 import com.jeffreymanzione.jef.parsing.value.LongValue;
@@ -77,6 +78,8 @@ public class Parser {
 				return new FloatValue(Double.parseDouble(tokens.remove().getText()));
 			case LONG:
 				return new LongValue(Long.parseLong(tokens.remove().getText()));
+			case ENUMVAL:
+				return new EnumValue(tokens.remove().getText());
 			case STRING:
 				return new StringValue(tokens.remove().getText());
 			default:
@@ -130,7 +133,6 @@ public class Parser {
 		EnumDefinition def = new EnumDefinition();
 		do {
 			Token name = tokens.remove();
-
 			if (name.getType() == TokenType.VAR) {
 				def.add(name.getText());
 			} else {
