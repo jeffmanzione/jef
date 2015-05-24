@@ -3,7 +3,6 @@ package com.jeffreymanzione.jef.assembly;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 
@@ -13,7 +12,6 @@ import com.jeffreymanzione.jef.parsing.DoesNotConformToDefintionException;
 import com.jeffreymanzione.jef.parsing.Parser;
 import com.jeffreymanzione.jef.parsing.ParsingException;
 import com.jeffreymanzione.jef.parsing.value.MapValue;
-import com.jeffreymanzione.jef.parsing.value.Pair;
 import com.jeffreymanzione.jef.tokenizing.Token;
 import com.jeffreymanzione.jef.tokenizing.TokenizeException;
 import com.jeffreymanzione.jef.tokenizing.Tokenizer;

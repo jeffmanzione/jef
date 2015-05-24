@@ -2,13 +2,13 @@ package com.jeffreymanzione.jef.test.entities;
 
 import java.util.List;
 
-import com.jeffreymanzione.jef.classes.AbstractJeffEntity;
+import com.jeffreymanzione.jef.classes.JeffEntityMap;
 import com.jeffreymanzione.jef.classes.JEFClass;
 import com.jeffreymanzione.jef.classes.JEFField;
 
 
 @JEFClass(name = "TEST2")
-public class Test2 extends AbstractJeffEntity {
+public class Test2 extends JeffEntityMap {
 	
 	@JEFField(key="name")
 	private String nombre;

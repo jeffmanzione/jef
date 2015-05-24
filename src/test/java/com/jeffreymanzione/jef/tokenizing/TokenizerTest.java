@@ -1,6 +1,6 @@
 package com.jeffreymanzione.jef.tokenizing;
 
-import static org.junit.Assert.*;
+//import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.Queue;

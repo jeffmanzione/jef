@@ -25,4 +25,6 @@ a2 : TEST2 = {
 		{ int1 = 1, float1 = 1.1, string1 = 'test string3' }
 		{ int1 = 1000, float1 = 5.1, string1 = 'test string4' }
 	>
+	
+	extra = 'my doge'
 }

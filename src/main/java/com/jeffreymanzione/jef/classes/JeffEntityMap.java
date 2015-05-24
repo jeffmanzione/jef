@@ -3,8 +3,9 @@ package com.jeffreymanzione.jef.classes;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
-public class AbstractJeffEntity implements JEFEntity {
+public class JeffEntityMap extends JEFEntity {
 
 	private Map<String, Object> mappings;
 	private Map<String, Class<?>> classes;
@@ -14,80 +15,8 @@ public class AbstractJeffEntity implements JEFEntity {
 		classes = new HashMap<>();
 	}
 
-	private boolean setFieldAnnot(Field field, String fieldName, Object val) throws CouldNotUpdateEntityMapException {
-		if (field.isAnnotationPresent(JEFField.class)) {
-			JEFField annot = field.getAnnotation(JEFField.class);
-			if (annot.key().equals(fieldName)) {
-				field.setAccessible(true);
-
-				if (field.getType().isInstance(val)) {
-					try {
-						field.set(this, val);
-						return true;
-					} catch (IllegalArgumentException | IllegalAccessException e) {
-						throw new CouldNotUpdateEntityMapException("Could not set object " + this + " with field "
-								+ field + " to val " + val
-								+ ". Either the security settings prevented it or you did something silly.");
-					}
-				} else {
-					throw new CouldNotUpdateEntityMapException("Could not set object " + this + " with field " + field
-							+ " to val " + val + ". Value was not instanceof field.");
-				}
-			}
-		}
-		return false;
-	}
-
-	private boolean matches(Field field, Object val) {
-		if (field.getType().isInstance(val)) {
-			return true;
-		} else {
-			if ((field.getType().equals(int.class) || field.getType().equals(long.class)) && val instanceof Long) {
-				return true;
-			} else if ((field.getType().equals(float.class) || field.getType().equals(double.class))
-					&& val instanceof Double) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private boolean setField(Field field, String fieldName, Object val) throws CouldNotUpdateEntityMapException {
-		if (field.getName().equals(fieldName)) {
-			field.setAccessible(true);
-
-			// System.out.println(field.getType() + " " + val.getClass().getName());
-			if (matches(field, val)) {
-				// System.out.println(field.getName() + " " + fieldName);
-
-				setSafe(field, val);
-				return true;
-
-			} else {
-				throw new CouldNotUpdateEntityMapException("Could not match types between field " + field + " and val "
-						+ val + ".");
-			}
-		}
-		return false;
-	}
-
-	private void setSafe(Field field, Object val) throws CouldNotUpdateEntityMapException {
-		try {
-			if (field.getType().equals(int.class)) {
-				field.set(this, ((Long) val).intValue());
-			} else if (field.getType().equals(float.class)) {
-				field.set(this, ((Double) val).floatValue());
-			} else {
-				field.set(this, val);
-			}
-		} catch (IllegalArgumentException | IllegalAccessException e) {
-			throw new CouldNotUpdateEntityMapException("Could not set object " + this + " with field " + field
-					+ " to val " + val + ". Either the security settings prevented it or you did something silly.");
-		}
-	}
-
 	@Override
-	public boolean addToMap(String fieldName, Object val) throws CouldNotUpdateEntityMapException {
+	public boolean setField(String fieldName, Object val) throws CouldNotUpdateEntityMapException {
 		for (Field field : this.getClass().getDeclaredFields()) {
 			if (this.setFieldAnnot(field, fieldName, val)) {
 				return true;
@@ -115,6 +44,7 @@ public class AbstractJeffEntity implements JEFEntity {
 						+ this.getClass().getName()
 						+ ", but it does not have a field that matches it. Going to add it to the auxilliary map, "
 						+ "but check to see if this is a mistake.");
+
 				classes.put(fieldName, val.getClass());
 				mappings.put(fieldName, val);
 			}
@@ -126,7 +56,7 @@ public class AbstractJeffEntity implements JEFEntity {
 	}
 
 	@Override
-	public Object getFromMap(String fieldName) throws CouldNotUpdateEntityMapException {
+	public Object getField(String fieldName) throws CouldNotUpdateEntityMapException {
 		for (Field field : this.getClass().getFields()) {
 			if (field.isAnnotationPresent(JEFField.class)) {
 				JEFField annot = field.getAnnotation(JEFField.class);
@@ -169,7 +99,7 @@ public class AbstractJeffEntity implements JEFEntity {
 	}
 
 	@Override
-	public Class<?> getFromMapType(String fieldName) throws CouldNotUpdateEntityMapException {
+	public Class<?> getFieldType(String fieldName) throws CouldNotUpdateEntityMapException {
 		for (Field field : this.getClass().getFields()) {
 			if (field.isAnnotationPresent(JEFField.class)) {
 				JEFField annot = field.getAnnotation(JEFField.class);
@@ -199,6 +129,59 @@ public class AbstractJeffEntity implements JEFEntity {
 			// e.printStackTrace();
 		}
 		return null;
+	}
+
+	@Override
+	public String toJEFEntityFormat(int indents, boolean useSpaces, int spacesPerTab) throws IllegalArgumentException,
+			IllegalAccessException {
+		String result = "";
+		String tab;
+		if (useSpaces) {
+			tab = "";
+			for (int i = 0; i < spacesPerTab; i++) {
+				tab += " ";
+			}
+		} else {
+			tab = "\t";
+		}
+		String indent = "";
+		for (int i = 0; i < indents; i++) {
+			indent += tab;
+		}
+
+		for (Field field : this.getClass().getDeclaredFields()) {
+			JEFField jf = field.getAnnotation(JEFField.class);
+
+			String name;
+			if (jf != null && !jf.ignore()) {
+				name = jf.key();
+			} else if (jf == null) {
+				name = field.getName();
+			} else {
+				continue;
+			}
+
+			String typeName = "";
+			if (JeffEntityMap.class.isAssignableFrom(field.getType())) {
+				typeName = " : " + toTypeName(field);
+
+			}
+			result += indent + name + typeName + " = " + writeBody(this, field, indents, useSpaces, spacesPerTab);
+		}
+		for (Entry<String, Object> entry : this.mappings.entrySet()) {
+			String name = entry.getKey();
+
+			String typeName = "";
+			if (JeffEntityMap.class.isAssignableFrom(classes.get(entry.getKey()))) {
+				typeName = " : " + toTypeName(classes.get(entry.getKey()));
+
+			}
+			result += indent + name + typeName + " = "
+					+ getValueFromObject(entry.getValue(), indents, useSpaces, spacesPerTab);
+		}
+		// result += "\n";
+
+		return result;
 	}
 
 }

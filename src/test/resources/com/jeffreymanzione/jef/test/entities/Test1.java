@@ -1,10 +1,10 @@
 package com.jeffreymanzione.jef.test.entities;
 
-import com.jeffreymanzione.jef.classes.AbstractJeffEntity;
+import com.jeffreymanzione.jef.classes.JeffEntityMap;
 import com.jeffreymanzione.jef.classes.JEFClass;
 
 @JEFClass(name = "TEST1")
-public class Test1 extends AbstractJeffEntity {
+public class Test1 extends JeffEntityMap {
 	private int int1;
 	private double float1;
 	private String string1;

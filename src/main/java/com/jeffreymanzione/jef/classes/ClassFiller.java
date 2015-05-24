@@ -3,8 +3,10 @@ package com.jeffreymanzione.jef.classes;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import com.jeffreymanzione.jef.parsing.value.EnumValue;
@@ -20,10 +22,10 @@ public class ClassFiller {
 	private Map<String, Class<? extends JEFEntity>> classes;
 	private Map<String, Class<?>> enums;
 	{
-		classes = new HashMap<String, Class<? extends JEFEntity>>();
+		classes = new LinkedHashMap<String, Class<? extends JEFEntity>>();
 		enums = new HashMap<String, Class<?>>();
 	}
-
+	
 	@SafeVarargs
 	public final boolean addEntityClass(Class<? extends JEFEntity>... cls) {
 		boolean success = true;
@@ -51,7 +53,7 @@ public class ClassFiller {
 		try {
 			obj = cls.newInstance();
 			for (Pair<?> p : val) {
-				obj.addToMap(p.getKey(), parseToObject(p.getValue()));
+				obj.setField(p.getKey(), parseToObject(p.getValue()));
 			}
 
 			return obj;
@@ -116,5 +118,22 @@ public class ClassFiller {
 				return (T) result;
 			}
 		}
+	}
+	
+
+	public final String convertToJEFEntityFormat(Map<String, Object> map, boolean useSpaces, int spacesPerTab)
+			throws IllegalArgumentException, IllegalAccessException {
+		String result = "";
+		for (Entry<String, Class<?>> entry : enums.entrySet()) {
+			result += JEFEntity.toJEFEnumHeader(entry.getValue()) + "\n";
+		}
+		for (Entry<String, Class<? extends JEFEntity>> entry : classes.entrySet()) {
+			result += JEFEntity.toJEFEntityHeader(entry.getValue()) + "\n";
+		}
+		result += "\n";
+		
+		result += JEFEntity.getValueFromObject(map, -1, useSpaces, spacesPerTab);
+		
+		return result;
 	}
 }

@@ -3,7 +3,6 @@ package com.jeffreymanzione.jef.parsing;
 import com.jeffreymanzione.jef.parsing.value.ListValue;
 import com.jeffreymanzione.jef.parsing.value.MapValue;
 import com.jeffreymanzione.jef.parsing.value.Pair;
-import com.jeffreymanzione.jef.parsing.value.StringValue;
 import com.jeffreymanzione.jef.parsing.value.TupleValue;
 import com.jeffreymanzione.jef.parsing.value.Value;
 import com.jeffreymanzione.jef.parsing.value.ValueType;
