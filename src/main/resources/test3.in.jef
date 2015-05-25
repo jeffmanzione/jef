@@ -1,5 +1,5 @@
-type : EVENT {STRING name, STRING text}
 type : DATAPOINT {INT x, INT y, STRING name, STRING desc, EVENT<> events}
+type : EVENT {STRING name, STRING text}
 
 points = {
 	p1 : DATAPOINT = {

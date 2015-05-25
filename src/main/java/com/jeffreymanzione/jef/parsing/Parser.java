@@ -2,6 +2,7 @@ package com.jeffreymanzione.jef.parsing;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 
@@ -65,7 +66,14 @@ public class Parser {
 				default:
 					break defCheck;
 			}
+
 		} while (tokens.peek().getType() == TokenType.COMMA && tokens.remove().getType() == TokenType.COMMA);
+
+		for (Entry<String, Definition> entry : definitions.entrySet()) {
+			Definition definition = entry.getValue();
+			//System.out.println(entry.getKey() + " " + definition);
+			definition.validate(definitions);
+		}
 
 		return this.parseMap(tokens);
 
@@ -159,6 +167,15 @@ public class Parser {
 		}
 	}
 
+	private Definition resolveType(Token type) {
+		Definition innerDef = definitions.get(type.getText());
+		if (innerDef == null) {
+			//System.out.println("1Could not find " + type.getText());
+			innerDef = new TempDefinition(type.getText());
+		}
+		return innerDef;
+	}
+	
 	private Definition parseTypeInner(Queue<Token> tokens) throws ParsingException {
 		Token howToProceed = tokens.peek();
 
@@ -194,11 +211,11 @@ public class Parser {
 
 				if (name.getType() == TokenType.VAR) {
 					Definition outerDef;
+					Definition innerDef = resolveType(type);
+					
 					if (mod == Modification.LIST) {
-						outerDef = new ListDefinition(definitions.get(type.getText()));
+						outerDef = new ListDefinition(innerDef);
 					} else /* if (mod == Modification.MAP) */{
-						// NEED TO MAKE THIS STRICT
-
 						outerDef = new MapDefinition();
 						((MapDefinition) outerDef).setRestricted(definitions.get(type.getText()));
 					}
@@ -218,7 +235,8 @@ public class Parser {
 				// System.out.println("\tDEF " + definitions.get(type.getText()));
 
 				if (name.getType() == TokenType.VAR) {
-					return new Declaration(definitions.get(type.getText()), name.getText());
+					Definition innerDef = resolveType(type);
+					return new Declaration(innerDef, name.getText());
 				} else {
 					throw new ParsingException(name, "Unexpected token. Expected token VAR_NAME after TYPE.",
 							TokenType.VAR);
@@ -377,7 +395,7 @@ public class Parser {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private Pair<?> parseAssignment(Queue<Token> tokens) throws ParsingException, DoesNotConformToDefintionException {
+	private Pair<String,?> parseAssignment(Queue<Token> tokens) throws ParsingException, DoesNotConformToDefintionException {
 		Token var = tokens.remove();
 		Value<?> val;
 		if (var.getType() == TokenType.VAR) {

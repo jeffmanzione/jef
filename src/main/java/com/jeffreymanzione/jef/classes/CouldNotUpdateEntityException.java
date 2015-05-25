@@ -1,6 +1,6 @@
 package com.jeffreymanzione.jef.classes;
 
-public class CouldNotUpdateEntityMapException extends ClassFillingException {
+public class CouldNotUpdateEntityException extends ClassFillingException {
 
 	/**
 	 * 
@@ -11,7 +11,7 @@ public class CouldNotUpdateEntityMapException extends ClassFillingException {
 	 * 
 	 */
 	
-	public CouldNotUpdateEntityMapException(String string) {
+	public CouldNotUpdateEntityException(String string) {
 		super("Error: could not fill class: " + string);
 	}
 }

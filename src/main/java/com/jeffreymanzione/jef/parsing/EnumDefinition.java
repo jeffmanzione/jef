@@ -2,6 +2,7 @@ package com.jeffreymanzione.jef.parsing;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 public class EnumDefinition extends Definition {
@@ -34,5 +35,11 @@ public class EnumDefinition extends Definition {
 		}
 
 		return result;
+	}
+
+	@Override
+	public void validateInnerTypes(Map<String, Definition> definitions) {
+		// TODO Auto-generated method stub
+		
 	}
 }

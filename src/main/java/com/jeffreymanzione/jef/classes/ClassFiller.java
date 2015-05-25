@@ -25,17 +25,17 @@ import com.jeffreymanzione.jef.parsing.value.TupleValue;
 import com.jeffreymanzione.jef.parsing.value.Value;
 
 public class ClassFiller {
-	private Map<String, Class<? extends JEFEntity>> classes;
+	private Map<String, Class<? extends JEFEntity<?>>> classes;
 	private Map<String, Class<?>> enums;
 	{
-		classes = new LinkedHashMap<String, Class<? extends JEFEntity>>();
+		classes = new LinkedHashMap<String, Class<? extends JEFEntity<?>>>();
 		enums = new HashMap<String, Class<?>>();
 	}
 
 	@SafeVarargs
-	public final boolean addEntityClass(Class<? extends JEFEntity>... cls) {
+	public final boolean addEntityClass(Class<? extends JEFEntity<?>>... cls) {
 		boolean success = true;
-		for (Class<? extends JEFEntity> cl : cls) {
+		for (Class<? extends JEFEntity<?>> cl : cls) {
 			success &= classes.put(cl.getAnnotation(JEFClass.class).name(), cl) != null;
 		}
 		return success;
@@ -54,12 +54,28 @@ public class ClassFiller {
 		return success;
 	}
 
-	private <T extends JEFEntity> T create(MapValue val, Class<T> cls) throws ClassFillingException {
+	private <T extends JEFEntityTuple> T create(TupleValue val, Class<T> cls) throws ClassFillingException {
 		T obj;
 		try {
 			obj = cls.newInstance();
-			for (Pair<?> p : val) {
-				obj.setField(p.getKey(), parseToObject(p.getValue()));
+			for (Pair<Integer, ?> p : val) {
+				obj.set(p.getKey(), parseToObject(p.getValue()));
+			}
+
+			return obj;
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new CouldNotAssembleClassException("Failed on newInstance() for val=" + val + ", class=" + cls
+					+ " Are we allowed to use the default constructor?");
+		}
+
+	}
+
+	private <T extends JEFEntityMap> T create(MapValue val, Class<T> cls) throws ClassFillingException {
+		T obj;
+		try {
+			obj = cls.newInstance();
+			for (Pair<String, ?> p : val) {
+				obj.set(p.getKey(), parseToObject(p.getValue()));
 			}
 
 			return obj;
@@ -107,23 +123,43 @@ public class ClassFiller {
 			return (T) result;
 		} else if (value instanceof TupleValue) {
 			TupleValue tupVal = (TupleValue) value;
-			Object[] objs = new Object[tupVal.size()];
-			for (int i = 0; i < objs.length; i++) {
-				objs[i] = tupVal.get(i);
+			//System.out.println("TUP " + tupVal + " " + tupVal.getEntityID());
+			if (classes.containsKey(tupVal.getEntityID())) {
+				return (T) create(tupVal, (Class<? extends JEFEntityTuple>) classes.get(tupVal.getEntityID()));
+			} else {
+				Object[] objs = new Object[tupVal.size()];
+				for (int i = 0; i < objs.length; i++) {
+					objs[i] = tupVal.get(i);
+				}
+				return (T) objs;
 			}
-			return (T) objs;
 		} else /* if MapValue */{
 			MapValue mapVal = (MapValue) value;
 			if (classes.containsKey(mapVal.getEntityID())) {
-				return (T) create(mapVal, classes.get(mapVal.getEntityID()));
+				return (T) create(mapVal, (Class<? extends JEFEntityMap>) classes.get(mapVal.getEntityID()));
 			} else {
 				Map<String, Object> result = new HashMap<String, Object>();
-				for (Pair<?> pair : mapVal) {
+				for (Pair<String, ?> pair : mapVal) {
 					result.put(pair.getKey(), parseToObject(pair.getValue()));
 				}
 				return (T) result;
 			}
 		}
+	}
+
+	public final String convertToJEFEntityFormat(Map<String, Object> map) throws IllegalArgumentException,
+			IllegalAccessException {
+		String result = "";
+		for (Entry<String, Class<?>> entry : enums.entrySet()) {
+			result += JEFEntity.toJEFEnumHeader(entry.getValue()) + "\n";
+		}
+		for (Entry<String, Class<? extends JEFEntity<?>>> entry : classes.entrySet()) {
+			result += JEFEntity.toJEFEntityHeader(entry.getValue()) + "\n";
+		}
+
+		String entities = JEFEntity.getValueFromObject(map, -1, false, -1);
+		result += entities.substring(1, entities.length() - 2);
+		return result;
 	}
 
 	public final String convertToJEFEntityFormat(Map<String, Object> map, boolean useSpaces, int spacesPerTab)
@@ -132,7 +168,7 @@ public class ClassFiller {
 		for (Entry<String, Class<?>> entry : enums.entrySet()) {
 			result += JEFEntity.toJEFEnumHeader(entry.getValue()) + "\n";
 		}
-		for (Entry<String, Class<? extends JEFEntity>> entry : classes.entrySet()) {
+		for (Entry<String, Class<? extends JEFEntity<?>>> entry : classes.entrySet()) {
 			result += JEFEntity.toJEFEntityHeader(entry.getValue()) + "\n";
 		}
 
@@ -148,6 +184,23 @@ public class ClassFiller {
 		} else {
 			OutputStream stream = new FileOutputStream(file);
 			writeToStream(map, useSpaces, spacesPerTab, stream);
+		}
+	}
+
+	public final void writeToFile(Map<String, Object> map, File file) throws IOException, IllegalArgumentException,
+			IllegalAccessException {
+		if (!file.exists() && !file.createNewFile()) {
+			throw new FileNotFoundException();
+		} else {
+			OutputStream stream = new FileOutputStream(file);
+			writeToStream(map, false, -1, stream);
+		}
+	}
+
+	public final void writeToStream(Map<String, Object> map, OutputStream stream) throws IllegalArgumentException,
+			IllegalAccessException {
+		try (PrintWriter out = new PrintWriter(stream)) {
+			out.print(convertToJEFEntityFormat(map, false, -1));
 		}
 	}
 

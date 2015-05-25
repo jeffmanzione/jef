@@ -6,14 +6,14 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
-public class MapValue extends Value<Map<String, Value<?>>> implements Iterable<Pair<?>> {
+public class MapValue extends Value<Map<String, Value<?>>> implements Iterable<Pair<String,?>> {
 	public MapValue() {
 		super(ValueType.MAP);
 	}
 	
 	private Map<String, Value<?>> map = new HashMap<>();
 
-	public void add(Pair<?> pair) {
+	public void add(Pair<String,?> pair) {
 		map.put(pair.getKey(), pair.getValue());
 		super.set(map);
 	}
@@ -24,12 +24,12 @@ public class MapValue extends Value<Map<String, Value<?>>> implements Iterable<P
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public Iterator<Pair<?>> iterator() {
-		return new Iterator<Pair<?>>() {
+	public Iterator<Pair<String,?>> iterator() {
+		return new Iterator<Pair<String,?>>() {
 
-			Queue<Pair<?>> queue;
+			Queue<Pair<String,?>> queue;
 			{
-				queue = new LinkedList<Pair<?>>();
+				queue = new LinkedList<Pair<String,?>>();
 				for (String key : map.keySet()) {
 					queue.add(new Pair(key, map.get(key)));
 				}
@@ -41,7 +41,7 @@ public class MapValue extends Value<Map<String, Value<?>>> implements Iterable<P
 			}
 
 			@Override
-			public Pair<?> next() {
+			public Pair<String,?> next() {
 				return queue.remove();
 			}
 		};

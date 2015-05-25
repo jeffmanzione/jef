@@ -1,16 +1,16 @@
 package com.jeffreymanzione.jef.parsing.value;
 
-public class Pair<T> {
-	private final String key;
+public class Pair<K, T> {
+	private final K key;
 	private final Value<T> value;
 
-	public Pair(String key, Value<T> value) {
+	public Pair(K key, Value<T> value) {
 		super();
 		this.key = key;
 		this.value = value;
 	}
 
-	public String getKey() {
+	public K getKey() {
 		return key;
 	}
 

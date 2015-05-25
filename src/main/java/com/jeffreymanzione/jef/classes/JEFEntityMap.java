@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class JEFEntityMap extends JEFEntity {
+public class JEFEntityMap extends JEFEntity<String> {
 
 	private Map<String, Object> mappings;
 	private Map<String, Class<?>> classes;
@@ -16,7 +16,7 @@ public class JEFEntityMap extends JEFEntity {
 	}
 
 	@Override
-	public boolean setField(String fieldName, Object val) throws CouldNotUpdateEntityMapException {
+	public boolean set(String fieldName, Object val) throws CouldNotUpdateEntityException {
 		for (Field field : this.getClass().getDeclaredFields()) {
 			if (this.setFieldAnnot(field, fieldName, val)) {
 				return true;
@@ -34,7 +34,7 @@ public class JEFEntityMap extends JEFEntity {
 					mappings.put(fieldName, val);
 					return true;
 				} else {
-					throw new CouldNotUpdateEntityMapException(
+					throw new CouldNotUpdateEntityException(
 							"Could not set field's value in map as it was already set to a different type "
 									+ " nor in the map: fieldName='" + fieldName + "' and val=" + val + " expected="
 									+ mappings.get(fieldName) + ".");
@@ -49,14 +49,14 @@ public class JEFEntityMap extends JEFEntity {
 				mappings.put(fieldName, val);
 			}
 		} catch (SecurityException e) {
-			throw new CouldNotUpdateEntityMapException("Unexpected security exception: fieldName='" + fieldName
+			throw new CouldNotUpdateEntityException("Unexpected security exception: fieldName='" + fieldName
 					+ "' and val=" + val + ".\n See Exception in the stack trace.");
 		}
 		return false;
 	}
 
 	@Override
-	public Object getField(String fieldName) throws CouldNotUpdateEntityMapException {
+	public Object get(String fieldName) throws CouldNotUpdateEntityException {
 		for (Field field : this.getClass().getFields()) {
 			if (field.isAnnotationPresent(JEFField.class)) {
 				JEFField annot = field.getAnnotation(JEFField.class);
@@ -65,7 +65,7 @@ public class JEFEntityMap extends JEFEntity {
 					try {
 						return field.get(this);
 					} catch (IllegalArgumentException | IllegalAccessException e) {
-						throw new CouldNotUpdateEntityMapException("Field " + field + " in " + this
+						throw new CouldNotUpdateEntityException("Field " + field + " in " + this
 								+ " could not be read. Check the security settings.");
 
 					}
@@ -80,7 +80,7 @@ public class JEFEntityMap extends JEFEntity {
 					try {
 						return field.get(this);
 					} catch (IllegalArgumentException | IllegalAccessException e) {
-						throw new CouldNotUpdateEntityMapException("Field " + field + " in " + this
+						throw new CouldNotUpdateEntityException("Field " + field + " in " + this
 								+ " could not be read. Check the security settings.");
 					}
 				}
@@ -89,17 +89,17 @@ public class JEFEntityMap extends JEFEntity {
 			if (mappings.containsKey(fieldName)) {
 				return mappings.get(fieldName);
 			} else {
-				throw new CouldNotUpdateEntityMapException("Could not set field's value in map as it was not a field"
+				throw new CouldNotUpdateEntityException("Could not set field's value in map as it was not a field"
 						+ " nor in the map: fieldName='" + fieldName + ".");
 			}
 		} catch (SecurityException e) {
-			throw new CouldNotUpdateEntityMapException("Unexpected security exception: fieldName='" + fieldName + ".");
+			throw new CouldNotUpdateEntityException("Unexpected security exception: fieldName='" + fieldName + ".");
 		}
 		return false;
 	}
 
 	@Override
-	public Class<?> getFieldType(String fieldName) throws CouldNotUpdateEntityMapException {
+	public Class<?> getType(String fieldName) throws CouldNotUpdateEntityException {
 		for (Field field : this.getClass().getFields()) {
 			if (field.isAnnotationPresent(JEFField.class)) {
 				JEFField annot = field.getAnnotation(JEFField.class);
@@ -121,11 +121,11 @@ public class JEFEntityMap extends JEFEntity {
 			if (mappings.containsKey(fieldName)) {
 				return classes.get(fieldName);
 			} else {
-				throw new CouldNotUpdateEntityMapException("Could not set field's value in map as it was not a field"
+				throw new CouldNotUpdateEntityException("Could not set field's value in map as it was not a field"
 						+ " nor in the map: fieldName='" + fieldName + ".");
 			}
 		} catch (SecurityException e) {
-			throw new CouldNotUpdateEntityMapException("Unexpected security exception: fieldName='" + fieldName + ".");
+			throw new CouldNotUpdateEntityException("Unexpected security exception: fieldName='" + fieldName + ".");
 			// e.printStackTrace();
 		}
 		return null;
@@ -169,7 +169,7 @@ public class JEFEntityMap extends JEFEntity {
 				typeName = " : " + toTypeName(field);
 
 			}
-			result += indent + name + typeName + " = " + writeBody(this, field, indents, useSpaces, spacesPerTab);
+			result += indent + name + typeName + " = " + writeBody(this, field, indents, useSpaces, spacesPerTab) + "\n";
 		}
 		for (Entry<String, Object> entry : this.mappings.entrySet()) {
 			String name = entry.getKey();
@@ -180,7 +180,7 @@ public class JEFEntityMap extends JEFEntity {
 
 			}
 			result += indent + name + typeName + " = "
-					+ getValueFromObject(entry.getValue(), indents, useSpaces, spacesPerTab);
+					+ getValueFromObject(entry.getValue(), indents, useSpaces, spacesPerTab) + "\n";
 		}
 		// result += "\n";
 

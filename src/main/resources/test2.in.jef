@@ -1,12 +1,13 @@
 enum : DOGE of [a, b, c, d, e]
-type : TEST1 {INT int1, FLOAT float1, STRING string1}
+type : TEST1 {INT int1, FLOAT float1, STRING string1, TUPL1 tup}
 type : TEST2 {STRING name, INT x, INT y, TEST1 a, TEST1<> test1List, DOGE doge}
-
+type : TUPL1 (DOGE, INT, INT)
 
 a1 : TEST1 = {
 	int1 = 5
 	float1 = 0.1
 	string1 = 'test string'
+	tup = ($a, 0, 0)
 }
 
 a2 : TEST2 = {
@@ -17,13 +18,14 @@ a2 : TEST2 = {
 		int1 = 5
 		float1 = 0.1
 		string1 = 'test string1'
+		tup = ($e, 55, 69)
 	}
 	doge = $b
 	
 	test1List = <
-		{ int1 = 1, float1 = 0.2, string1 = 'test string2' }
-		{ int1 = 1, float1 = 1.1, string1 = 'test string3' }
-		{ int1 = 1000, float1 = 5.1, string1 = 'test string4' }
+		{ int1 = 1, float1 = 0.2, string1 = 'test string2', tup = ($b, 5, 5) }
+		{ int1 = 1, float1 = 1.1, string1 = 'test string3', tup = ($c, 100, 1) }
+		{ int1 = 1000, float1 = 5.1, string1 = 'test string4', tup = ($d, 0, 1000) }
 	>
 	
 	extra = 'my doge'

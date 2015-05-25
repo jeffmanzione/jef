@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.jeffreymanzione.jef.parsing.value.ValueType;
 
@@ -62,7 +63,7 @@ public class TupleDefinition extends Definition {
 		while (tupleType.hasNext()) {
 			type = tupleType.next();
 			if (type == ValueType.DEFINED) {
-				//System.out.println("HMMM " + index + " " + toDefs);
+				// System.out.println("HMMM " + index + " " + toDefs);
 				result += ", " + toDefs.get(index).toString();
 			} else {
 				result += ", " + type.toString();
@@ -70,9 +71,18 @@ public class TupleDefinition extends Definition {
 			index++;
 		}
 
-		//System.out.println("(" + result + ")");
+		// System.out.println("(" + result + ")");
 
 		return "(" + result + ")";
+	}
+
+	public void validateInnerTypes(Map<String, Definition> definitions) {
+		for (Entry<Integer, Definition> entry : toDefs.entrySet()) {
+			Definition def = entry.getValue();
+			if (def instanceof TempDefinition) {
+				toDefs.put(entry.getKey(), definitions.get(((TempDefinition) def).getName()));
+			}
+		}
 	}
 
 }

@@ -1,13 +1,16 @@
 package com.jeffreymanzione.jef.parsing.value;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import com.jeffreymanzione.jef.parsing.ParsingException;
 import com.jeffreymanzione.jef.parsing.TupleDefinition;
 import com.jeffreymanzione.jef.parsing.TupleException;
 
-public class TupleValue extends Value<List<Value<?>>> {
+public class TupleValue extends Value<List<Value<?>>> implements Iterable<Pair<Integer,?>> {
 
 	private List<Value<?>> values = new ArrayList<>();
 
@@ -59,5 +62,31 @@ public class TupleValue extends Value<List<Value<?>>> {
 			result += ", " + values.get(index).toString();
 		}
 		return result + ")";
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public Iterator<Pair<Integer, ?>> iterator() {
+		return new Iterator<Pair<Integer,?>>() {
+
+			Queue<Pair<Integer,?>> queue;
+			{
+				queue = new LinkedList<Pair<Integer,?>>();
+				for (int i = 0; i < values.size(); i++) {
+					queue.add(new Pair(i,values.get(i)));
+				}
+			}
+
+			@Override
+			public boolean hasNext() {
+				return !queue.isEmpty();
+			}
+
+			@Override
+			public Pair<Integer,?> next() {
+				return queue.remove();
+			}
+		};
+
 	}
 }

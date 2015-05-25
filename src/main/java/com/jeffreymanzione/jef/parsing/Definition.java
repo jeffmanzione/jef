@@ -1,5 +1,7 @@
 package com.jeffreymanzione.jef.parsing;
 
+import java.util.Map;
+
 import com.jeffreymanzione.jef.parsing.value.ListValue;
 import com.jeffreymanzione.jef.parsing.value.MapValue;
 import com.jeffreymanzione.jef.parsing.value.Pair;
@@ -25,6 +27,21 @@ public abstract class Definition {
 		return "Definition(" + name + ")";
 	}
 
+	private boolean validated = false;
+
+	public boolean wasValidated() {
+		return validated;
+	}
+
+	public boolean setValidated(boolean wasValidated) {
+		if (validated != wasValidated) {
+			validated = wasValidated;
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	public static final boolean check(Definition def, Value<?> val, int line, int column)
 			throws DoesNotConformToDefintionException {
 		if (def instanceof EnumDefinition) {
@@ -36,8 +53,7 @@ public abstract class Definition {
 					return true;
 				} else {
 					throw new DoesNotConformToDefintionException(line, column, "Unexpected enum value. Was '"
-							+ val.getValue() + "' but expected one of the following: "
-							+ enumDef.toString() + ".");
+							+ val.getValue() + "' but expected one of the following: " + enumDef.toString() + ".");
 				}
 			} else {
 				throw new DoesNotConformToDefintionException(line, column, "Expected a STRING but was a "
@@ -62,8 +78,9 @@ public abstract class Definition {
 
 							MapValue subMapVal = (MapValue) subVal;
 
-							for (Pair<?> pair : subMapVal) {
+							for (Pair<String,?> pair : subMapVal) {
 								Definition.check(subDef, pair.getValue(), line, column);
+								pair.getValue().setEntityID(subDef.getName());
 							}
 
 						} else if (subDef instanceof ListDefinition) {
@@ -126,6 +143,7 @@ public abstract class Definition {
 							}
 						}
 					}
+					val.setEntityID(def.getName());
 				}
 				return true;
 			} else {
@@ -158,4 +176,13 @@ public abstract class Definition {
 		}
 
 	}
+
+	public void validate(Map<String, Definition> definitions) {
+		if (!wasValidated()) {
+			this.validateInnerTypes(definitions);
+			this.setValidated(true);
+		}
+	}
+
+	protected abstract void validateInnerTypes(Map<String, Definition> definitions);
 }

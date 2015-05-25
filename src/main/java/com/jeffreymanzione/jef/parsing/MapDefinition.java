@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-
 //import parsing.value.ValueType;
 
 public class MapDefinition extends Definition implements Iterable<String> {
@@ -42,6 +41,19 @@ public class MapDefinition extends Definition implements Iterable<String> {
 	public void setRestricted(Definition restriction) {
 		this.restriction = restriction;
 
+	}
+
+	
+	public void validateInnerTypes(Map<String, Definition> definitions) {
+		for (String varName : this) {
+			Definition def = this.get(varName);
+			//System.out.println(def.getClass().getSimpleName() + " " + (def instanceof TempDefinition));
+			if (def instanceof TempDefinition) {
+				this.add(varName, definitions.get(((TempDefinition) def).getName()));
+			} else if (def instanceof MapDefinition || def instanceof ListDefinition || def instanceof TupleDefinition) {
+				def.validateInnerTypes(definitions);
+			}
+		}
 	}
 
 }
