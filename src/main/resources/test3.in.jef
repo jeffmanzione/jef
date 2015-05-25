@@ -1,0 +1,46 @@
+type : EVENT {STRING name, STRING text}
+type : DATAPOINT {INT x, INT y, STRING name, STRING desc, EVENT<> events}
+
+points = {
+	p1 : DATAPOINT = {
+		x = 5
+		y = 22
+		name = 'HQ'
+		desc = 'Best place ever.'
+		events = <
+			{
+				name = 'Meeting 1'
+				text = 'this meeting'
+			}
+			{
+				name = 'Meeting 2'
+				text = 'this meeting again'
+			}
+			{
+				name = 'Meeting 3'
+				text = 'another meeting'
+			}
+		>
+	}
+	p2 : DATAPOINT = {
+		x = 55
+		y = 2
+		name = 'BASE'
+		desc = 'Best base ever.'
+		events = <
+			{
+				name = 'Meeting 1'
+				text = 'this meeting'
+			}
+			{
+				name = 'Meeting 2'
+				text = 'this meeting again'
+			}
+			{
+				name = 'Meeting 3'
+				text = 'another meeting'
+			}
+		>
+	}
+	
+}

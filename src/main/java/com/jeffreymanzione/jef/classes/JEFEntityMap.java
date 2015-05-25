@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class JeffEntityMap extends JEFEntity {
+public class JEFEntityMap extends JEFEntity {
 
 	private Map<String, Object> mappings;
 	private Map<String, Class<?>> classes;
@@ -40,7 +40,7 @@ public class JeffEntityMap extends JEFEntity {
 									+ mappings.get(fieldName) + ".");
 				}
 			} else {
-				System.err.println("Suspicious: Tried to add (key=" + fieldName + ",val=" + val + ") to a "
+				System.err.println("Warning: Tried to add (key=" + fieldName + ",val=" + val + ") to a "
 						+ this.getClass().getName()
 						+ ", but it does not have a field that matches it. Going to add it to the auxilliary map, "
 						+ "but check to see if this is a mistake.");
@@ -151,10 +151,13 @@ public class JeffEntityMap extends JEFEntity {
 
 		for (Field field : this.getClass().getDeclaredFields()) {
 			JEFField jf = field.getAnnotation(JEFField.class);
-
 			String name;
 			if (jf != null && !jf.ignore()) {
-				name = jf.key();
+				if (jf.key().equals("")) {
+					name = field.getName();
+				} else {
+					name = jf.key();
+				}
 			} else if (jf == null) {
 				name = field.getName();
 			} else {
@@ -162,7 +165,7 @@ public class JeffEntityMap extends JEFEntity {
 			}
 
 			String typeName = "";
-			if (JeffEntityMap.class.isAssignableFrom(field.getType())) {
+			if (JEFEntityMap.class.isAssignableFrom(field.getType())) {
 				typeName = " : " + toTypeName(field);
 
 			}
@@ -172,7 +175,7 @@ public class JeffEntityMap extends JEFEntity {
 			String name = entry.getKey();
 
 			String typeName = "";
-			if (JeffEntityMap.class.isAssignableFrom(classes.get(entry.getKey()))) {
+			if (JEFEntityMap.class.isAssignableFrom(classes.get(entry.getKey()))) {
 				typeName = " : " + toTypeName(classes.get(entry.getKey()));
 
 			}

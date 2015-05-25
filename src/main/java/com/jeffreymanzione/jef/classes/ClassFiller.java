@@ -1,5 +1,11 @@
 package com.jeffreymanzione.jef.classes;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,7 +31,7 @@ public class ClassFiller {
 		classes = new LinkedHashMap<String, Class<? extends JEFEntity>>();
 		enums = new HashMap<String, Class<?>>();
 	}
-	
+
 	@SafeVarargs
 	public final boolean addEntityClass(Class<? extends JEFEntity>... cls) {
 		boolean success = true;
@@ -119,7 +125,6 @@ public class ClassFiller {
 			}
 		}
 	}
-	
 
 	public final String convertToJEFEntityFormat(Map<String, Object> map, boolean useSpaces, int spacesPerTab)
 			throws IllegalArgumentException, IllegalAccessException {
@@ -130,10 +135,26 @@ public class ClassFiller {
 		for (Entry<String, Class<? extends JEFEntity>> entry : classes.entrySet()) {
 			result += JEFEntity.toJEFEntityHeader(entry.getValue()) + "\n";
 		}
-		result += "\n";
-		
-		result += JEFEntity.getValueFromObject(map, -1, useSpaces, spacesPerTab);
-		
+
+		String entities = JEFEntity.getValueFromObject(map, -1, useSpaces, spacesPerTab);
+		result += entities.substring(1, entities.length() - 2);
 		return result;
+	}
+
+	public final void writeToFile(Map<String, Object> map, boolean useSpaces, int spacesPerTab, File file)
+			throws IOException, IllegalArgumentException, IllegalAccessException {
+		if (!file.exists() && !file.createNewFile()) {
+			throw new FileNotFoundException();
+		} else {
+			OutputStream stream = new FileOutputStream(file);
+			writeToStream(map, useSpaces, spacesPerTab, stream);
+		}
+	}
+
+	public final void writeToStream(Map<String, Object> map, boolean useSpaces, int spacesPerTab, OutputStream stream)
+			throws IllegalArgumentException, IllegalAccessException {
+		try (PrintWriter out = new PrintWriter(stream)) {
+			out.print(convertToJEFEntityFormat(map, useSpaces, spacesPerTab));
+		}
 	}
 }

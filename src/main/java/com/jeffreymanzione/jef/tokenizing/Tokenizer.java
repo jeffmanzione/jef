@@ -51,7 +51,7 @@ public class Tokenizer {
 		for (int index = 0; index < words.size(); index++) {
 			Word word = words.get(index);
 			Token token = null;
-
+			//System.out.println("\"" + word.getText() + "\"");
 			if (TokenType.isKeyword(word.getText())) {
 				token = new Token(word, TokenType.getToken(word.getText()));
 			} else {
@@ -64,7 +64,8 @@ public class Tokenizer {
 					} else {
 						token = new Token(word, TokenType.LONG);
 					}
-				} else if (word.getText().equals(word.getText().toUpperCase())) {
+				} else if (tokens.get(tokens.size() - 1).getType() != TokenType.QUOTE
+						&& word.getText().equals(word.getText().toUpperCase())) {
 					token = new Token(word, TokenType.DEF);
 				} else if (tokens.size() > 0 && tokens.get(tokens.size() - 1).getType() == TokenType.DOLLAR) {
 					tokens.remove(tokens.size() - 1);
@@ -81,6 +82,8 @@ public class Tokenizer {
 					token = new Token(word, TokenType.VAR);
 				}
 			}
+
+			//System.out.println(token + " " + word.getText());
 
 			if (token != null) {
 

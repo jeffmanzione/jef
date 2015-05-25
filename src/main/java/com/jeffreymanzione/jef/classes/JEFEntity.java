@@ -14,10 +14,9 @@ public abstract class JEFEntity {
 
 	public abstract Class<?> getFieldType(String fieldName) throws CouldNotUpdateEntityMapException;
 
-	public abstract String toJEFEntityFormat(int indents, boolean useSpaces, int spacesPerTab) throws IllegalArgumentException,
-			IllegalAccessException;
+	public abstract String toJEFEntityFormat(int indents, boolean useSpaces, int spacesPerTab)
+			throws IllegalArgumentException, IllegalAccessException;
 
-	
 	protected boolean setFieldAnnot(Field field, String fieldName, Object val) throws CouldNotUpdateEntityMapException {
 		if (field.isAnnotationPresent(JEFField.class)) {
 			JEFField annot = field.getAnnotation(JEFField.class);
@@ -109,8 +108,8 @@ public abstract class JEFEntity {
 		field.setAccessible(true);
 		String result = "";
 		// System.out.println(field.getType());
-		if (JeffEntityMap.class.isAssignableFrom(field.getType())) {
-			result += "{\n" + ((JeffEntityMap) field.get(obj)).toJEFEntityFormat(indents + 1, useSpaces, spacesPerTab)
+		if (JEFEntityMap.class.isAssignableFrom(field.getType())) {
+			result += "{\n" + ((JEFEntityMap) field.get(obj)).toJEFEntityFormat(indents + 1, useSpaces, spacesPerTab)
 					+ indent + "}";
 		} else if (fieldIsPrimitive(field)) {
 			result += field.get(obj).toString();
@@ -123,7 +122,7 @@ public abstract class JEFEntity {
 			for (Object entry : ((List<Object>) field.get(obj))) {
 				result += getValueFromObject(entry, indents + 1, useSpaces, spacesPerTab);
 			}
-			result += "\n" + indent + ">";
+			result += indent + ">";
 		} else if (Map.class.isAssignableFrom(field.getType())) {
 			result += "{\n" + getValueFromObject(field.get(obj), indents + 1, useSpaces, spacesPerTab) + indent + "}\n";
 		}
@@ -147,11 +146,11 @@ public abstract class JEFEntity {
 		for (int i = 0; i < indents; i++) {
 			indent += tab;
 		}
-
+		
 		String result = indent;
 
 		if (obj instanceof JEFEntity) {
-			result += "{\n" + ((JeffEntityMap) obj).toJEFEntityFormat(indents + 1, useSpaces, spacesPerTab) + indent
+			result += "{\n" + ((JEFEntityMap) obj).toJEFEntityFormat(indents + 1, useSpaces, spacesPerTab) + indent
 					+ "}";
 		} else if (classIsPrimitive(obj.getClass())) {
 			result += obj.toString();
@@ -164,19 +163,24 @@ public abstract class JEFEntity {
 			for (Object entry : ((List<Object>) obj)) {
 				result += getValueFromObject(entry, indents + 1, useSpaces, spacesPerTab);
 			}
-			result += "\n" + indent + ">";
+			result += indent + ">";
 		} else if (obj instanceof Map) {
+			result += "{\n";
 			for (Entry<String, Object> entry : ((Map<String, Object>) obj).entrySet()) {
-				
-				String typeName = "";
-				if (JeffEntityMap.class.isAssignableFrom(entry.getValue().getClass())) {
-					typeName = " : " + toTypeName(entry.getValue().getClass());
-					
-				}
-				result += indent + entry.getKey() + typeName + " = "
-						+ getValueFromObject(entry.getValue(), indents + 1, useSpaces, spacesPerTab);
 
+				String typeName = "";
+				if (JEFEntityMap.class.isAssignableFrom(entry.getValue().getClass())) {
+					typeName = " : " + toTypeName(entry.getValue().getClass());
+				}
+				result += indent + (indents < 0 ? "" : tab) + entry.getKey() + typeName + " = ";
+				
+				String map = getValueFromObject(entry.getValue(), indents + 1, useSpaces, spacesPerTab);
+				while (map.startsWith(tab)) {
+					map = map.substring(1);
+				}
+				result += map;
 			}
+			result += "}";
 		}
 		result += "\n";
 
@@ -214,7 +218,11 @@ public abstract class JEFEntity {
 				typeName = JEFEntity.toTypeName(field);
 
 				if (field.isAnnotationPresent(JEFField.class)) {
-					valName = field.getAnnotation(JEFField.class).key();
+					if (field.getAnnotation(JEFField.class).equals("")) {
+						valName = field.getName();
+					} else {
+						valName = field.getAnnotation(JEFField.class).key();
+					}
 				} else {
 					valName = field.getName();
 				}
@@ -232,13 +240,13 @@ public abstract class JEFEntity {
 		Class<?> cls = field.getType();
 
 		if (List.class.isAssignableFrom(cls)) {
-			//System.out.println(field);
-			//System.out.println(((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0]);
+			// System.out.println(field);
+			// System.out.println(((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0]);
 			return toTypeName((Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0])
 					+ "<>";
 		} else if (Map.class.isAssignableFrom(cls)) {
-			//System.out.println(field);
-			//System.out.println(((ParameterizedType) field.getGenericType()).getActualTypeArguments()[1]);
+			// System.out.println(field);
+			// System.out.println(((ParameterizedType) field.getGenericType()).getActualTypeArguments()[1]);
 			return toTypeName((Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[1])
 					+ "{}";
 		} else {
