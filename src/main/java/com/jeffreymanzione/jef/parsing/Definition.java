@@ -2,6 +2,7 @@ package com.jeffreymanzione.jef.parsing;
 
 import java.util.Map;
 
+import com.jeffreymanzione.jef.parsing.exceptions.DoesNotConformToDefintionException;
 import com.jeffreymanzione.jef.parsing.value.ListValue;
 import com.jeffreymanzione.jef.parsing.value.MapValue;
 import com.jeffreymanzione.jef.parsing.value.Pair;
@@ -42,8 +43,69 @@ public abstract class Definition {
 		}
 	}
 
-	public static final boolean check(Definition def, Value<?> val, int line, int column)
-			throws DoesNotConformToDefintionException {
+	private static final boolean checkMap(MapDefinition mapDef, Value<?> val) throws DoesNotConformToDefintionException {
+		// System.out.println(">>> " + mapDef.getRestriction());
+		if (val.getType() == ValueType.MAP) {
+			MapValue mapVal = (MapValue) val;
+
+			if (mapDef.isRestricted()) {
+				for (Pair<String, ?> p : mapVal) {
+					String key = p.getKey();
+					Value<?> subVal = p.getValue();
+
+					if (mapDef.hasKey(key)) {
+						if (mapDef.getRestriction().equals(mapDef.get(key))) {
+							Definition.check(mapDef.get(key), subVal);
+						} else {
+							throw new DoesNotConformToDefintionException(subVal.getLine(), subVal.getColumn(),
+									"The explicit restriction on the map conflicts with the explicit definition "
+											+ "prescribed to this key/value pair in the map. value was " + val
+											+ ". The map restriction was " + mapDef.getRestriction()
+											+ ". The explicit definition for the value was " + mapDef.get(key) + ".");
+						}
+					} else {
+						Definition.check(mapDef.getRestriction(), subVal);
+
+					}
+				}
+
+				for (String key : mapDef) {
+					if (!mapVal.hasKey(key)) {
+						throw new DoesNotConformToDefintionException(mapVal.getLine(), mapVal.getColumn(),
+								"Unattended key in map. Expected KEY=" + key + " but it was not present.");
+
+					}
+				}
+			} else {
+				for (String key : mapDef) {
+					Definition subDef = mapDef.get(key);
+					if (!mapVal.hasKey(key)) {
+						throw new DoesNotConformToDefintionException(mapVal.getLine(), mapVal.getColumn(),
+								"Unattended key in map. Expected KEY=" + key + " but it was not present.");
+
+					} else {
+						Value<?> subVal = mapVal.get(key);
+						Definition.check(subDef, subVal);
+					}
+				}
+
+				for (String key : mapDef) {
+					if (!mapVal.hasKey(key)) {
+						throw new DoesNotConformToDefintionException(mapVal.getLine(), mapVal.getColumn(),
+								"Unattended key in map. Expected KEY=" + key + " but it was not present.");
+
+					}
+				}
+			}
+
+			return true;
+		} else {
+			throw new DoesNotConformToDefintionException(val.getLine(), val.getColumn(), "Expected a MAP but was a "
+					+ val.getType() + ". Value was " + val);
+		}
+	}
+
+	public static final boolean check(Definition def, Value<?> val) throws DoesNotConformToDefintionException {
 		if (def instanceof EnumDefinition) {
 			EnumDefinition enumDef = (EnumDefinition) def;
 			if (val.getType() == ValueType.ENUM) {
@@ -52,69 +114,24 @@ public abstract class Definition {
 					val.setEntityID(enumDef.getName());
 					return true;
 				} else {
-					throw new DoesNotConformToDefintionException(line, column, "Unexpected enum value. Was '"
-							+ val.getValue() + "' but expected one of the following: " + enumDef.toString() + ".");
+					throw new DoesNotConformToDefintionException(val.getLine(), val.getColumn(),
+							"Unexpected enum value. Was '" + val.getValue() + "' but expected one of the following: "
+									+ enumDef.toString() + ".");
 				}
 			} else {
-				throw new DoesNotConformToDefintionException(line, column, "Expected a STRING but was a "
-						+ val.getType() + ".");
+				throw new DoesNotConformToDefintionException(val.getLine(), val.getColumn(),
+						"Expected a STRING but was a " + val.getType() + ".");
 			}
 		} else if (def instanceof MapDefinition) {
 			MapDefinition mapDef = (MapDefinition) def;
-			if (val.getType() == ValueType.MAP) {
-				MapValue mapVal = (MapValue) val;
-				// System.out.println("MAP DEF = " + mapDef.toString());
-				// System.out.println("MAP     = " + mapVal);
-				for (String key : mapDef) {
-					// System.out.println(key);
-					Value<?> subVal = mapVal.get(key);
-					if (subVal != null) {
-						Definition subDef = mapDef.get(key);
-
-						if (subDef instanceof MapDefinition && ((MapDefinition) subDef).isRestricted()) {
-							// System.out.println(((MapDefinition) subDef).isRestricted() + " "
-							// + ((MapDefinition) subDef).getRestriction());
-							subDef = ((MapDefinition) subDef).getRestriction();
-
-							MapValue subMapVal = (MapValue) subVal;
-
-							for (Pair<String,?> pair : subMapVal) {
-								Definition.check(subDef, pair.getValue(), line, column);
-								pair.getValue().setEntityID(subDef.getName());
-							}
-
-						} else if (subDef instanceof ListDefinition) {
-							subDef = ((ListDefinition) subDef).getType();
-
-							ListValue subListVal = (ListValue) subVal;
-
-							for (Value<?> listVal : subListVal) {
-								Definition.check(subDef, listVal, line, column);
-								listVal.setEntityID(subDef.getName());
-							}
-
-						} else {
-							// System.out.println(key + " " + subVal.toString() + " " + subDef);
-							Definition.check(subDef, subVal, line, column);
-						}
-
-					} else {
-						throw new DoesNotConformToDefintionException(line, column,
-								"Unattended key in map. Expected KEY=" + key + " but it was not present.");
-					}
-				}
-				return true;
-			} else {
-				throw new DoesNotConformToDefintionException(line, column, "Expected a MAP but was a " + val.getType()
-						+ ".");
-			}
+			return checkMap(mapDef, val);
 		} else if (def instanceof TupleDefinition) {
 			TupleDefinition tupleDef = (TupleDefinition) def;
 			if (val.getType() == ValueType.TUPLE) {
 				TupleValue tupleVal = (TupleValue) val;
 
 				if (tupleVal.getValue().size() != tupleDef.length()) {
-					throw new DoesNotConformToDefintionException(line, column,
+					throw new DoesNotConformToDefintionException(tupleVal.getLine(), tupleVal.getColumn(),
 							"Improper number of arguments, Expected " + tupleDef.toString() + " and was "
 									+ tupleVal.toStringType() + ".");
 				} else {
@@ -122,10 +139,10 @@ public abstract class Definition {
 						if (tupleDef.getTypeAt(index) != tupleVal.getValue().get(index).getType()) {
 							if (tupleDef.getTypeAt(index) == ValueType.DEFINED) {
 								// System.out.println("TUPLE DEF " + tupleDef.getDefinitionAt(index));
-								Definition.check(tupleDef.getDefinitionAt(index), tupleVal.getValue().get(index), line,
-										column);
+								Definition.check(tupleDef.getDefinitionAt(index), tupleVal.getValue().get(index));
 							} else {
-								throw new DoesNotConformToDefintionException(line, column,
+								throw new DoesNotConformToDefintionException(tupleVal.getValue().get(index).getLine(),
+										tupleVal.getValue().get(index).getColumn(),
 										"Expected different tupled expression, Expected " + tupleDef.toString()
 												+ " and was " + tupleVal.toStringType() + ".");
 							}
@@ -147,32 +164,62 @@ public abstract class Definition {
 				}
 				return true;
 			} else {
-				throw new DoesNotConformToDefintionException(line, column, "Expected a TUPLE but was a "
-						+ val.getType() + ".");
+				throw new DoesNotConformToDefintionException(val.getLine(), val.getColumn(),
+						"Expected a TUPLE but was a " + val.getType() + ".");
 			}
-		} else if (def instanceof IntDefinition) {
-			if (val.getType() == ValueType.LONG) {
+		} else if (def instanceof SingletonDefintion) {
+			return checkSingleton(def, val);
+		} else if (def instanceof ListDefinition) {
+			if (val.getType() == ValueType.LIST) {
+				ListValue listVal = (ListValue) val;
+				for (Value<?> value : listVal) {
+					if (!check(((ListDefinition) def).getType(), value)) {
+						throw new DoesNotConformToDefintionException(value.getLine(), value.getColumn(), "Expected "
+								+ ((ListDefinition) def).getType() + " but was " + value + ".");
+					}
+				}
 				return true;
 			} else {
-				throw new DoesNotConformToDefintionException(line, column, "Expected a LONG but was a " + val.getType()
-						+ ".");
+				throw new DoesNotConformToDefintionException(val.getLine(), val.getColumn(),
+						"Expected a LIST but was a " + val.getType() + ".");
 			}
-		} else if (def instanceof FloatDefinition) {
+		} else if (def instanceof BuiltInDefinition) {
+			val.setEntityID(def.getName());
+			((BuiltInDefinition<?>) def).getInnerDefintion().setName(def.getName());
+			return check(((BuiltInDefinition<?>) def).getInnerDefintion(), val);
+		} else {
+			throw new DoesNotConformToDefintionException(val.getLine(), val.getColumn(), "Expected " + def
+					+ " but was " + val + ".");
+		}
+
+	}
+
+	private static boolean checkSingleton(Definition def, Value<?> val) throws DoesNotConformToDefintionException {
+		if (def instanceof FloatDefinition) {
 			if (val.getType() == ValueType.FLOAT) {
 				return true;
 			} else {
-				throw new DoesNotConformToDefintionException(line, column, "Expected a FLOAT but was a "
-						+ val.getType() + ".");
+				throw new DoesNotConformToDefintionException(val.getLine(), val.getColumn(),
+						"Expected a FLOAT but was a " + val.getType() + ".");
 			}
 		} else if (def instanceof StringDefinition) {
 			if (val.getType() == ValueType.STRING) {
 				return true;
 			} else {
-				throw new DoesNotConformToDefintionException(line, column, "Expected a STRING but was a "
-						+ val.getType() + ".");
+				throw new DoesNotConformToDefintionException(val.getLine(), val.getColumn(),
+						"Expected a STRING but was a " + val.getType() + ".");
+			}
+		} else if (def instanceof IntDefinition) {
+			if (val.getType() == ValueType.INT) {
+				return true;
+			} else {
+				throw new DoesNotConformToDefintionException(val.getLine(), val.getColumn(),
+						"Expected a INT but was a " + val.getType() + ".");
 			}
 		} else {
-			throw new DoesNotConformToDefintionException(line, column, "Expected " + def + " but was " + val + ".");
+			throw new DoesNotConformToDefintionException(val.getLine(), val.getColumn(),
+					"Expected a Primitive but was def=" + def.getClass().getSimpleName() + " and va=" + val.getType()
+							+ ".");
 		}
 
 	}
@@ -185,4 +232,16 @@ public abstract class Definition {
 	}
 
 	protected abstract void validateInnerTypes(Map<String, Definition> definitions);
+
+	@Override
+	public boolean equals(Object obj) {
+		Definition other;
+		if (obj instanceof Definition) {
+			other = (Definition) obj;
+		} else {
+			return false;
+		}
+		return other.getName().equals(this.getName());
+
+	}
 }

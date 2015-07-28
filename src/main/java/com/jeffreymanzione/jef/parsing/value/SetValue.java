@@ -6,11 +6,13 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 
+import com.jeffreymanzione.jef.tokenizing.Token;
+
 public class SetValue extends Value<Set<Value<?>>> implements Iterable<Value<?>> {
 	private Set<Value<?>> values = new HashSet<>();
 	
-	public SetValue() {
-		super(ValueType.SET);
+	public SetValue(Token token) {
+		super(ValueType.SET, token);
 		super.set(values);
 	}
 	

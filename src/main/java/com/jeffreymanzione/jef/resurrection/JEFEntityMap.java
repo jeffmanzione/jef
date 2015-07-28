@@ -1,9 +1,14 @@
-package com.jeffreymanzione.jef.classes;
+package com.jeffreymanzione.jef.resurrection;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import com.jeffreymanzione.jef.resurrection.annotations.JEFField;
+import com.jeffreymanzione.jef.resurrection.exceptions.CouldNotTranformValueException;
+import com.jeffreymanzione.jef.resurrection.exceptions.CouldNotUpdateEntityException;
 
 public class JEFEntityMap extends JEFEntity<String> {
 
@@ -133,21 +138,10 @@ public class JEFEntityMap extends JEFEntity<String> {
 
 	@Override
 	public String toJEFEntityFormat(int indents, boolean useSpaces, int spacesPerTab) throws IllegalArgumentException,
-			IllegalAccessException {
+			IllegalAccessException, CouldNotTranformValueException {
 		String result = "";
-		String tab;
-		if (useSpaces) {
-			tab = "";
-			for (int i = 0; i < spacesPerTab; i++) {
-				tab += " ";
-			}
-		} else {
-			tab = "\t";
-		}
-		String indent = "";
-		for (int i = 0; i < indents; i++) {
-			indent += tab;
-		}
+		// String tab = getTab(useSpaces, spacesPerTab);
+		String indent = getIndent(indents, useSpaces, spacesPerTab);
 
 		for (Field field : this.getClass().getDeclaredFields()) {
 			JEFField jf = field.getAnnotation(JEFField.class);
@@ -164,22 +158,27 @@ public class JEFEntityMap extends JEFEntity<String> {
 				continue;
 			}
 
-			String typeName = "";
+			String typeName = "", preamble = "";
 			if (JEFEntityMap.class.isAssignableFrom(field.getType())) {
-				typeName = " : " + toTypeName(field);
-
+				typeName = toTypeName(field);
+				preamble = " = " + typeName + " ";
+			} else if (List.class.isAssignableFrom(field.getType())) {
+				String typeNameSimple = toTypeName(field);
+				typeName = "<" + typeNameSimple.substring(0, typeNameSimple.length() - 2) + ">";
+				preamble = typeName + " = ";
+			} else {
+				preamble = " = ";
 			}
-			result += indent + name + typeName + " = " + writeBody(this, field, indents, useSpaces, spacesPerTab) + "\n";
+			result += indent + name + preamble + writeBody(this, field, indents, useSpaces, spacesPerTab) + "\n";
 		}
 		for (Entry<String, Object> entry : this.mappings.entrySet()) {
 			String name = entry.getKey();
 
 			String typeName = "";
 			if (JEFEntityMap.class.isAssignableFrom(classes.get(entry.getKey()))) {
-				typeName = " : " + toTypeName(classes.get(entry.getKey()));
-
+				typeName = " " + toTypeName(classes.get(entry.getKey()));
 			}
-			result += indent + name + typeName + " = "
+			result += indent + name + " =" + typeName + " "
 					+ getValueFromObject(entry.getValue(), indents, useSpaces, spacesPerTab) + "\n";
 		}
 		// result += "\n";

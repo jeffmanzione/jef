@@ -11,26 +11,68 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Scanner;
 
+import com.jeffreymanzione.jef.parsing.Parser;
+
+/**
+ * @author Jeffrey J. Manzione
+ * @date 2015/06/09
+ * 
+ *       Takes an input string or file in JEF and outputs annotated tokens which can be used by the {@link Parser} class.
+ */
 public class Tokenizer {
 
 	private boolean isVerbose;
 
+	/**
+	 * Sets whether to tokenizer should log details while tokenizing input.
+	 * 
+	 * @param isVerbose
+	 *            true if the tokenizer is to be 'verbose', false, otherwise.
+	 */
 	public void setVerbose(boolean isVerbose) {
 		this.isVerbose = isVerbose;
 	}
 
+	
+	/**
+	 * Outputs whether the tokenizer logs details while tokenizing input.
+	 * 
+	 * @return	true if the tokenizer is 'verbose', false, otherwise.
+	 */
 	public boolean isVerbose() {
 		return isVerbose;
 	}
 
+	
+	/**
+	 * Tokenizes a string in JEF into tokens which can be used by {@link Parser#parse(Queue)}.
+	 * 
+	 * @param string	String to be tokenized
+	 * @return			A {@link Queue}<{@link Token}> created by tokenizing the input string.
+	 * @throws TokenizeException
+	 */
 	public Queue<Token> tokenize(String string) throws TokenizeException {
 		return this.tokenizeWords(Tokenizer.split(string));
 	}
 
+	/**
+	 * Tokenizes a stream in JEF into tokens which can be used by {@link Parser#parse(Queue)}.
+	 * 
+	 * @param stream	An {@link InputStream} to be tokenized
+	 * @return			A {@link Queue}<{@link Token}> created by tokenizing the input string.
+	 * @throws TokenizeException
+	 */
 	public Queue<Token> tokenize(InputStream stream) throws IOException, TokenizeException {
 		return this.tokenize(Tokenizer.fileToString(stream));
 	}
 
+	/**
+	 * Tokenizes the contents of a file in JEF into tokens which can be used by {@link Parser#parse(Queue)}.
+	 * 
+	 * @param string	A {@link File} with content to be tokenized
+	 * @return			A {@link Queue}<{@link Token}> created by tokenizing the input string.
+	 * @throws TokenizeException
+	 */
 	public Queue<Token> tokenize(File file) throws IOException, TokenizeException {
 		return this.tokenize(new FileInputStream(file));
 	}
@@ -62,10 +104,10 @@ public class Tokenizer {
 					if (word.getText().contains(".")) {
 						token = new Token(word, TokenType.FLOAT);
 					} else {
-						token = new Token(word, TokenType.LONG);
+						token = new Token(word, TokenType.INT);
 					}
 				} else if (tokens.get(tokens.size() - 1).getType() != TokenType.QUOTE
-						&& word.getText().equals(word.getText().toUpperCase())) {
+						&& Character.isUpperCase(word.getText().charAt(0))) {
 					token = new Token(word, TokenType.DEF);
 				} else if (tokens.size() > 0 && tokens.get(tokens.size() - 1).getType() == TokenType.DOLLAR) {
 					tokens.remove(tokens.size() - 1);
@@ -83,7 +125,7 @@ public class Tokenizer {
 				}
 			}
 
-			//System.out.println(token + " " + word.getText());
+			// System.out.println(token + " " + word.getText());
 
 			if (token != null) {
 
@@ -100,7 +142,7 @@ public class Tokenizer {
 		return tokens;
 	}
 
-	public static String fileToString(InputStream file) throws IOException {
+	private static String fileToString(InputStream file) throws IOException {
 		String str = "";
 		try (Scanner scan = new Scanner(file)) {
 			while (scan.hasNextLine()) {
@@ -158,8 +200,10 @@ public class Tokenizer {
 					}
 					buffer = "";
 				} else if (Character.isWhitespace(c) && !sQuote && !dQuote) {
-					if (buffer.equals("/*")) {
-						isComment = true;
+					if (buffer.startsWith("/*")) {
+						if (!buffer.endsWith("*/")) {
+							isComment = true;
+						}
 					} else if (!buffer.equals("") && !isComment) {
 						words.add(new Word(buffer, lineNumber, column));
 					}

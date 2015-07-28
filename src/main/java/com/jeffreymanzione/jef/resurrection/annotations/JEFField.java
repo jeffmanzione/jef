@@ -1,4 +1,4 @@
-package com.jeffreymanzione.jef.classes;
+package com.jeffreymanzione.jef.resurrection.annotations;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

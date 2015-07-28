@@ -9,7 +9,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.jeffreymanzione.jef.parsing.exceptions.DoesNotConformToDefintionException;
+import com.jeffreymanzione.jef.parsing.exceptions.ParsingException;
 import com.jeffreymanzione.jef.parsing.value.MapValue;
+import com.jeffreymanzione.jef.parsing.value.Pair;
 import com.jeffreymanzione.jef.tokenizing.Token;
 import com.jeffreymanzione.jef.tokenizing.TokenizeException;
 import com.jeffreymanzione.jef.tokenizing.Tokenizer;
@@ -27,12 +30,16 @@ public class ParsingTest {
 
 	@Test
 	public void test() throws ParsingException, DoesNotConformToDefintionException, IOException, TokenizeException {
-		Queue<Token> tokens = new Tokenizer().tokenize(TokenizerTest.class.getResourceAsStream("/test1.in.jef"));
-
+		Tokenizer tokenizer = new Tokenizer();
+		tokenizer.setVerbose(true);
+		Queue<Token> tokens = tokenizer.tokenize(TokenizerTest.class.getResourceAsStream("/test2.in.jef"));
+		
 		Parser parser = new Parser();
-
 		MapValue mappings = parser.parse(tokens);
-		if (mappings.get("entities") == null || mappings.get("properties") == null) {
+		for (Pair<String,?> p : mappings) {
+			System.out.println(p.getValue());
+		}
+		if (mappings.get("a1") == null || mappings.get("a2") == null) {
 			fail();
 		}
 

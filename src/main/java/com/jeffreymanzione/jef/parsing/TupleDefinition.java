@@ -20,7 +20,7 @@ public class TupleDefinition extends Definition {
 
 	public void add(Definition def) {
 		if (def instanceof IntDefinition) {
-			types.add(ValueType.LONG);
+			types.add(ValueType.INT);
 		} else if (def instanceof FloatDefinition) {
 			types.add(ValueType.FLOAT);
 		} else if (def instanceof StringDefinition) {
@@ -85,4 +85,19 @@ public class TupleDefinition extends Definition {
 		}
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (super.equals(obj)) {
+			TupleDefinition other;
+			if (obj instanceof TupleDefinition) {
+				other = (TupleDefinition) obj;
+				return this.toDefs.equals(other.toDefs) && this.types.equals(other.types);
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+	
 }

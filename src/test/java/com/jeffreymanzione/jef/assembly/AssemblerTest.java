@@ -7,8 +7,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.jeffreymanzione.jef.classes.ClassFiller;
 import com.jeffreymanzione.jef.parsing.Parser;
+import com.jeffreymanzione.jef.resurrection.Resurrector;
 import com.jeffreymanzione.jef.test.entities.Datapoint;
 import com.jeffreymanzione.jef.test.entities.Doge;
 import com.jeffreymanzione.jef.test.entities.Event;
@@ -32,13 +32,13 @@ public class AssemblerTest {
 		Assembler assembler = new Assembler();
 		assembler.setTokenizer(new Tokenizer());
 		assembler.setParser(new Parser());
-		ClassFiller cf = new ClassFiller();
+		Resurrector cf = new Resurrector();
 		cf.addEntityClass(Test1.class, Test2.class, Tuple1.class);
 		cf.addEnumClass(Doge.class);
 		assembler.setFiller(cf);
 		assembler.setSource(AssemblerTest.class.getResourceAsStream("/test2.in.jef"));
 		Map<String, Object> map = assembler.assemble();
-		System.out.println(map.get("a1"));
+		System.out.println(((Test2) map.get("a2")));
 		System.out.println(cf.convertToJEFEntityFormat(map, false, -1));
 	}
 
@@ -49,7 +49,7 @@ public class AssemblerTest {
 		// tokenizer.setVerbose(true);
 		assembler.setTokenizer(tokenizer);
 		assembler.setParser(new Parser());
-		ClassFiller cf = new ClassFiller();
+		Resurrector cf = new Resurrector();
 		cf.addEntityClass(Event.class, Datapoint.class);
 		assembler.setFiller(cf);
 		assembler.setSource(AssemblerTest.class.getResourceAsStream("/test3.in.jef"));

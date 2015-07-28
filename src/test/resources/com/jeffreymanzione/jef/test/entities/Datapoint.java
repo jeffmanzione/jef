@@ -2,10 +2,10 @@ package com.jeffreymanzione.jef.test.entities;
 
 import java.util.List;
 
-import com.jeffreymanzione.jef.classes.JEFClass;
-import com.jeffreymanzione.jef.classes.JEFEntityMap;
+import com.jeffreymanzione.jef.resurrection.JEFEntityMap;
+import com.jeffreymanzione.jef.resurrection.annotations.JEFClass;
 
-@JEFClass(name="DATAPOINT")
+@JEFClass(name="Datapoint")
 public class Datapoint extends JEFEntityMap {
 	int x, y;
 	

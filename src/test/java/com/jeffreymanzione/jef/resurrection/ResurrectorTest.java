@@ -1,4 +1,4 @@
-package com.jeffreymanzione.jef.classes;
+package com.jeffreymanzione.jef.resurrection;
 
 import java.util.Queue;
 
@@ -6,16 +6,16 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.jeffreymanzione.jef.classes.ClassFiller;
 import com.jeffreymanzione.jef.parsing.Parser;
 import com.jeffreymanzione.jef.parsing.value.MapValue;
+import com.jeffreymanzione.jef.resurrection.Resurrector;
 import com.jeffreymanzione.jef.test.entities.Doge;
 import com.jeffreymanzione.jef.test.entities.Test1;
 import com.jeffreymanzione.jef.test.entities.Test2;
 import com.jeffreymanzione.jef.tokenizing.Token;
 import com.jeffreymanzione.jef.tokenizing.Tokenizer;
 
-public class ClassFillerTest {
+public class ResurrectorTest {
 
 	@Before
 	public void setUp() throws Exception {
@@ -27,14 +27,14 @@ public class ClassFillerTest {
 
 	@Test
 	public void test() throws Exception {
-		ClassFiller cf = new ClassFiller();
+		Resurrector cf = new Resurrector();
 		cf.addEntityClass(Test1.class);
 		cf.addEntityClass(Test2.class);
 		cf.addEnumClass(Doge.class);
 		
 		Parser parser = new Parser();
 		
-		Queue<Token> tokens = new Tokenizer().tokenize(ClassFillerTest.class.getResourceAsStream("/test2.in.jef"));
+		Queue<Token> tokens = new Tokenizer().tokenize(ResurrectorTest.class.getResourceAsStream("/test2.in.jef"));
 
 		MapValue mappings = parser.parse(tokens);
 		

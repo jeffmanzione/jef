@@ -1,4 +1,4 @@
-package com.jeffreymanzione.jef.classes;
+package com.jeffreymanzione.jef.resurrection.exceptions;
 
 public class ClassFillingException extends Exception {
 

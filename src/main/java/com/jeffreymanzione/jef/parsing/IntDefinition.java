@@ -5,7 +5,7 @@ public class IntDefinition extends SingletonDefintion {
 	public static volatile IntDefinition instance;
 
 	private IntDefinition() {
-		super("LONG");
+		super("Int");
 	}
 
 	public static Definition instance() {

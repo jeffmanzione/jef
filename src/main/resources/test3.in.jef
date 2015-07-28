@@ -1,13 +1,13 @@
-type : DATAPOINT {INT x, INT y, STRING name, STRING desc, EVENT<> events}
-type : EVENT {STRING name, STRING text}
+type : Datapoint {Int x, Int y, String name, String desc, Event<> events}
+type : Event {String name, String text}
 
-points = {
-	p1 : DATAPOINT = {
+points<Datapoint> = {
+	p1 = Datapoint {
 		x = 5
 		y = 22
 		name = 'HQ'
 		desc = 'Best place ever.'
-		events = <
+		events<Event> = <
 			{
 				name = 'Meeting 1'
 				text = 'this meeting'
@@ -22,7 +22,7 @@ points = {
 			}
 		>
 	}
-	p2 : DATAPOINT = {
+	p2 = Datapoint {
 		x = 55
 		y = 2
 		name = 'BASE'
@@ -42,5 +42,19 @@ points = {
 			}
 		>
 	}
+	/* events2<Event> = <
+			{
+				name = 'M1'
+				text = 'T1'
+			}
+			{
+				name = 'M2'
+				text = 'T2'
+			}
+			{
+				name = 'M3'
+				text = 'T3'
+			}
+		> */
 	
 }

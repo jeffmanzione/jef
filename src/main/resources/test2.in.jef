@@ -1,20 +1,18 @@
-enum : DOGE of [a, b, c, d, e]
-type : TEST1 {INT int1, FLOAT float1, STRING string1, TUPL1 tup}
-type : TEST2 {STRING name, INT x, INT y, TEST1 a, TEST1<> test1List, DOGE doge}
-type : TUPL1 (DOGE, INT, INT)
+include 'src/main/resources/test2.in.jefh'
+include 'src/main/resources/test2-0.in.jefh'
 
-a1 : TEST1 = {
+a1 = Test1 {
 	int1 = 5
 	float1 = 0.1
 	string1 = 'test string'
 	tup = ($a, 0, 0)
 }
 
-a2 : TEST2 = {
+a2 = Test2 {
 	name = 'Doge'
 	x = 5
 	y = 200
-	a : TEST1 = {
+	a = Test1 {
 		int1 = 5
 		float1 = 0.1
 		string1 = 'test string1'
@@ -27,6 +25,7 @@ a2 : TEST2 = {
 		{ int1 = 1, float1 = 1.1, string1 = 'test string3', tup = ($c, 100, 1) }
 		{ int1 = 1000, float1 = 5.1, string1 = 'test string4', tup = ($d, 0, 1000) }
 	>
-	
+	happy = $true
 	extra = 'my doge'
+	col = (255, 255, 255, 255)
 }

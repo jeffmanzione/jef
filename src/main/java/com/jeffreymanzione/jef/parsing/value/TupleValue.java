@@ -6,16 +6,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-import com.jeffreymanzione.jef.parsing.ParsingException;
 import com.jeffreymanzione.jef.parsing.TupleDefinition;
 import com.jeffreymanzione.jef.parsing.TupleException;
+import com.jeffreymanzione.jef.parsing.exceptions.ParsingException;
+import com.jeffreymanzione.jef.tokenizing.Token;
 
-public class TupleValue extends Value<List<Value<?>>> implements Iterable<Pair<Integer,?>> {
+public class TupleValue extends Value<List<Value<?>>> implements Iterable<Pair<Integer, ?>> {
 
 	private List<Value<?>> values = new ArrayList<>();
 
-	public TupleValue() {
-		super(ValueType.TUPLE);
+	public TupleValue(Token token) {
+		super(ValueType.TUPLE, token);
 		super.set(values);
 	}
 
@@ -45,15 +46,15 @@ public class TupleValue extends Value<List<Value<?>>> implements Iterable<Pair<I
 		}
 		return result + ")";
 	}
-	
+
 	public Value<?> get(int index) {
 		return values.get(index);
 	}
-	
+
 	public int size() {
 		return values.size();
 	}
-	
+
 	@Override
 	public String toString() {
 		String result = "(" + values.get(0).toString();
@@ -67,13 +68,13 @@ public class TupleValue extends Value<List<Value<?>>> implements Iterable<Pair<I
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public Iterator<Pair<Integer, ?>> iterator() {
-		return new Iterator<Pair<Integer,?>>() {
+		return new Iterator<Pair<Integer, ?>>() {
 
-			Queue<Pair<Integer,?>> queue;
+			Queue<Pair<Integer, ?>> queue;
 			{
-				queue = new LinkedList<Pair<Integer,?>>();
+				queue = new LinkedList<Pair<Integer, ?>>();
 				for (int i = 0; i < values.size(); i++) {
-					queue.add(new Pair(i,values.get(i)));
+					queue.add(new Pair(i, values.get(i)));
 				}
 			}
 
@@ -83,7 +84,7 @@ public class TupleValue extends Value<List<Value<?>>> implements Iterable<Pair<I
 			}
 
 			@Override
-			public Pair<Integer,?> next() {
+			public Pair<Integer, ?> next() {
 				return queue.remove();
 			}
 		};

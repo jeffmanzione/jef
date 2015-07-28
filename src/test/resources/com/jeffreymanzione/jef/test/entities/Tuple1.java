@@ -1,11 +1,11 @@
 package com.jeffreymanzione.jef.test.entities;
 
-import com.jeffreymanzione.jef.classes.JEFClass;
-import com.jeffreymanzione.jef.classes.JEFEntityTuple;
-import com.jeffreymanzione.jef.classes.JEFTuple;
-import com.jeffreymanzione.jef.classes.StructureType;
+import com.jeffreymanzione.jef.resurrection.JEFEntityTuple;
+import com.jeffreymanzione.jef.resurrection.annotations.JEFClass;
+import com.jeffreymanzione.jef.resurrection.annotations.JEFTuple;
+import com.jeffreymanzione.jef.resurrection.annotations.StructureType;
 
-@JEFClass(name="TUPL1", type=StructureType.TUPLE)
+@JEFClass(name="Tupl1")
 public class Tuple1 extends JEFEntityTuple {
 
 	@Override
@@ -13,13 +13,13 @@ public class Tuple1 extends JEFEntityTuple {
 		return 3;
 	}
 	
-	@JEFTuple(index=0)
+	@JEFTuple(0)
 	Doge name;
 
-	@JEFTuple(index=1)
+	@JEFTuple(1)
 	int x;
 
-	@JEFTuple(index=2)
+	@JEFTuple(2)
 	int y;
 
 	@Override

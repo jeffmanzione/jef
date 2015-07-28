@@ -1,0 +1,2 @@
+/* Doge header for Test 2 */
+enum : Doge of [a, b, c, d, e]

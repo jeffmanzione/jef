@@ -1,0 +1,5 @@
+/* Header for Test 2 */
+include 'src/main/resources/test2-0.in.jefh'
+type : Test1 {Int int1, Float float1, Str string1, Tupl1 tup}
+type : Test2 {Str name, Int x, Int y, Test1 a, Test1<> test1List, Doge doge, Color col, Bool happy}
+type : Tupl1 (Doge, Int, Int)

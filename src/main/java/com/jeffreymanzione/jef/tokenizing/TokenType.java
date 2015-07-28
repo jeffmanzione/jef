@@ -7,14 +7,14 @@ import java.util.Map;
 public enum TokenType {
 
 	/* Keywords */
-	TYPE("type"), ENUM("enum"), OF("of"),
+	TYPE("type"), ENUM("enum"), OF("of"), INCLUDE("include"),
 	/* Operators */
 	COLON(":"), COMMA(","), LPAREN("("), RPAREN(")"), LBRAC("["), RBRAC("]"), LTHAN(
 			"<"), GTHAN(">"), EQUALS("="), LBRCE("{"), RBRCE("}"), DOLLAR("$"),
 	/* Syntactical */
 	STRING(null),
 
-	LONG(null), FLOAT(null),
+	INT(null), FLOAT(null),
 
 	QUOTE(null),
 	

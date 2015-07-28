@@ -6,12 +6,12 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Queue;
 
-import com.jeffreymanzione.jef.classes.ClassFiller;
-import com.jeffreymanzione.jef.classes.ClassFillingException;
-import com.jeffreymanzione.jef.parsing.DoesNotConformToDefintionException;
 import com.jeffreymanzione.jef.parsing.Parser;
-import com.jeffreymanzione.jef.parsing.ParsingException;
+import com.jeffreymanzione.jef.parsing.exceptions.DoesNotConformToDefintionException;
+import com.jeffreymanzione.jef.parsing.exceptions.ParsingException;
 import com.jeffreymanzione.jef.parsing.value.MapValue;
+import com.jeffreymanzione.jef.resurrection.Resurrector;
+import com.jeffreymanzione.jef.resurrection.exceptions.ClassFillingException;
 import com.jeffreymanzione.jef.tokenizing.Token;
 import com.jeffreymanzione.jef.tokenizing.TokenizeException;
 import com.jeffreymanzione.jef.tokenizing.Tokenizer;
@@ -19,7 +19,7 @@ import com.jeffreymanzione.jef.tokenizing.Tokenizer;
 public class Assembler {
 	private Parser parser;
 	private Tokenizer tokenizer;
-	private ClassFiller filler;
+	private Resurrector filler;
 	private String stringSource;
 	private InputStream streamSource;
 	private File fileSource;
@@ -61,15 +61,16 @@ public class Assembler {
 		this.tokenizer = tokenizer;
 	}
 
-	public ClassFiller getFiller() {
+	public Resurrector getFiller() {
 		return filler;
 	}
 
-	public void setFiller(ClassFiller filler) {
+	public void setFiller(Resurrector filler) {
 		this.filler = filler;
 	}
 
-	public Map<String, Object> assemble() {
+	public Map<String, Object> assemble() throws TokenizeException, IOException, ParsingException,
+			DoesNotConformToDefintionException, ClassFillingException {
 		if (tokenizer == null) {
 			throw new NullPointerException();
 		} else if (parser == null) {
@@ -77,40 +78,24 @@ public class Assembler {
 		} else if (filler == null) {
 			throw new NullPointerException();
 		} else {
-			try {
-				Queue<Token> tokens;
-				if (stringSource != null) {
-					tokens = tokenizer.tokenize(stringSource);
-				} else if (streamSource != null) {
-					tokens = tokenizer.tokenize(streamSource);
-				} else if (fileSource != null) {
-					tokens = tokenizer.tokenize(fileSource);
-				} else {
-					throw new NullPointerException();
-				}
 
-				try {
-					MapValue parsedMap = parser.parse(tokens);
-					try {
-						Map<String, Object> map = filler.parseToObject(parsedMap);
-						return map;
-					} catch (ClassFillingException e) {
-						e.printStackTrace();
-					}
-
-				} catch (ParsingException e) {
-					e.printStackTrace();
-				} catch (DoesNotConformToDefintionException e) {
-					e.printStackTrace();
-				}
-
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (TokenizeException e) {
-				e.printStackTrace();
+			Queue<Token> tokens;
+			if (stringSource != null) {
+				tokens = tokenizer.tokenize(stringSource);
+			} else if (streamSource != null) {
+				tokens = tokenizer.tokenize(streamSource);
+			} else if (fileSource != null) {
+				tokens = tokenizer.tokenize(fileSource);
+			} else {
+				throw new NullPointerException();
 			}
+			
+			Parser parser = new Parser();
+			MapValue value = parser.parse(tokens);
+			Map<String, Object> map = filler.parseToObject(value);
+			return map;
+
 		}
-		return null;
 	}
 
 }

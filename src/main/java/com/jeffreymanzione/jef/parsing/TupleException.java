@@ -1,5 +1,7 @@
 package com.jeffreymanzione.jef.parsing;
 
+import com.jeffreymanzione.jef.parsing.exceptions.ParsingException;
+
 public class TupleException extends ParsingException {
 
 	/**

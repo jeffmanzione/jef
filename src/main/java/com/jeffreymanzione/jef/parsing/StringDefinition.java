@@ -5,7 +5,7 @@ public class StringDefinition extends SingletonDefintion {
 	public static volatile StringDefinition instance;
 
 	private StringDefinition() {
-		super("STRING");
+		super("String");
 	}
 
 	public static Definition instance() {

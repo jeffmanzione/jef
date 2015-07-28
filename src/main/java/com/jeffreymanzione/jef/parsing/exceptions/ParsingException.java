@@ -1,4 +1,4 @@
-package com.jeffreymanzione.jef.parsing;
+package com.jeffreymanzione.jef.parsing.exceptions;
 
 import com.jeffreymanzione.jef.tokenizing.Token;
 import com.jeffreymanzione.jef.tokenizing.TokenType;

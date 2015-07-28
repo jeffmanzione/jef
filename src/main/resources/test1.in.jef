@@ -1,20 +1,20 @@
 
-type : COORDINATE (INT, INT) /* This will be a built-in type */
-type : UNIT (STRING, COORDINATE)
-type : RGB (INT, INT, INT)
-enum : NATION_TYPE of [city_state, kingdom, empire]
-enum : SETTLEMENT_LEVEL of [village, city, large_city]
-type : SETTLEMENT {STRING name, SETTLEMENT_LEVEL lvl, INT population, COORDINATE loc, UNIT<> units}
-enum : TERRAIN of [deep_sea, sea, shallow, sea, river, beach, grass, forest, grass_low, forest_low, plain, desert, swamp, mountain, mt_low, mt_peak, mt_cap]
-type : NATION {STRING name, NATION_TYPE nation_type, RGB primary, RGB secondary, SETTLEMENT{} settlements}
-type : ENTITIES {NATION{} nations}
+type : Coordinate (Int, Int) /* This will be a built-in type */
+type : Unit (String, Coordinate)
+type : Rgb (Int, Int, Int)
+enum : NationType of [city_state, kingdom, empire]
+enum : SettlementLevel of [village, city, large_city]
+type : Settlement {String name, SettlementLevel lvl, Int population, Coordinate loc, Unit<> units}
+enum : Terrain of [deep_sea, sea, shallow, sea, river, beach, grass, forest, grass_low, forest_low, plain, desert, swamp, mountain, mt_low, mt_peak, mt_cap]
+type : Nation {String name, NationType nation_type, Rgb primary, Rgb secondary, Settlement{} settlements}
+type : Entities {Nation{} nations}
 
 properties = {
 	standard = 1.0
 	size = (1200, 800)
 }
 
-entities : ENTITIES = {
+entities : Entities = {
 	nations = {
 		attica = {
 			name = 'Attica'

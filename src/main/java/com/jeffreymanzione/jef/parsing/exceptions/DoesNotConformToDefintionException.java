@@ -1,4 +1,4 @@
-package com.jeffreymanzione.jef.parsing;
+package com.jeffreymanzione.jef.parsing.exceptions;
 
 public class DoesNotConformToDefintionException extends Exception {
 

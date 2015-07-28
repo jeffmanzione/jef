@@ -6,12 +6,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+import com.jeffreymanzione.jef.tokenizing.Token;
+
 public class ListValue extends Value<List<Value<?>>> implements Iterable<Value<?>> {
 
 	List<Value<?>> values = new ArrayList<>();
 	
-	public ListValue() {
-		super(ValueType.LIST);
+	public ListValue(Token token) {
+		super(ValueType.LIST, token);
 		super.set(values);
 	}
 	

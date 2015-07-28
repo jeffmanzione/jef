@@ -29,6 +29,10 @@ public class MapDefinition extends Definition implements Iterable<String> {
 		// referenced.put(name, ValueType.DEFINED);
 	}
 
+	public boolean hasKey(String name) {
+		return defs.containsKey(name);
+	}
+	
 	public Definition get(String key) {
 		return defs.get(key);
 	}
@@ -55,5 +59,19 @@ public class MapDefinition extends Definition implements Iterable<String> {
 			}
 		}
 	}
-
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (super.equals(obj)) {
+			MapDefinition other;
+			if (obj instanceof MapDefinition) {
+				other = (MapDefinition) obj;
+				return this.defs.equals(other.defs) && this.restriction.equals(other.restriction);
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
 }
