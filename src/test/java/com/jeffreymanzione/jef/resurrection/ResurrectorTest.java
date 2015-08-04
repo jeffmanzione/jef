@@ -12,6 +12,7 @@ import com.jeffreymanzione.jef.resurrection.Resurrector;
 import com.jeffreymanzione.jef.test.entities.Doge;
 import com.jeffreymanzione.jef.test.entities.Test1;
 import com.jeffreymanzione.jef.test.entities.Test2;
+import com.jeffreymanzione.jef.test.entities.Tuple1;
 import com.jeffreymanzione.jef.tokenizing.Token;
 import com.jeffreymanzione.jef.tokenizing.Tokenizer;
 
@@ -30,16 +31,17 @@ public class ResurrectorTest {
 		Resurrector cf = new Resurrector();
 		cf.addEntityClass(Test1.class);
 		cf.addEntityClass(Test2.class);
+		cf.addEntityClass(Tuple1.class);
 		cf.addEnumClass(Doge.class);
-		
+
 		Parser parser = new Parser();
-		
+
 		Queue<Token> tokens = new Tokenizer().tokenize(ResurrectorTest.class.getResourceAsStream("/test2.in.jef"));
 
 		MapValue mappings = parser.parse(tokens);
-		
-		//System.out.println(mappings.get("a1"));
-		
+
+		// System.out.println(mappings.get("a1"));
+
 		Test1 a1 = cf.parseToObject((MapValue) mappings.get("a1"));
 		Test2 a2 = cf.parseToObject((MapValue) mappings.get("a2"));
 

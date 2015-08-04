@@ -1,14 +1,16 @@
 package com.jeffreymanzione.jef.parsing.value;
 
+import com.jeffreymanzione.jef.tokenizing.IndexedObject;
 import com.jeffreymanzione.jef.tokenizing.Token;
 
-public abstract class Value<T> {
+public abstract class Value<T> extends IndexedObject {
 
-	private ValueType type;
+	private final ValueType type;
+	private final Token token;
 	private T value;
-	private Token token;
 
 	protected Value(ValueType type, Token token) {
+		super(token);
 		this.type = type;
 		this.token = token;
 	}
@@ -17,18 +19,6 @@ public abstract class Value<T> {
 		return token;
 	}
 
-	public void setToken(Token token) {
-		this.token = token;
-	}
-
-	public int getLine() {
-		return token.getLine();
-	}
-	
-	public int getColumn() {
-		return token.getColumn();
-	}
-	
 	protected void set(T value) {
 		this.value = value;
 	}

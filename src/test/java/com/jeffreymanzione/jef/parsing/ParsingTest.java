@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.jeffreymanzione.jef.parsing.exceptions.DoesNotConformToDefintionException;
+import com.jeffreymanzione.jef.parsing.exceptions.IndexableException;
 import com.jeffreymanzione.jef.parsing.exceptions.ParsingException;
 import com.jeffreymanzione.jef.parsing.value.MapValue;
 import com.jeffreymanzione.jef.parsing.value.Pair;
@@ -29,14 +30,14 @@ public class ParsingTest {
 	}
 
 	@Test
-	public void test() throws ParsingException, DoesNotConformToDefintionException, IOException, TokenizeException {
+	public void test() throws IndexableException, IOException, TokenizeException {
 		Tokenizer tokenizer = new Tokenizer();
 		tokenizer.setVerbose(true);
 		Queue<Token> tokens = tokenizer.tokenize(TokenizerTest.class.getResourceAsStream("/test2.in.jef"));
-		
+
 		Parser parser = new Parser();
 		MapValue mappings = parser.parse(tokens);
-		for (Pair<String,?> p : mappings) {
+		for (Pair<String, ?> p : mappings) {
 			System.out.println(p.getValue());
 		}
 		if (mappings.get("a1") == null || mappings.get("a2") == null) {

@@ -1,26 +1,15 @@
 package com.jeffreymanzione.jef.tokenizing;
 
-public final class Word {
+public final class Word extends IndexedObject {
 	private final String word;
-	private final int line;
-	
-	public Word(String word, int line, int columnWordEnd) {
-		super();
+
+	public Word(String word, StringBuilder lineText, int lineNum, int columnWordEnd) {
+		super(word, lineText, lineNum, columnWordEnd - word.length());
 		this.word = word;
-		this.line = line;
-		this.column = columnWordEnd - word.length();
 	}
-	
-	private final int column;
-	public String getText() {
+
+	public String getWord() {
 		return word;
 	}
-	public int getLine() {
-		return line;
-	}
-	public int getColumn() {
-		return column;
-	}
-	
-	
+
 }

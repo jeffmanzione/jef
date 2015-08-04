@@ -17,7 +17,8 @@ import com.jeffreymanzione.jef.parsing.Parser;
  * @author Jeffrey J. Manzione
  * @date 2015/06/09
  * 
- *       Takes an input string or file in JEF and outputs annotated tokens which can be used by the {@link Parser} class.
+ *       Takes an input string or file in JEF and outputs annotated tokens which can be used by the {@link Parser}
+ *       class.
  */
 public class Tokenizer {
 
@@ -33,22 +34,21 @@ public class Tokenizer {
 		this.isVerbose = isVerbose;
 	}
 
-	
 	/**
 	 * Outputs whether the tokenizer logs details while tokenizing input.
 	 * 
-	 * @return	true if the tokenizer is 'verbose', false, otherwise.
+	 * @return true if the tokenizer is 'verbose', false, otherwise.
 	 */
 	public boolean isVerbose() {
 		return isVerbose;
 	}
 
-	
 	/**
 	 * Tokenizes a string in JEF into tokens which can be used by {@link Parser#parse(Queue)}.
 	 * 
-	 * @param string	String to be tokenized
-	 * @return			A {@link Queue}<{@link Token}> created by tokenizing the input string.
+	 * @param string
+	 *            String to be tokenized
+	 * @return A {@link Queue}<{@link Token}> created by tokenizing the input string.
 	 * @throws TokenizeException
 	 */
 	public Queue<Token> tokenize(String string) throws TokenizeException {
@@ -58,8 +58,9 @@ public class Tokenizer {
 	/**
 	 * Tokenizes a stream in JEF into tokens which can be used by {@link Parser#parse(Queue)}.
 	 * 
-	 * @param stream	An {@link InputStream} to be tokenized
-	 * @return			A {@link Queue}<{@link Token}> created by tokenizing the input string.
+	 * @param stream
+	 *            An {@link InputStream} to be tokenized
+	 * @return A {@link Queue}<{@link Token}> created by tokenizing the input string.
 	 * @throws TokenizeException
 	 */
 	public Queue<Token> tokenize(InputStream stream) throws IOException, TokenizeException {
@@ -69,8 +70,9 @@ public class Tokenizer {
 	/**
 	 * Tokenizes the contents of a file in JEF into tokens which can be used by {@link Parser#parse(Queue)}.
 	 * 
-	 * @param string	A {@link File} with content to be tokenized
-	 * @return			A {@link Queue}<{@link Token}> created by tokenizing the input string.
+	 * @param string
+	 *            A {@link File} with content to be tokenized
+	 * @return A {@link Queue}<{@link Token}> created by tokenizing the input string.
 	 * @throws TokenizeException
 	 */
 	public Queue<Token> tokenize(File file) throws IOException, TokenizeException {
@@ -93,7 +95,7 @@ public class Tokenizer {
 		for (int index = 0; index < words.size(); index++) {
 			Word word = words.get(index);
 			Token token = null;
-			//System.out.println("\"" + word.getText() + "\"");
+
 			if (TokenType.isKeyword(word.getText())) {
 				token = new Token(word, TokenType.getToken(word.getText()));
 			} else {
@@ -118,17 +120,14 @@ public class Tokenizer {
 					if (index < words.size() + 1) {
 						index++;
 					} else {
-						throw new TokenizeException("EXPECTED TOKEN '.");
+						throw new TokenizeException("Expected token: '. Reached end of file.");
 					}
 				} else {
 					token = new Token(word, TokenType.VAR);
 				}
 			}
 
-			// System.out.println(token + " " + word.getText());
-
 			if (token != null) {
-
 				if (tokens.size() > 0 && closers.contains(token.getType())
 						&& tokens.get(tokens.size() - 1).getType() == TokenType.COMMA) {
 					tokens.remove(tokens.get(tokens.size() - 1));
@@ -136,26 +135,108 @@ public class Tokenizer {
 
 				tokens.add(token);
 			}
-
 		}
-
 		return tokens;
 	}
 
 	private static String fileToString(InputStream file) throws IOException {
-		String str = "";
+		StringBuilder strBuilder = new StringBuilder();
 		try (Scanner scan = new Scanner(file)) {
 			while (scan.hasNextLine()) {
-				str += scan.nextLine() + "\n";
+				strBuilder.append(scan.nextLine());
+				strBuilder.append("\n");
 			}
 		}
-		return str;
+		return strBuilder.toString();
 	}
 
+	// private static List<Word> split(String text) {
+	// List<Word> words = new ArrayList<>();
+	//
+	// StringBuilder buffer = new StringBuilder();
+	//
+	// boolean sQuote = false;
+	// boolean dQuote = false;
+	// boolean isComment = false;
+	//
+	// int lineNumber = 1;
+	// int column = 0;
+	//
+	// String[] lines = text.split("\n");
+	//
+	// while (lineNumber <= lines.length) {
+	// char c = lines[lineNumber-1].charAt(0);
+	//
+	// if (c == '\t') {
+	// column += 4;
+	// } else {
+	// column++;
+	// }
+	//
+	// if (!isComment) {
+	// if (c == '\'') {
+	// sQuote = !sQuote;
+	// }
+	//
+	// if (c == '\"') {
+	// dQuote = !dQuote;
+	// }
+	//
+	// if (splitters.contains(c + "")) {
+	// if (!buffer.toString().equals("")) {
+	// words.add(new Word(buffer.toString(), lineText, lineNumber, column));
+	// }
+	//
+	// if (c == '\n') {
+	// lineNumber++;
+	// column = 0;
+	// if (words.size() != 0 && !preline.contains(words.get(words.size() - 1).getText())) {
+	// words.add(new Word(",", lineText, lineNumber, column));
+	// }
+	// } else {
+	// words.add(new Word(c + "", lineText, lineNumber, column));
+	// }
+	// buffer.setLength(0);
+	// } else if (Character.isWhitespace(c) && !sQuote && !dQuote) {
+	// if (buffer.toString().startsWith("/*")) {
+	// if (!buffer.toString().endsWith("*/")) {
+	// isComment = true;
+	// }
+	// } else if (!buffer.toString().equals("") && !isComment) {
+	// words.add(new Word(buffer.toString(), lineText, lineNumber, column));
+	// }
+	// buffer.setLength(0);
+	// } else {
+	// buffer.append(c);
+	// }
+	//
+	// } else {
+	// buffer.append(c);
+	// if (buffer.toString().endsWith("*/")) {
+	// isComment = false;
+	// buffer.setLength(0);
+	// }
+	//
+	// }
+	//
+	// column++;
+	// if (column == lines[lineNumber].length()) {
+	// column = 0;
+	// lineNumber++;
+	// }
+	// }
+	//
+	// if (words.get(words.size() - 1).getText().equals(",")) {
+	// words.remove(words.size() - 1);
+	// }
+	//
+	// return words;
+	// }
 	private static List<Word> split(String line) {
 		List<Word> words = new ArrayList<>();
 
-		String buffer = "";
+		StringBuilder buffer = new StringBuilder();
+		StringBuilder lineText = new StringBuilder();
 
 		boolean sQuote = false;
 		boolean dQuote = false;
@@ -181,11 +262,11 @@ public class Tokenizer {
 				}
 
 				if (splitters.contains(c + "")) {
-					if (!buffer.equals("")) {
+					if (!buffer.toString().equals("")) {
 						// if (buffer.equals("*/")) {
 						// isComment = false;
 						// } else {
-						words.add(new Word(buffer, lineNumber, column));
+						words.add(new Word(buffer.toString(), lineText, lineNumber, column));
 						// }
 					}
 
@@ -193,32 +274,40 @@ public class Tokenizer {
 						lineNumber++;
 						column = 0;
 						if (words.size() != 0 && !preline.contains(words.get(words.size() - 1).getText())) {
-							words.add(new Word(",", lineNumber, column));
+							words.add(new Word(",", lineText, lineNumber, column));
 						}
 					} else {
-						words.add(new Word(c + "", lineNumber, column));
+						words.add(new Word(c + "", lineText, lineNumber, column));
 					}
-					buffer = "";
+					buffer.setLength(0);
+					;
 				} else if (Character.isWhitespace(c) && !sQuote && !dQuote) {
-					if (buffer.startsWith("/*")) {
-						if (!buffer.endsWith("*/")) {
+					if (buffer.toString().startsWith("/*")) {
+						if (!buffer.toString().endsWith("*/")) {
 							isComment = true;
 						}
-					} else if (!buffer.equals("") && !isComment) {
-						words.add(new Word(buffer, lineNumber, column));
+					} else if (!buffer.toString().equals("") && !isComment) {
+						words.add(new Word(buffer.toString(), lineText, lineNumber, column));
 					}
-					buffer = "";
+					buffer.setLength(0);
+					;
 				} else {
-					buffer += c;
+					buffer.append(c);
 				}
 
 			} else {
-				buffer += c;
-				if (buffer.endsWith("*/")) {
+				buffer.append(c);
+				if (buffer.toString().endsWith("*/")) {
 					isComment = false;
-					buffer = "";
+					buffer.setLength(0);
 				}
 
+			}
+
+			if (c == '\n') {
+				lineText = new StringBuilder();
+			} else {
+				lineText.append(c);
 			}
 
 		}

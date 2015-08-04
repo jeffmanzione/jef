@@ -7,8 +7,8 @@ import java.util.Map;
 import java.util.Queue;
 
 import com.jeffreymanzione.jef.parsing.Parser;
-import com.jeffreymanzione.jef.parsing.exceptions.DoesNotConformToDefintionException;
-import com.jeffreymanzione.jef.parsing.exceptions.ParsingException;
+import com.jeffreymanzione.jef.parsing.ValidationResponse;
+import com.jeffreymanzione.jef.parsing.exceptions.IndexableException;
 import com.jeffreymanzione.jef.parsing.value.MapValue;
 import com.jeffreymanzione.jef.resurrection.Resurrector;
 import com.jeffreymanzione.jef.resurrection.exceptions.ClassFillingException;
@@ -23,6 +23,7 @@ public class Assembler {
 	private String stringSource;
 	private InputStream streamSource;
 	private File fileSource;
+	private ValidationResponse response;
 
 	public boolean setSource(String source) {
 		streamSource = null;
@@ -69,8 +70,8 @@ public class Assembler {
 		this.filler = filler;
 	}
 
-	public Map<String, Object> assemble() throws TokenizeException, IOException, ParsingException,
-			DoesNotConformToDefintionException, ClassFillingException {
+	public Map<String, Object> assemble() throws TokenizeException, IOException, IndexableException,
+			ClassFillingException {
 		if (tokenizer == null) {
 			throw new NullPointerException();
 		} else if (parser == null) {
@@ -78,7 +79,6 @@ public class Assembler {
 		} else if (filler == null) {
 			throw new NullPointerException();
 		} else {
-
 			Queue<Token> tokens;
 			if (stringSource != null) {
 				tokens = tokenizer.tokenize(stringSource);
@@ -89,13 +89,27 @@ public class Assembler {
 			} else {
 				throw new NullPointerException();
 			}
-			
+
 			Parser parser = new Parser();
 			MapValue value = parser.parse(tokens);
-			Map<String, Object> map = filler.parseToObject(value);
-			return map;
+			response = parser.getExceptions();
+			
+			if (response.hasErrors()) {
+				for (IndexableException e : response.getExceptions()) {
+					System.out.println(e.getFullText());
+					System.out.println(e.getLineText());
+					System.out.println(e.getLineAnnotation());
+				}
+				throw new ClassFillingException("There were errors in parsing and validation.");
+			} else {
+				Map<String, Object> map = filler.parseToObject(value);
+				return map;
+			}
 
 		}
 	}
 
+	public ValidationResponse getValidationResponse() {
+		return response;
+	}
 }

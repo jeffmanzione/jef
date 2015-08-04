@@ -1,5 +1,7 @@
 package com.jeffreymanzione.jef.assembly;
 
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.util.Map;
 
@@ -8,7 +10,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.jeffreymanzione.jef.parsing.Parser;
+import com.jeffreymanzione.jef.parsing.exceptions.IndexableException;
+import com.jeffreymanzione.jef.parsing.exceptions.ParsingException;
 import com.jeffreymanzione.jef.resurrection.Resurrector;
+import com.jeffreymanzione.jef.resurrection.exceptions.ClassFillingException;
 import com.jeffreymanzione.jef.test.entities.Datapoint;
 import com.jeffreymanzione.jef.test.entities.Doge;
 import com.jeffreymanzione.jef.test.entities.Event;
@@ -56,6 +61,23 @@ public class AssemblerTest {
 		Map<String, Object> map = assembler.assemble();
 		System.out.println(cf.convertToJEFEntityFormat(map));
 		cf.writeToFile(map, new File("test.out.jef"));
+	}
+
+	@Test
+	public void test3() throws Exception {
+		Assembler assembler = new Assembler();
+		assembler.setTokenizer(new Tokenizer());
+		assembler.setParser(new Parser());
+		Resurrector cf = new Resurrector();
+		cf.addEntityClass(Test1.class, Test2.class, Tuple1.class);
+		cf.addEnumClass(Doge.class);
+		assembler.setFiller(cf);
+		assembler.setSource(AssemblerTest.class.getResourceAsStream("/test4.in.jef"));
+		try {
+			Map<String, Object> map = assembler.assemble();
+			fail();
+		} catch (ClassFillingException e) {
+		}
 	}
 
 }

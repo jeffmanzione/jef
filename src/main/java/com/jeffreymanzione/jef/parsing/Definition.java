@@ -43,7 +43,8 @@ public abstract class Definition {
 		}
 	}
 
-	private static final boolean checkMap(MapDefinition mapDef, Value<?> val) throws DoesNotConformToDefintionException {
+	private static final ValidationResponse checkMap(MapDefinition mapDef, Value<?> val) {
+		ValidationResponse response = new ValidationResponse();
 		// System.out.println(">>> " + mapDef.getRestriction());
 		if (val.getType() == ValueType.MAP) {
 			MapValue mapVal = (MapValue) val;
@@ -55,24 +56,24 @@ public abstract class Definition {
 
 					if (mapDef.hasKey(key)) {
 						if (mapDef.getRestriction().equals(mapDef.get(key))) {
-							Definition.check(mapDef.get(key), subVal);
+							response.addResponse(Definition.check(mapDef.get(key), subVal));
 						} else {
-							throw new DoesNotConformToDefintionException(subVal.getLine(), subVal.getColumn(),
+							response.addException(new DoesNotConformToDefintionException(subVal,
 									"The explicit restriction on the map conflicts with the explicit definition "
 											+ "prescribed to this key/value pair in the map. value was " + val
 											+ ". The map restriction was " + mapDef.getRestriction()
-											+ ". The explicit definition for the value was " + mapDef.get(key) + ".");
+											+ ". The explicit definition for the value was " + mapDef.get(key) + "."));
 						}
 					} else {
-						Definition.check(mapDef.getRestriction(), subVal);
+						response.addResponse(Definition.check(mapDef.getRestriction(), subVal));
 
 					}
 				}
 
 				for (String key : mapDef) {
 					if (!mapVal.hasKey(key)) {
-						throw new DoesNotConformToDefintionException(mapVal.getLine(), mapVal.getColumn(),
-								"Unattended key in map. Expected KEY=" + key + " but it was not present.");
+						response.addException(new DoesNotConformToDefintionException(mapVal,
+								"Unattended key in map. Expected KEY=" + key + " but it was not present."));
 
 					}
 				}
@@ -80,71 +81,69 @@ public abstract class Definition {
 				for (String key : mapDef) {
 					Definition subDef = mapDef.get(key);
 					if (!mapVal.hasKey(key)) {
-						throw new DoesNotConformToDefintionException(mapVal.getLine(), mapVal.getColumn(),
-								"Unattended key in map. Expected KEY=" + key + " but it was not present.");
+						response.addException(new DoesNotConformToDefintionException(mapVal,
+								"Unattended key in map. Expected KEY=" + key + " but it was not present."));
 
 					} else {
 						Value<?> subVal = mapVal.get(key);
-						Definition.check(subDef, subVal);
+						response.addResponse(Definition.check(subDef, subVal));
 					}
 				}
 
 				for (String key : mapDef) {
 					if (!mapVal.hasKey(key)) {
-						throw new DoesNotConformToDefintionException(mapVal.getLine(), mapVal.getColumn(),
-								"Unattended key in map. Expected KEY=" + key + " but it was not present.");
+						response.addException(new DoesNotConformToDefintionException(mapVal,
+								"Unattended key in map. Expected KEY=" + key + " but it was not present."));
 
 					}
 				}
 			}
-
-			return true;
 		} else {
-			throw new DoesNotConformToDefintionException(val.getLine(), val.getColumn(), "Expected a MAP but was a "
-					+ val.getType() + ". Value was " + val);
+			response.addException(new DoesNotConformToDefintionException(val, "Expected a MAP but was a "
+					+ val.getType() + ". Value was " + val));
 		}
+		return response;
 	}
 
-	public static final boolean check(Definition def, Value<?> val) throws DoesNotConformToDefintionException {
+	public static final ValidationResponse check(Definition def, Value<?> val) {
+		ValidationResponse response = new ValidationResponse();
 		if (def instanceof EnumDefinition) {
 			EnumDefinition enumDef = (EnumDefinition) def;
 			if (val.getType() == ValueType.ENUM) {
 				if (enumDef.contains(val.getValue().toString())) {
 					// System.out.println("SUCCESS!!!");
 					val.setEntityID(enumDef.getName());
-					return true;
 				} else {
-					throw new DoesNotConformToDefintionException(val.getLine(), val.getColumn(),
-							"Unexpected enum value. Was '" + val.getValue() + "' but expected one of the following: "
-									+ enumDef.toString() + ".");
+					response.addException(new DoesNotConformToDefintionException(val, "Unexpected enum value. Was '"
+							+ val.getValue() + "' but expected one of the following: " + enumDef.toString() + "."));
 				}
 			} else {
-				throw new DoesNotConformToDefintionException(val.getLine(), val.getColumn(),
-						"Expected a STRING but was a " + val.getType() + ".");
+				response.addException(new DoesNotConformToDefintionException(val, "Expected a STRING but was a "
+						+ val.getType() + "."));
 			}
 		} else if (def instanceof MapDefinition) {
 			MapDefinition mapDef = (MapDefinition) def;
-			return checkMap(mapDef, val);
+			response.addResponse(checkMap(mapDef, val));
 		} else if (def instanceof TupleDefinition) {
 			TupleDefinition tupleDef = (TupleDefinition) def;
 			if (val.getType() == ValueType.TUPLE) {
 				TupleValue tupleVal = (TupleValue) val;
 
 				if (tupleVal.getValue().size() != tupleDef.length()) {
-					throw new DoesNotConformToDefintionException(tupleVal.getLine(), tupleVal.getColumn(),
+					response.addException(new DoesNotConformToDefintionException(tupleVal,
 							"Improper number of arguments, Expected " + tupleDef.toString() + " and was "
-									+ tupleVal.toStringType() + ".");
+									+ tupleVal.toStringType() + "."));
 				} else {
 					for (int index = 0; index < tupleDef.length(); index++) {
 						if (tupleDef.getTypeAt(index) != tupleVal.getValue().get(index).getType()) {
 							if (tupleDef.getTypeAt(index) == ValueType.DEFINED) {
 								// System.out.println("TUPLE DEF " + tupleDef.getDefinitionAt(index));
-								Definition.check(tupleDef.getDefinitionAt(index), tupleVal.getValue().get(index));
+								response.addResponse(Definition.check(tupleDef.getDefinitionAt(index), tupleVal
+										.getValue().get(index)));
 							} else {
-								throw new DoesNotConformToDefintionException(tupleVal.getValue().get(index).getLine(),
-										tupleVal.getValue().get(index).getColumn(),
-										"Expected different tupled expression, Expected " + tupleDef.toString()
-												+ " and was " + tupleVal.toStringType() + ".");
+								response.addException(new DoesNotConformToDefintionException(tupleVal.getValue().get(
+										index), "Expected different tupled expression, Expected " + tupleDef.toString()
+										+ " and was " + tupleVal.toStringType() + "."));
 							}
 						} else {
 
@@ -162,66 +161,60 @@ public abstract class Definition {
 					}
 					val.setEntityID(def.getName());
 				}
-				return true;
 			} else {
-				throw new DoesNotConformToDefintionException(val.getLine(), val.getColumn(),
-						"Expected a TUPLE but was a " + val.getType() + ".");
+				response.addException(new DoesNotConformToDefintionException(val, "Expected a TUPLE but was a "
+						+ val.getType() + "."));
 			}
 		} else if (def instanceof SingletonDefintion) {
-			return checkSingleton(def, val);
+			response.addResponse(checkSingleton(def, val));
 		} else if (def instanceof ListDefinition) {
 			if (val.getType() == ValueType.LIST) {
 				ListValue listVal = (ListValue) val;
 				for (Value<?> value : listVal) {
-					if (!check(((ListDefinition) def).getType(), value)) {
-						throw new DoesNotConformToDefintionException(value.getLine(), value.getColumn(), "Expected "
-								+ ((ListDefinition) def).getType() + " but was " + value + ".");
+					ValidationResponse innerResponse = check(((ListDefinition) def).getType(), value);
+					if (innerResponse.hasErrors()) {
+						response.addException(new DoesNotConformToDefintionException(value, "Expected "
+								+ ((ListDefinition) def).getType() + " but was " + value + "."));
+						response.addResponse(innerResponse);
 					}
 				}
-				return true;
 			} else {
-				throw new DoesNotConformToDefintionException(val.getLine(), val.getColumn(),
-						"Expected a LIST but was a " + val.getType() + ".");
+				response.addException(new DoesNotConformToDefintionException(val, "Expected a LIST but was a "
+						+ val.getType() + "."));
 			}
 		} else if (def instanceof BuiltInDefinition) {
 			val.setEntityID(def.getName());
 			((BuiltInDefinition<?>) def).getInnerDefintion().setName(def.getName());
-			return check(((BuiltInDefinition<?>) def).getInnerDefintion(), val);
+			response.addResponse(check(((BuiltInDefinition<?>) def).getInnerDefintion(), val));
 		} else {
-			throw new DoesNotConformToDefintionException(val.getLine(), val.getColumn(), "Expected " + def
-					+ " but was " + val + ".");
+			response.addException(new DoesNotConformToDefintionException(val, "Expected " + def + " but was " + val
+					+ "."));
 		}
-
+		return response;
 	}
 
-	private static boolean checkSingleton(Definition def, Value<?> val) throws DoesNotConformToDefintionException {
+	private static ValidationResponse checkSingleton(Definition def, Value<?> val) {
+		ValidationResponse response = new ValidationResponse();
 		if (def instanceof FloatDefinition) {
-			if (val.getType() == ValueType.FLOAT) {
-				return true;
-			} else {
-				throw new DoesNotConformToDefintionException(val.getLine(), val.getColumn(),
-						"Expected a FLOAT but was a " + val.getType() + ".");
+			if (val.getType() != ValueType.FLOAT) {
+				response.addException(new DoesNotConformToDefintionException(val, "Expected a FLOAT but was a "
+						+ val.getType() + "."));
 			}
 		} else if (def instanceof StringDefinition) {
-			if (val.getType() == ValueType.STRING) {
-				return true;
-			} else {
-				throw new DoesNotConformToDefintionException(val.getLine(), val.getColumn(),
-						"Expected a STRING but was a " + val.getType() + ".");
+			if (val.getType() != ValueType.STRING) {
+				response.addException(new DoesNotConformToDefintionException(val, "Expected a STRING but was a "
+						+ val.getType() + "."));
 			}
 		} else if (def instanceof IntDefinition) {
-			if (val.getType() == ValueType.INT) {
-				return true;
-			} else {
-				throw new DoesNotConformToDefintionException(val.getLine(), val.getColumn(),
-						"Expected a INT but was a " + val.getType() + ".");
+			if (val.getType() != ValueType.INT) {
+				response.addException(new DoesNotConformToDefintionException(val, "Expected a INT but was a "
+						+ val.getType() + "."));
 			}
 		} else {
-			throw new DoesNotConformToDefintionException(val.getLine(), val.getColumn(),
-					"Expected a Primitive but was def=" + def.getClass().getSimpleName() + " and va=" + val.getType()
-							+ ".");
+			response.addException(new DoesNotConformToDefintionException(val, "Expected a Primitive but was def="
+					+ def.getClass().getSimpleName() + " and va=" + val.getType() + "."));
 		}
-
+		return response;
 	}
 
 	public void validate(Map<String, Definition> definitions) {

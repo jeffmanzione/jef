@@ -1,14 +1,29 @@
 package com.jeffreymanzione.jef.parsing.exceptions;
 
-public class DoesNotConformToDefintionException extends Exception {
+import com.jeffreymanzione.jef.parsing.value.Value;
+import com.jeffreymanzione.jef.tokenizing.Token;
 
-	public DoesNotConformToDefintionException(int line, int column, String string) {
-		super("On line " + line + " column " + column + ": " + string);
-	}
-
+public class DoesNotConformToDefintionException extends IndexableException {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -1895815961800477678L;
+
+	private final Value<?> value;
+	private final Token token;
+
+	public DoesNotConformToDefintionException(Value<?> value, String message) {
+		super(value, message);
+		this.value = value;
+		this.token = value.getToken();
+	}
+
+	public Value<?> getValue() {
+		return value;
+	}
+
+	public Token getToken() {
+		return token;
+	}
 
 }

@@ -9,7 +9,7 @@ import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.Set;
 
-import com.jeffreymanzione.jef.parsing.exceptions.DoesNotConformToDefintionException;
+import com.jeffreymanzione.jef.parsing.exceptions.IndexableException;
 import com.jeffreymanzione.jef.parsing.exceptions.ParsingException;
 import com.jeffreymanzione.jef.parsing.value.EnumValue;
 import com.jeffreymanzione.jef.parsing.value.ListValue;
@@ -35,8 +35,8 @@ public class Parser {
 
 		void put(String key, Definition value) throws ParsingException {
 			if (definitions.containsKey(key) && !definitions.get(key).equals(value)) {
-				throw new ParsingException("Duplicate Definintion. Old=" + definitions.get(key) + ". New="
-						+ value + ".", TokenType.DEF);
+				throw new ParsingException("Duplicate Definintion. Old=" + definitions.get(key) + ". New=" + value
+						+ ".", TokenType.DEF);
 			} else {
 				definitions.put(key, value);
 			}
@@ -65,6 +65,16 @@ public class Parser {
 
 	private boolean isVerbose;
 
+	private ValidationResponse exceptions;
+
+	public boolean hasErrors() {
+		return exceptions != null && exceptions.hasErrors();
+	}
+
+	public ValidationResponse getExceptions() {
+		return exceptions;
+	}
+
 	public void setVerbose(boolean isVerbose) {
 		this.isVerbose = isVerbose;
 	}
@@ -75,6 +85,7 @@ public class Parser {
 
 	public Parser() {
 		try {
+			exceptions = new ValidationResponse();
 			definitions.put("Int", IntDefinition.instance());
 			definitions.put("Float", FloatDefinition.instance());
 			definitions.put("String", StringDefinition.instance());
@@ -93,7 +104,7 @@ public class Parser {
 		}
 	}
 
-	public MapValue parse(Queue<Token> tokens) throws ParsingException, DoesNotConformToDefintionException {
+	public MapValue parse(Queue<Token> tokens) throws IndexableException {
 		return this.parseTopLevel(tokens);
 	}
 
@@ -161,14 +172,13 @@ public class Parser {
 		}
 	}
 
-	private MapValue parseTopLevel(Queue<Token> tokens) throws ParsingException, DoesNotConformToDefintionException {
+	private MapValue parseTopLevel(Queue<Token> tokens) throws IndexableException {
 		parseHeaders(tokens);
 		return this.parseMap(tokens, tokens.peek());
 
 	}
 
-	private Value<?> parseValuesUntyped(Queue<Token> tokens) throws ParsingException,
-			DoesNotConformToDefintionException {
+	private Value<?> parseValuesUntyped(Queue<Token> tokens) throws IndexableException {
 		Token val = tokens.peek();
 		switch (val.getType()) {
 			case INT:
@@ -404,7 +414,7 @@ public class Parser {
 		}
 	}
 
-	private Value<?> parseStructures(Queue<Token> tokens) throws ParsingException, DoesNotConformToDefintionException {
+	private Value<?> parseStructures(Queue<Token> tokens) throws IndexableException {
 		Token open = tokens.remove();
 
 		TokenType closeToken;
@@ -445,8 +455,7 @@ public class Parser {
 		}
 	}
 
-	private TupleValue parseTuple(Queue<Token> tokens, Token start) throws ParsingException,
-			DoesNotConformToDefintionException {
+	private TupleValue parseTuple(Queue<Token> tokens, Token start) throws IndexableException {
 		TupleValue list = new TupleValue(start);
 		do {
 			list.add(this.parseValues(tokens));
@@ -455,8 +464,7 @@ public class Parser {
 		return list;
 	}
 
-	private SetValue parseSet(Queue<Token> tokens, Token start) throws ParsingException,
-			DoesNotConformToDefintionException {
+	private SetValue parseSet(Queue<Token> tokens, Token start) throws IndexableException {
 		SetValue set = new SetValue(start);
 		do {
 			set.add(this.parseValues(tokens));
@@ -465,8 +473,7 @@ public class Parser {
 		return set;
 	}
 
-	private ListValue parseList(Queue<Token> tokens, Token start) throws ParsingException,
-			DoesNotConformToDefintionException {
+	private ListValue parseList(Queue<Token> tokens, Token start) throws IndexableException {
 		ListValue list = new ListValue(start);
 		do {
 			list.add(this.parseValues(tokens));
@@ -476,8 +483,7 @@ public class Parser {
 
 	}
 
-	private MapValue parseMap(Queue<Token> tokens, Token start) throws ParsingException,
-			DoesNotConformToDefintionException {
+	private MapValue parseMap(Queue<Token> tokens, Token start) throws IndexableException {
 		MapValue map = new MapValue(start);
 		do {
 			map.add(this.parseAssignment(tokens));
@@ -488,8 +494,7 @@ public class Parser {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private Pair<String, ?> parseAssignment(Queue<Token> tokens) throws ParsingException,
-			DoesNotConformToDefintionException {
+	private Pair<String, ?> parseAssignment(Queue<Token> tokens) throws IndexableException {
 		Token var = tokens.remove();
 		Value<?> val;
 		if (var.getType() == TokenType.VAR) {
@@ -516,7 +521,7 @@ public class Parser {
 								} else {
 									throw new ParsingException(eq1, "NOT IMPLEMENTED!!!");
 								}
-								Definition.check(tmp, val);
+								exceptions.addResponse(Definition.check(tmp, val));
 								if (tmp instanceof ListDefinition) {
 									val.setEntityID(def.getName());
 								}
@@ -544,7 +549,7 @@ public class Parser {
 	}
 
 	// make it so you do not need equals (anonymous)
-	private Value<?> parseValues(Queue<Token> tokens) throws ParsingException, DoesNotConformToDefintionException {
+	private Value<?> parseValues(Queue<Token> tokens) throws IndexableException {
 		Value<?> val;
 		Token className = tokens.peek();
 		if (className.getType() == TokenType.DEF) {
@@ -552,7 +557,7 @@ public class Parser {
 			if (definitions.containsKey(className.getText())) {
 				Definition def = definitions.get(className.getText());
 				val = parseValuesUntyped(tokens);
-				Definition.check(def, val);
+				exceptions.addResponse(Definition.check(def, val));
 				val.setEntityID(def.getName());
 			} else {
 				throw new ParsingException(className, "ClassName is undefined. Was '" + className.getText() + "'.");
