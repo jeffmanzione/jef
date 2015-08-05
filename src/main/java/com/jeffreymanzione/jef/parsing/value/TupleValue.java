@@ -13,81 +13,81 @@ import com.jeffreymanzione.jef.tokenizing.Token;
 
 public class TupleValue extends Value<List<Value<?>>> implements Iterable<Pair<Integer, ?>> {
 
-	private List<Value<?>> values = new ArrayList<>();
+  private List<Value<?>> values = new ArrayList<>();
 
-	public TupleValue(Token token) {
-		super(ValueType.TUPLE, token);
-		super.set(values);
-	}
+  public TupleValue(Token token) {
+    super(ValueType.TUPLE, token);
+    super.set(values);
+  }
 
-	public void add(Value<?> value) throws ParsingException {
-		values.add(value);
-	}
+  public void add(Value<?> value) throws ParsingException {
+    values.add(value);
+  }
 
-	public void validate(TupleDefinition format) throws TupleException {
+  public void validate(TupleDefinition format) throws TupleException {
 
-		if (format.length() != values.size()) {
-			throw new TupleException("Tuple does not fit size requirement of format.");
-		}
+    if (format.length() != values.size()) {
+      throw new TupleException("Tuple does not fit size requirement of format.");
+    }
 
-		for (int i = 0; i < values.size(); i++) {
-			if (format.getTypeAt(i) != values.get(i).getType()) {
-				throw new TupleException("Tuple type does not match.");
-			}
-		}
-	}
+    for (int i = 0; i < values.size(); i++) {
+      if (format.getTypeAt(i) != values.get(i).getType()) {
+        throw new TupleException("Tuple type does not match.");
+      }
+    }
+  }
 
-	@Override
-	public String toStringType() {
-		String result = "(" + values.get(0).toStringType();
+  @Override
+  public String toStringType() {
+    String result = "(" + values.get(0).toStringType();
 
-		for (int index = 1; index < values.size(); index++) {
-			result += ", " + values.get(index).toStringType();
-		}
-		return result + ")";
-	}
+    for (int index = 1; index < values.size(); index++) {
+      result += ", " + values.get(index).toStringType();
+    }
+    return result + ")";
+  }
 
-	public Value<?> get(int index) {
-		return values.get(index);
-	}
+  public Value<?> get(int index) {
+    return values.get(index);
+  }
 
-	public int size() {
-		return values.size();
-	}
+  public int size() {
+    return values.size();
+  }
 
-	@Override
-	public String toString() {
-		String result = "(" + values.get(0).toString();
+  @Override
+  public String toString() {
+    String result = "(" + values.get(0).toString();
 
-		for (int index = 1; index < values.size(); index++) {
-			result += ", " + values.get(index).toString();
-		}
-		return result + ")";
-	}
+    for (int index = 1; index < values.size(); index++) {
+      result += ", " + values.get(index).toString();
+    }
+    return result + ")";
+  }
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	@Override
-	public Iterator<Pair<Integer, ?>> iterator() {
-		return new Iterator<Pair<Integer, ?>>() {
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  @Override
+  public Iterator<Pair<Integer, ?>> iterator() {
+    return new Iterator<Pair<Integer, ?>>() {
 
-			Queue<Pair<Integer, ?>> queue;
-			{
-				queue = new LinkedList<Pair<Integer, ?>>();
-				for (int i = 0; i < values.size(); i++) {
-					queue.add(new Pair(i, values.get(i)));
-				}
-			}
+      Queue<Pair<Integer, ?>> queue;
+      {
+        queue = new LinkedList<Pair<Integer, ?>>();
+        for (int i = 0; i < values.size(); i++) {
+          queue.add(new Pair(i, values.get(i)));
+        }
+      }
 
-			@Override
-			public boolean hasNext() {
-				return !queue.isEmpty();
-			}
+      @Override
+      public boolean hasNext() {
+        return !queue.isEmpty();
+      }
 
-			@Override
-			public Pair<Integer, ?> next() {
-				return queue.remove();
-			}
-		};
+      @Override
+      public Pair<Integer, ?> next() {
+        return queue.remove();
+      }
+    };
 
-	}
+  }
 }

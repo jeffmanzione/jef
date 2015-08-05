@@ -1,9 +1,9 @@
 package com.jeffreymanzione.jef.test.entities;
 
 import com.jeffreymanzione.jef.resurrection.JEFEntityMap;
-import com.jeffreymanzione.jef.resurrection.annotations.JEFClass;
+// import com.jeffreymanzione.jef.resurrection.annotations.JEFClass;
 
-//@JEFClass(name="Event")
+// @JEFClass(name="Event")
 public class Event extends JEFEntityMap {
-	String name, text;
+  String name, text;
 }

@@ -4,5 +4,5 @@ import com.jeffreymanzione.jef.resurrection.annotations.JEFClass;
 
 @JEFClass(name = "Doge")
 public enum Doge {
-	a, b, c, d, e
+  a, b, c, d, e
 }

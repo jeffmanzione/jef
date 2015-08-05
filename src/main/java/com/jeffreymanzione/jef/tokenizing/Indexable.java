@@ -1,42 +1,42 @@
 package com.jeffreymanzione.jef.tokenizing;
 
 public interface Indexable {
-	public int getLineNumber();
+  public int getLineNumber();
 
-	public int getColumnNumber();
+  public int getColumnNumber();
 
-	public String getLineText();
+  public String getLineText();
 
-	public StringBuilder getLineTextBuilder();
+  public StringBuilder getLineTextBuilder();
 
-	public String getText();
+  public String getText();
 
-	Indexable EOF = new Indexable() {
+  Indexable EOF = new Indexable() {
 
-		@Override
-		public int getLineNumber() {
-			return -1;
-		}
+                  @Override
+                  public int getLineNumber() {
+                    return -1;
+                  }
 
-		@Override
-		public String getLineText() {
-			return "EOF";
-		}
+                  @Override
+                  public String getLineText() {
+                    return "EOF";
+                  }
 
-		@Override
-		public int getColumnNumber() {
-			return -1;
-		}
+                  @Override
+                  public int getColumnNumber() {
+                    return -1;
+                  }
 
-		@Override
-		public String getText() {
-			return "EOF";
-		}
+                  @Override
+                  public String getText() {
+                    return "EOF";
+                  }
 
-		@Override
-		public StringBuilder getLineTextBuilder() {
-			return new StringBuilder();
-		}
-	};
+                  @Override
+                  public StringBuilder getLineTextBuilder() {
+                    return new StringBuilder();
+                  }
+                };
 
 }

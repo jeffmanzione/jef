@@ -5,11 +5,11 @@ import java.util.List;
 import com.jeffreymanzione.jef.resurrection.JEFEntityMap;
 import com.jeffreymanzione.jef.resurrection.annotations.JEFClass;
 
-@JEFClass(name="Datapoint")
+@JEFClass(name = "Datapoint")
 public class Datapoint extends JEFEntityMap {
-	int x, y;
-	
-	String name, desc;
-	
-	List<Event> events;
+  int         x, y;
+
+  String      name, desc;
+
+  List<Event> events;
 }

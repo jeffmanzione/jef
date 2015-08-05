@@ -10,39 +10,39 @@ import com.jeffreymanzione.jef.tokenizing.Token;
 
 public class ListValue extends Value<List<Value<?>>> implements Iterable<Value<?>> {
 
-	List<Value<?>> values = new ArrayList<>();
-	
-	public ListValue(Token token) {
-		super(ValueType.LIST, token);
-		super.set(values);
-	}
-	
-	public void add(Value<?> value) {
-		values.add(value);
-	}
+  List<Value<?>> values = new ArrayList<>();
 
-	@Override
-	public Iterator<Value<?>> iterator() {
-		return new Iterator<Value<?>>() {
+  public ListValue(Token token) {
+    super(ValueType.LIST, token);
+    super.set(values);
+  }
 
-			Queue<Value<?>> queue;
-			{
-				queue = new LinkedList<Value<?>>();
-				for (Value<?> val : values) {
-					queue.add(val);
-				}
-			}
+  public void add(Value<?> value) {
+    values.add(value);
+  }
 
-			@Override
-			public boolean hasNext() {
-				return !queue.isEmpty();
-			}
+  @Override
+  public Iterator<Value<?>> iterator() {
+    return new Iterator<Value<?>>() {
 
-			@Override
-			public Value<?> next() {
-				return queue.remove();
-			}
-		};
-	}
-	
+      Queue<Value<?>> queue;
+      {
+        queue = new LinkedList<Value<?>>();
+        for (Value<?> val : values) {
+          queue.add(val);
+        }
+      }
+
+      @Override
+      public boolean hasNext() {
+        return !queue.isEmpty();
+      }
+
+      @Override
+      public Value<?> next() {
+        return queue.remove();
+      }
+    };
+  }
+
 }

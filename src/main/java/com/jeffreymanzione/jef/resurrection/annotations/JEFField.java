@@ -5,6 +5,7 @@ import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
 public @interface JEFField {
-	String key() default "";
-	boolean ignore() default false;
+  String key() default "";
+
+  boolean ignore() default false;
 }

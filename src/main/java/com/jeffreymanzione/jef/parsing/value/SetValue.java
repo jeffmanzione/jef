@@ -9,40 +9,39 @@ import java.util.Set;
 import com.jeffreymanzione.jef.tokenizing.Token;
 
 public class SetValue extends Value<Set<Value<?>>> implements Iterable<Value<?>> {
-	private Set<Value<?>> values = new HashSet<>();
-	
-	public SetValue(Token token) {
-		super(ValueType.SET, token);
-		super.set(values);
-	}
-	
-	public void add(Value<?> value) {
-		values.add(value);
-	}
+  private Set<Value<?>> values = new HashSet<>();
 
-	@Override
-	public Iterator<Value<?>> iterator() {
-		return new Iterator<Value<?>>() {
+  public SetValue(Token token) {
+    super(ValueType.SET, token);
+    super.set(values);
+  }
 
-			Queue<Value<?>> queue;
-			{
-				queue = new LinkedList<Value<?>>();
-				for (Value<?> val : values) {
-					queue.add(val);
-				}
-			}
+  public void add(Value<?> value) {
+    values.add(value);
+  }
 
-			@Override
-			public boolean hasNext() {
-				return !queue.isEmpty();
-			}
+  @Override
+  public Iterator<Value<?>> iterator() {
+    return new Iterator<Value<?>>() {
 
-			@Override
-			public Value<?> next() {
-				return queue.remove();
-			}
-		};
-	}
-	
-	
+      Queue<Value<?>> queue;
+      {
+        queue = new LinkedList<Value<?>>();
+        for (Value<?> val : values) {
+          queue.add(val);
+        }
+      }
+
+      @Override
+      public boolean hasNext() {
+        return !queue.isEmpty();
+      }
+
+      @Override
+      public Value<?> next() {
+        return queue.remove();
+      }
+    };
+  }
+
 }
