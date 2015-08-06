@@ -171,7 +171,11 @@ public class JEFParser implements Parser {
 
     Token defName = tokens.remove();
     assertTokenType(defName, TokenType.DEF, "Expected DEFINITION after keyword type and ':'.");
-    assertTokenType(tokens.remove(), TokenType.OF, "Expected OF after keyword type : ENUM.");
+    // assertTokenType(tokens.remove(), TokenType.OF, "Expected OF after keyword type : ENUM.");
+    // OF is now optional for enum defs. =)
+    if (tokens.peek().getType() == TokenType.OF) {
+      tokens.remove();
+    }
 
     return parseEnumInner(tokens).setName(defName.getText());
   }
@@ -246,23 +250,24 @@ public class JEFParser implements Parser {
       Definition innerDef = resolveType(type);
 
       return new Declaration(innerDef, name.getText());
-    } else {
-      Modification mod = getModDeclaration(tokens);
-      Token name = tokens.remove();
-
-      assertTokenType(name, TokenType.VAR, "Unexpected token. Expected token VAR_NAME after TYPE.");
-
-      Definition outerDef;
-      Definition innerDef = resolveType(type);
-
-      if (mod == Modification.LIST) {
-        outerDef = new ListDefinition(innerDef);
-      } else /* if (mod == Modification.MAP) */{
-        outerDef = new MapDefinition();
-        ((MapDefinition) outerDef).setRestricted(definitions.get(type.getText()));
-      }
-      return new Declaration(outerDef, name.getText());
     }
+
+    Modification mod = getModDeclaration(tokens);
+    Token name = tokens.remove();
+
+    assertTokenType(name, TokenType.VAR, "Unexpected token. Expected token VAR_NAME after TYPE.");
+
+    Definition outerDef;
+    Definition innerDef = resolveType(type);
+
+    if (mod == Modification.LIST) {
+      outerDef = new ListDefinition(innerDef);
+    } else /* if (mod == Modification.MAP) */{
+      outerDef = new MapDefinition();
+      ((MapDefinition) outerDef).setRestricted(definitions.get(type.getText()));
+    }
+    return new Declaration(outerDef, name.getText());
+
   }
 
   private Modification getModDeclaration(Queue<Token> tokens) throws ParsingException {
@@ -443,12 +448,15 @@ public class JEFParser implements Parser {
     assertTokenType(var, TokenType.VAR, "Where is the variable name?");
 
     Token eq = tokens.remove();
-    if (eq.getType() == TokenType.EQUALS) {
-      val = parseValues(tokens);
-    } else if (eq.getType() == TokenType.LTHAN) {
-      val = parseTypedValues(tokens);
-    } else {
-      throw new ParsingException(eq, "Expected '=' or '<'.", TokenType.EQUALS);
+    switch (eq.getType()) {
+      case EQUALS:
+        val = parseValues(tokens);
+        break;
+      case LTHAN:
+        val = parseTypedValues(tokens);
+        break;
+      default:
+        throw new ParsingException(eq, "Expected '=' or '<'.", TokenType.EQUALS);
     }
 
     return new Pair(var.getText(), val);
@@ -483,7 +491,7 @@ public class JEFParser implements Parser {
     }
   }
 
-  class DefinitionsContainer {
+  private class DefinitionsContainer {
     Map<String, Definition> definitions = new HashMap<>();
 
     void put(Definition def) throws ParsingException {
@@ -500,11 +508,11 @@ public class JEFParser implements Parser {
       definitions.put(key, value);
     }
 
-    void putAll(Map<String, Definition> defs) throws ParsingException {
-      for (Entry<String, Definition> entry : defs.entrySet()) {
-        put(entry.getKey(), entry.getValue());
-      }
-    }
+    // void putAll(Map<String, Definition> defs) throws ParsingException {
+    // for (Entry<String, Definition> entry : defs.entrySet()) {
+    // put(entry.getKey(), entry.getValue());
+    // }
+    // }
 
     Set<Entry<String, Definition>> entrySet() {
       return definitions.entrySet();
