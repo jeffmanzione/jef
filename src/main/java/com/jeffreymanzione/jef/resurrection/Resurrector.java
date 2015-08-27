@@ -6,19 +6,20 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Array;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
+
 import com.jeffreymanzione.jef.parsing.value.EnumValue;
 import com.jeffreymanzione.jef.parsing.value.ListValue;
 import com.jeffreymanzione.jef.parsing.value.MapValue;
 import com.jeffreymanzione.jef.parsing.value.Pair;
-import com.jeffreymanzione.jef.parsing.value.SetValue;
+import com.jeffreymanzione.jef.parsing.value.ArrayValue;
 import com.jeffreymanzione.jef.parsing.value.TupleValue;
 import com.jeffreymanzione.jef.parsing.value.Value;
 import com.jeffreymanzione.jef.parsing.value.primitive.PrimitiveValue;
@@ -68,6 +69,16 @@ public class Resurrector {
     return true;
   }
 
+  private Class<?> getClassForName(String name) throws ClassNotFoundException {
+    if (classes.containsKey(name)) {
+      return classes.get(name);
+    } else if (enums.containsKey(name)) {
+      return enums.get(name);
+    } else {
+      return Class.forName(name);
+    }
+  }
+
   private <T extends JEFEntityTuple> T create(TupleValue val, Class<T> cls)
       throws ClassFillingException {
     T obj;
@@ -113,8 +124,8 @@ public class Resurrector {
       return parseToEnum(value);
     } else if (value instanceof ListValue) {
       return (T) parseToList(value);
-    } else if (value instanceof SetValue) {
-      return (T) parseToSet(value);
+    } else if (value instanceof ArrayValue) {
+      return (T) parseToArray(value);
     } else if (value instanceof TupleValue) {
       return (T) parseToTuple(value);
     } else if (value instanceof MapValue) {
@@ -155,13 +166,31 @@ public class Resurrector {
     }
   }
 
-  private Set<Object> parseToSet(Value<?> value) throws ClassFillingException {
-    SetValue setVal = (SetValue) value;
-    Set<Object> result = new HashSet<Object>();
-    for (Value<?> val : setVal) {
-      result.add(parseToObject(val));
+  @SuppressWarnings("unchecked")
+  private <T> T[] parseToArray(Value<?> value) throws ClassFillingException {
+
+    if (!(value instanceof ArrayValue)) {
+      throw new ClassFillingException("Expected that value would be an ArrayValue.");
     }
-    return result;
+
+    ArrayValue<T> arrVal = (ArrayValue<T>) value;
+
+    T[] result;
+    try {
+      // TODO: THE FOLLOWING IS DANGEROUS. IT DEPENDS ON THE ARRAY HAVING AT LEAST ONE VALUE. NEED
+      // TO FIND A BETTER WAY TO DO THIS!
+      result = (T[]) Array.newInstance(
+          getClassForName(((Class<T>) ((ParameterizedType) arrVal.getValue().get(0).getClass()
+              .getGenericSuperclass()).getActualTypeArguments()[0]).getName()), arrVal.size());
+      int i = 0;
+      for (Value<T> val : arrVal) {
+        result[i++] = parseToObject(val);
+      }
+      return result;
+    } catch (NegativeArraySizeException | ClassNotFoundException e) {
+      throw new ClassFillingException("FAILED HERE.");
+    }
+
   }
 
   private List<Object> parseToList(Value<?> value) throws ClassFillingException {

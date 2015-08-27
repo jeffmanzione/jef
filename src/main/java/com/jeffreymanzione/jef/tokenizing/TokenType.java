@@ -18,7 +18,7 @@ public enum TokenType {
 
   QUOTE(null),
 
-  DEF(null), VAR(null), ENUMVAL(null);
+  DEF(null), VAR(null), ENUMVAL(null), NOP("nop");
 
   private static Map<String, TokenType> tokens;
 

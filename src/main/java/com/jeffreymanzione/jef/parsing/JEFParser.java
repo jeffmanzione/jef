@@ -15,7 +15,7 @@ import com.jeffreymanzione.jef.parsing.value.EnumValue;
 import com.jeffreymanzione.jef.parsing.value.ListValue;
 import com.jeffreymanzione.jef.parsing.value.MapValue;
 import com.jeffreymanzione.jef.parsing.value.Pair;
-import com.jeffreymanzione.jef.parsing.value.SetValue;
+import com.jeffreymanzione.jef.parsing.value.ArrayValue;
 import com.jeffreymanzione.jef.parsing.value.TupleValue;
 import com.jeffreymanzione.jef.parsing.value.Value;
 import com.jeffreymanzione.jef.parsing.value.primitive.FloatValue;
@@ -336,7 +336,7 @@ public class JEFParser implements Parser {
         break;
       case LBRAC:
         closeToken = TokenType.RBRAC;
-        val = parseSet(tokens, open);
+        val = parseArray(tokens, open);
         break;
       case LBRCE:
         closeToken = TokenType.RBRCE;
@@ -370,14 +370,14 @@ public class JEFParser implements Parser {
     return list;
   }
 
-  private SetValue parseSet(Queue<Token> tokens, Token start) throws IndexableException {
-    SetValue set = new SetValue(start);
+  private ArrayValue parseArray(Queue<Token> tokens, Token start) throws IndexableException {
+    ArrayValue arr = new ArrayValue(start);
     do {
-      set.add(parseValues(tokens));
+      arr.add(parseValues(tokens));
     } while (tokens.peek().getType() == TokenType.COMMA
         && tokens.remove().getType() == TokenType.COMMA);
 
-    return set;
+    return arr;
   }
 
   private ListValue parseList(Queue<Token> tokens, Token start) throws IndexableException {
