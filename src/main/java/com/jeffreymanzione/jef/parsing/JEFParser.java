@@ -94,8 +94,7 @@ public class JEFParser implements Parser {
         default:
           break defCheck;
       }
-    } while (!(isEmpty = tokens.isEmpty()) && tokens.peek().getType() == TokenType.COMMA
-        && tokens.remove().getType() == TokenType.COMMA);
+    } while (!(isEmpty = tokens.isEmpty()) && nextTokenIsAndRemove(tokens, TokenType.COMMA));
 
     for (Entry<String, Definition> entry : definitions.entrySet()) {
       Definition definition = entry.getValue();
