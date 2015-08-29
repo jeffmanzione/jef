@@ -5,12 +5,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import javax.swing.text.html.parser.Element;
 
 import java.util.TreeMap;
 
@@ -22,23 +19,13 @@ import com.jeffreymanzione.jef.resurrection.exceptions.CouldNotUpdateEntityExcep
 
 public abstract class JEFEntity<KEY> {
 
-  public static final Map<Class<?>, Class<?>> classToPrimitive = new HashMap<Class<?>, Class<?>>();
-
-  static {
-    classToPrimitive.put(Boolean.class, boolean.class);
-    classToPrimitive.put(Byte.class, byte.class);
-    classToPrimitive.put(Short.class, short.class);
-    classToPrimitive.put(Character.class, char.class);
-    classToPrimitive.put(Integer.class, int.class);
-    classToPrimitive.put(Long.class, long.class);
-    classToPrimitive.put(Float.class, float.class);
-    classToPrimitive.put(Double.class, double.class);
+  /**
+   * Put here what needs to be done after this object is created to fully initialized.
+   */
+  protected void initialize() {
+    
   }
-
-  public static Class<?> convertObjectClassToPrimitive(Class<?> cls) {
-    return classToPrimitive.getOrDefault(cls, cls);
-  }
-
+  
   public abstract boolean set(KEY key, Object val) throws CouldNotUpdateEntityException;
 
   public abstract Object get(KEY key) throws CouldNotUpdateEntityException;

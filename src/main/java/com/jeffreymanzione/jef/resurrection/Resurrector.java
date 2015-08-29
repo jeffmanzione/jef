@@ -88,6 +88,7 @@ public class Resurrector {
         obj.set(p.getKey(), parseToObject(p.getValue()));
       }
 
+      obj.initialize();
       return obj;
     } catch (InstantiationException | IllegalAccessException e) {
       throw new CouldNotAssembleClassException("Failed on newInstance() for val=" + val + ", class="
@@ -105,6 +106,7 @@ public class Resurrector {
         obj.set(p.getKey(), parseToObject(p.getValue()));
       }
 
+      obj.initialize();
       return obj;
     } catch (InstantiationException | IllegalAccessException e) {
       throw new CouldNotAssembleClassException("Failed on newInstance() for val=" + val + ", class="

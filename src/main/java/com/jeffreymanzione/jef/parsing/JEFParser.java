@@ -256,11 +256,12 @@ public class JEFParser implements Parser {
     Token name = tokens.remove();
 
     assertTokenType(name, TokenType.VAR, "Unexpected token. Expected token VAR_NAME after TYPE.");
-  
+
     Definition outerDef;
     Definition innerDef = resolveType(type);
+    System.out.println(innerDef);
 
-    switch (mod) {
+    switch (mod.getType()) {
       case LIST:
         outerDef = new ListDefinition(innerDef);
         break;
@@ -283,16 +284,36 @@ public class JEFParser implements Parser {
 
   private Modification getModDeclaration(Queue<Token> tokens) throws ParsingException {
     Token type = tokens.remove();
-    Modification mod;
+    Modification mod, tmpMod;
 
     if (type.getType() == TokenType.LBRCE && tokens.remove().getType() == TokenType.RBRCE) {
-      mod = Modification.MAP;
+      mod = new Modification(ModificationType.MAP);
     } else if (type.getType() == TokenType.LTHAN && tokens.remove().getType() == TokenType.GTHAN) {
-      mod = Modification.LIST;
+      mod = new Modification(ModificationType.LIST);
     } else if (type.getType() == TokenType.LBRAC && tokens.remove().getType() == TokenType.RBRAC) {
-      mod = Modification.ARRAY;
+      mod = new Modification(ModificationType.ARRAY);
     } else {
       throw new ParsingException(type, "Unexpected token. Expected mod.");
+    }
+
+    tmpMod = mod;
+
+    type = tokens.peek();
+    while (type.getType() == TokenType.LBRCE || type.getType() == TokenType.LTHAN
+        || type.getType() == TokenType.LBRAC) {
+      System.out.println(tmpMod + " " + type);
+      if (type.getType() == TokenType.LBRCE && tokens.remove() != null
+          && tokens.remove().getType() == TokenType.RBRCE) {
+        tmpMod.setInnerModification(new Modification(ModificationType.MAP));
+      } else if (type.getType() == TokenType.LTHAN && tokens.remove() != null
+          && tokens.remove().getType() == TokenType.GTHAN) {
+        tmpMod.setInnerModification(new Modification(ModificationType.LIST));
+      } else if (type.getType() == TokenType.LBRAC && tokens.remove() != null
+          && tokens.remove().getType() == TokenType.RBRAC) {
+        tmpMod.setInnerModification(new Modification(ModificationType.ARRAY));
+      }
+      tmpMod = tmpMod.getInnerModification();
+      type = tokens.peek();
     }
 
     return mod;
@@ -418,7 +439,7 @@ public class JEFParser implements Parser {
   private void assertTokenType(Token token, TokenType expected, String errMessage)
       throws ParsingException {
     if (token.getType() != expected) {
-      throw new ParsingException(token, "Where is the variable name?", expected);
+      throw new ParsingException(token, errMessage, expected);
     }
   }
 

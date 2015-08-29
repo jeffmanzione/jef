@@ -84,6 +84,7 @@ public class AssemblerTest {
   public void testArray() throws Exception {
     Assembler assembler = new Assembler();
     assembler.setTokenizer(new JEFTokenizer());
+    //assembler.getTokenizer().setVerbose(true);
     assembler.setParser(new JEFParser());
     Resurrector cf = new Resurrector();
     cf.addEntityClass(ArrayTest.class);

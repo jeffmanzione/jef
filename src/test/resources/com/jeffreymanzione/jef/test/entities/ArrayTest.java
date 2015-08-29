@@ -13,5 +13,4 @@ public class ArrayTest extends JEFEntityMap {
     return "ArrayTest [stringArray=" + Arrays.toString(stringArray) + ", intArray="
         + Arrays.toString(intArray) + "]";
   }
-  
 }
