@@ -189,7 +189,6 @@ public class JEFParser implements Parser {
     assertTokenType(tokens.remove(), TokenType.RBRAC, "Expected ']' at end of an enumaration.");
 
     return def;
-
   }
 
   private Definition parseEnumSet(Queue<Token> tokens) throws ParsingException {
@@ -199,10 +198,17 @@ public class JEFParser implements Parser {
       assertTokenType(name, TokenType.VAR, "Invalid within an enumaration.");
       def.add(name.getText());
 
-    } while (tokens.peek().getType() == TokenType.COMMA
-        && tokens.remove().getType() == TokenType.COMMA);
+    } while (nextTokenIsAndRemove(tokens, TokenType.COMMA));
 
     return def;
+  }
+
+  private boolean nextTokenIsAndRemove(Queue<Token> tokens, TokenType type) {
+    if (tokens.peek().getType() == type) {
+      tokens.remove();
+      return true;
+    }
+    return false;
   }
 
   private Definition parseType(Queue<Token> tokens) throws ParsingException {
@@ -282,34 +288,41 @@ public class JEFParser implements Parser {
 
   }
 
+  private boolean nextTwoAre(Queue<Token> tokens, TokenType first, TokenType second) {
+    if (tokens.peek().getType() == first) {
+      tokens.remove();
+      if (tokens.peek().getType() == second) {
+        tokens.remove();
+        return true;
+      }
+    }
+    return false;
+  }
+
   private Modification getModDeclaration(Queue<Token> tokens) throws ParsingException {
-    Token type = tokens.remove();
     Modification mod, tmpMod;
 
-    if (type.getType() == TokenType.LBRCE && tokens.remove().getType() == TokenType.RBRCE) {
+    if (nextTwoAre(tokens, TokenType.LBRCE, TokenType.RBRCE)) {
       mod = new Modification(ModificationType.MAP);
-    } else if (type.getType() == TokenType.LTHAN && tokens.remove().getType() == TokenType.GTHAN) {
+    } else if (nextTwoAre(tokens, TokenType.LTHAN, TokenType.GTHAN)) {
       mod = new Modification(ModificationType.LIST);
-    } else if (type.getType() == TokenType.LBRAC && tokens.remove().getType() == TokenType.RBRAC) {
+    } else if (nextTwoAre(tokens, TokenType.LBRAC, TokenType.RBRAC)) {
       mod = new Modification(ModificationType.ARRAY);
     } else {
-      throw new ParsingException(type, "Unexpected token. Expected mod.");
+      throw new ParsingException(tokens.peek(), "Unexpected token. Expected mod.");
     }
 
     tmpMod = mod;
 
-    type = tokens.peek();
+    Token type = tokens.peek();
     while (type.getType() == TokenType.LBRCE || type.getType() == TokenType.LTHAN
         || type.getType() == TokenType.LBRAC) {
       System.out.println(tmpMod + " " + type);
-      if (type.getType() == TokenType.LBRCE && tokens.remove() != null
-          && tokens.remove().getType() == TokenType.RBRCE) {
+      if (nextTwoAre(tokens, TokenType.LBRCE, TokenType.RBRCE)) {
         tmpMod.setInnerModification(new Modification(ModificationType.MAP));
-      } else if (type.getType() == TokenType.LTHAN && tokens.remove() != null
-          && tokens.remove().getType() == TokenType.GTHAN) {
+      } else if (nextTwoAre(tokens, TokenType.LTHAN, TokenType.GTHAN)) {
         tmpMod.setInnerModification(new Modification(ModificationType.LIST));
-      } else if (type.getType() == TokenType.LBRAC && tokens.remove() != null
-          && tokens.remove().getType() == TokenType.RBRAC) {
+      } else if (nextTwoAre(tokens, TokenType.LBRAC, TokenType.RBRAC)) {
         tmpMod.setInnerModification(new Modification(ModificationType.ARRAY));
       }
       tmpMod = tmpMod.getInnerModification();
@@ -334,8 +347,7 @@ public class JEFParser implements Parser {
     do {
       Declaration dec = parseDeclaration(tokens);
       def.add(dec.getName(), dec.getDefinition());
-    } while (tokens.peek().getType() == TokenType.COMMA
-        && tokens.remove().getType() == TokenType.COMMA);
+    } while (nextTokenIsAndRemove(tokens, TokenType.COMMA));
 
     assertTokenType(tokens.remove(), TokenType.RBRCE, "Missing '}' ending map declaration.");
 
@@ -348,8 +360,7 @@ public class JEFParser implements Parser {
 
     do {
       format.add(parseTypeInfo(tokens));
-    } while (tokens.peek().getType() == TokenType.COMMA
-        && tokens.remove().getType() == TokenType.COMMA);
+    } while (nextTokenIsAndRemove(tokens, TokenType.COMMA));
 
     assertTokenType(tokens.remove(), TokenType.RPAREN, "Missing ')' ending tuple declaration.");
 
@@ -399,8 +410,7 @@ public class JEFParser implements Parser {
     TupleValue list = new TupleValue(start);
     do {
       list.add(parseValues(tokens));
-    } while (tokens.peek().getType() == TokenType.COMMA
-        && tokens.remove().getType() == TokenType.COMMA);
+    } while (nextTokenIsAndRemove(tokens, TokenType.COMMA));
 
     return list;
   }
@@ -409,8 +419,7 @@ public class JEFParser implements Parser {
     ArrayValue arr = new ArrayValue(start);
     do {
       arr.add(parseValues(tokens));
-    } while (tokens.peek().getType() == TokenType.COMMA
-        && tokens.remove().getType() == TokenType.COMMA);
+    } while (nextTokenIsAndRemove(tokens, TokenType.COMMA));
 
     return arr;
   }
@@ -419,8 +428,7 @@ public class JEFParser implements Parser {
     ListValue list = new ListValue(start);
     do {
       list.add(parseValues(tokens));
-    } while (tokens.peek().getType() == TokenType.COMMA
-        && tokens.remove().getType() == TokenType.COMMA);
+    } while (nextTokenIsAndRemove(tokens, TokenType.COMMA));
 
     return list;
 
@@ -430,8 +438,7 @@ public class JEFParser implements Parser {
     MapValue map = new MapValue(start);
     do {
       map.add(parseAssignment(tokens));
-    } while (!tokens.isEmpty() && tokens.peek().getType() == TokenType.COMMA
-        && tokens.remove().getType() == TokenType.COMMA);
+    } while (!tokens.isEmpty() && nextTokenIsAndRemove(tokens, TokenType.COMMA));
 
     return map;
   }
