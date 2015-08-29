@@ -6,20 +6,20 @@ import java.util.List;
 
 import com.jeffreymanzione.jef.tokenizing.Token;
 
-public class ArrayValue<T> extends Value<List<Value<T>>> implements Iterable<Value<T>> {
-  private List<Value<T>> values = new ArrayList<>();
+public class ArrayValue extends Value<List<Value<?>>> implements Iterable<Value<?>> {
+  private List<Value<?>> values = new ArrayList<>();
 
   public ArrayValue(Token token) {
     super(ValueType.ARRAY, token);
     super.set(values);
   }
 
-  public void add(Value<T> value) {
+  public void add(Value<?> value) {
     values.add(value);
   }
 
   @Override
-  public Iterator<Value<T>> iterator() {
+  public Iterator<Value<?>> iterator() {
     return values.iterator();
   }
   

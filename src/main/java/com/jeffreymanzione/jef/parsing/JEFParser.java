@@ -129,8 +129,8 @@ public class JEFParser implements Parser {
 
     File file = new File(filePath.getText());
     if (!file.exists()) {
-      throw new ParsingException(filePath, "Include path does not exist. Was: '"
-          + filePath.getText() + "'.");
+      throw new ParsingException(filePath,
+          "Include path does not exist. Was: '" + filePath.getText() + "'.");
     }
 
     try {
@@ -256,16 +256,27 @@ public class JEFParser implements Parser {
     Token name = tokens.remove();
 
     assertTokenType(name, TokenType.VAR, "Unexpected token. Expected token VAR_NAME after TYPE.");
-
+  
     Definition outerDef;
     Definition innerDef = resolveType(type);
 
-    if (mod == Modification.LIST) {
-      outerDef = new ListDefinition(innerDef);
-    } else /* if (mod == Modification.MAP) */{
-      outerDef = new MapDefinition();
-      ((MapDefinition) outerDef).setRestricted(definitions.get(type.getText()));
+    switch (mod) {
+      case LIST:
+        outerDef = new ListDefinition(innerDef);
+        break;
+      case ARRAY:
+        outerDef = new ArrayDefinition(innerDef);
+        break;
+      case MAP:
+        outerDef = new MapDefinition();
+        ((MapDefinition) outerDef).setRestricted(definitions.get(type.getText()));
+        break;
+      default:
+        throw new ParsingException(null,
+            "This should not happen. Means a new modification type was "
+                + "added, but not added in this switch statement."); // See getModDeclaration(...)
     }
+
     return new Declaration(outerDef, name.getText());
 
   }
@@ -278,6 +289,8 @@ public class JEFParser implements Parser {
       mod = Modification.MAP;
     } else if (type.getType() == TokenType.LTHAN && tokens.remove().getType() == TokenType.GTHAN) {
       mod = Modification.LIST;
+    } else if (type.getType() == TokenType.LBRAC && tokens.remove().getType() == TokenType.RBRAC) {
+      mod = Modification.ARRAY;
     } else {
       throw new ParsingException(type, "Unexpected token. Expected mod.");
     }
@@ -347,7 +360,8 @@ public class JEFParser implements Parser {
         val = parseTuple(tokens, open);
         break;
       default:
-        throw new ParsingException(open, "Was: " + open.getText() + ". Expected struct block type.");
+        throw new ParsingException(open,
+            "Was: " + open.getText() + ". Expected struct block type.");
     }
 
     try {
@@ -425,6 +439,8 @@ public class JEFParser implements Parser {
     Definition tmp;
     if (val instanceof ListValue) {
       tmp = new ListDefinition(def);
+    } else if (val instanceof ArrayValue) {
+      tmp = new ArrayDefinition(def);
     } else if (val instanceof MapValue) {
       tmp = new MapDefinition();
       MapDefinition mapDef = (MapDefinition) tmp;
@@ -469,8 +485,8 @@ public class JEFParser implements Parser {
     if (className.getType() == TokenType.DEF) {
       tokens.remove();
       if (!definitions.containsKey(className.getText())) {
-        throw new ParsingException(className, "ClassName is undefined. Was '" + className.getText()
-            + "'.");
+        throw new ParsingException(className,
+            "ClassName is undefined. Was '" + className.getText() + "'.");
       }
 
       Definition def = definitions.get(className.getText());
@@ -501,8 +517,9 @@ public class JEFParser implements Parser {
     void put(String key, Definition value) throws ParsingException {
 
       if (definitions.containsKey(key) && !definitions.get(key).equals(value)) {
-        throw new ParsingException("Duplicate Definintion. Old=" + definitions.get(key) + ". New="
-            + value + ".", TokenType.DEF);
+        throw new ParsingException(
+            "Duplicate Definintion. Old=" + definitions.get(key) + ". New=" + value + ".",
+            TokenType.DEF);
       }
 
       definitions.put(key, value);

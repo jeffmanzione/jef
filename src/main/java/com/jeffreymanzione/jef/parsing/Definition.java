@@ -3,6 +3,7 @@ package com.jeffreymanzione.jef.parsing;
 import java.util.Map;
 
 import com.jeffreymanzione.jef.parsing.exceptions.DoesNotConformToDefintionException;
+import com.jeffreymanzione.jef.parsing.value.ArrayValue;
 import com.jeffreymanzione.jef.parsing.value.ListValue;
 import com.jeffreymanzione.jef.parsing.value.MapValue;
 import com.jeffreymanzione.jef.parsing.value.Pair;
@@ -99,8 +100,8 @@ public abstract class Definition {
         }
       }
     } else {
-      response.addException(new DoesNotConformToDefintionException(val, "Expected a MAP but was a "
-          + val.getType() + ". Value was " + val));
+      response.addException(new DoesNotConformToDefintionException(val,
+          "Expected a MAP but was a " + val.getType() + ". Value was " + val));
     }
     return response;
   }
@@ -139,12 +140,13 @@ public abstract class Definition {
             if (tupleDef.getTypeAt(index) != tupleVal.getValue().get(index).getType()) {
               if (tupleDef.getTypeAt(index) == ValueType.DEFINED) {
                 // System.out.println("TUPLE DEF " + tupleDef.getDefinitionAt(index));
-                response.addResponse(Definition.check(tupleDef.getDefinitionAt(index), tupleVal
-                    .getValue().get(index)));
+                response.addResponse(Definition.check(tupleDef.getDefinitionAt(index),
+                    tupleVal.getValue().get(index)));
               } else {
-                response.addException(new DoesNotConformToDefintionException(tupleVal.getValue()
-                    .get(index), "Expected different tupled expression, Expected "
-                    + tupleDef.toString() + " and was " + tupleVal.toStringType() + "."));
+                response.addException(
+                    new DoesNotConformToDefintionException(tupleVal.getValue().get(index),
+                        "Expected different tupled expression, Expected " + tupleDef.toString()
+                            + " and was " + tupleVal.toStringType() + "."));
               }
             } else {
 
@@ -174,8 +176,8 @@ public abstract class Definition {
         for (Value<?> value : listVal) {
           ValidationResponse innerResponse = check(((ListDefinition) def).getType(), value);
           if (innerResponse.hasErrors()) {
-            response.addException(new DoesNotConformToDefintionException(value, "Expected "
-                + ((ListDefinition) def).getType() + " but was " + value + "."));
+            response.addException(new DoesNotConformToDefintionException(value,
+                "Expected " + ((ListDefinition) def).getType() + " but was " + value + "."));
             response.addResponse(innerResponse);
           }
         }
@@ -183,13 +185,28 @@ public abstract class Definition {
         response.addException(new DoesNotConformToDefintionException(val,
             "Expected a LIST but was a " + val.getType() + "."));
       }
+    } else if (def instanceof ArrayDefinition) {
+      if (val.getType() == ValueType.ARRAY) {
+        ArrayValue arrVal = (ArrayValue) val;
+        for (Value<?> value : arrVal) {
+          ValidationResponse innerResponse = check(((ArrayDefinition) def).getType(), value);
+          if (innerResponse.hasErrors()) {
+            response.addException(new DoesNotConformToDefintionException(value,
+                "Expected " + ((ArrayDefinition) def).getType() + " but was " + value + "."));
+            response.addResponse(innerResponse);
+          }
+        }
+      } else {
+        response.addException(new DoesNotConformToDefintionException(val,
+            "Expected a ARRAY but was a " + val.getType() + "."));
+      }
     } else if (def instanceof BuiltInDefinition) {
       val.setEntityID(def.getName());
       ((BuiltInDefinition<?>) def).getInnerDefintion().setName(def.getName());
       response.addResponse(check(((BuiltInDefinition<?>) def).getInnerDefintion(), val));
     } else {
-      response.addException(new DoesNotConformToDefintionException(val, "Expected " + def
-          + " but was " + val + "."));
+      response.addException(
+          new DoesNotConformToDefintionException(val, "Expected " + def + " but was " + val + "."));
     }
     return response;
   }
@@ -212,9 +229,9 @@ public abstract class Definition {
             "Expected a INT but was a " + val.getType() + "."));
       }
     } else {
-      response.addException(new DoesNotConformToDefintionException(val,
-          "Expected a Primitive but was def=" + def.getClass().getSimpleName() + " and va="
-              + val.getType() + "."));
+      response.addException(
+          new DoesNotConformToDefintionException(val, "Expected a Primitive but was def="
+              + def.getClass().getSimpleName() + " and va=" + val.getType() + "."));
     }
     return response;
   }

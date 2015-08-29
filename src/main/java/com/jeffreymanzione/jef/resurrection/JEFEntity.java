@@ -1,10 +1,17 @@
 package com.jeffreymanzione.jef.resurrection;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.swing.text.html.parser.Element;
+
 import java.util.TreeMap;
 
 import com.jeffreymanzione.jef.resurrection.annotations.JEFClass;
@@ -14,6 +21,23 @@ import com.jeffreymanzione.jef.resurrection.exceptions.CouldNotTranformValueExce
 import com.jeffreymanzione.jef.resurrection.exceptions.CouldNotUpdateEntityException;
 
 public abstract class JEFEntity<KEY> {
+
+  public static final Map<Class<?>, Class<?>> classToPrimitive = new HashMap<Class<?>, Class<?>>();
+
+  static {
+    classToPrimitive.put(Boolean.class, boolean.class);
+    classToPrimitive.put(Byte.class, byte.class);
+    classToPrimitive.put(Short.class, short.class);
+    classToPrimitive.put(Character.class, char.class);
+    classToPrimitive.put(Integer.class, int.class);
+    classToPrimitive.put(Long.class, long.class);
+    classToPrimitive.put(Float.class, float.class);
+    classToPrimitive.put(Double.class, double.class);
+  }
+
+  public static Class<?> convertObjectClassToPrimitive(Class<?> cls) {
+    return classToPrimitive.getOrDefault(cls, cls);
+  }
 
   public abstract boolean set(KEY key, Object val) throws CouldNotUpdateEntityException;
 
@@ -36,9 +60,9 @@ public abstract class JEFEntity<KEY> {
             field.set(this, val);
             return true;
           } catch (IllegalArgumentException | IllegalAccessException e) {
-            throw new CouldNotUpdateEntityException("Could not set object " + this + " with field "
-                + field + " to val " + val
-                + ". Either the security settings prevented it or you did something silly.");
+            throw new CouldNotUpdateEntityException(
+                "Could not set object " + this + " with field " + field + " to val " + val
+                    + ". Either the security settings prevented it or you did something silly.");
           }
         } else {
           throw new CouldNotUpdateEntityException("Could not set object " + this + " with field "
@@ -53,22 +77,27 @@ public abstract class JEFEntity<KEY> {
     // System.out.println(field.getType().getSimpleName() + " " + val.getClass().getSimpleName());
     if (field.getType().isInstance(val)) {
       return true;
+    } else if (field.getType().isArray() && val.getClass().isArray()) {
+      return field.getType().getComponentType().equals(val.getClass().getComponentType());
     } else {
-      if ((field.getType().equals(int.class) || field.getType().equals(long.class))
-          && val instanceof Integer) {
-        return true;
-      } else if ((field.getType().equals(float.class) || field.getType().equals(double.class))
-          && val instanceof Double) {
-        return true;
-      } else if ((field.getType().equals(boolean.class) || field.getType().equals(Boolean.class))
-          && val instanceof Boolean) {
-        return true;
-      }
+      return matchesPrimitive(field.getType(), val);
     }
-    return false;
   }
 
-  protected boolean setField(Field field, KEY key, Object val) throws CouldNotUpdateEntityException {
+  protected boolean matchesPrimitive(Class<?> cls, Object val) {
+    if ((cls.equals(int.class) || cls.equals(long.class)) && val instanceof Integer) {
+      return true;
+    } else if ((cls.equals(float.class) || cls.equals(double.class)) && val instanceof Double) {
+      return true;
+    } else if ((cls.equals(boolean.class) || cls.equals(Boolean.class)) && val instanceof Boolean) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  protected boolean setField(Field field, KEY key, Object val)
+      throws CouldNotUpdateEntityException {
     if (field.getName().equals(key.toString())) {
       field.setAccessible(true);
 
@@ -80,33 +109,73 @@ public abstract class JEFEntity<KEY> {
         return true;
 
       } else {
-        throw new CouldNotUpdateEntityException("Could not match types between field '"
-            + field.getName() + "' and val " + val + ".");
+        throw new CouldNotUpdateEntityException(
+            "Could not match types between field '" + field.getName() + "' and val " + val + ".");
       }
     }
     return false;
   }
 
+  protected Object handlePrimitives(Object val) {
+    Class<?> cls = val.getClass();
+    /*
+     * if (cls.isPrimitive() && fieldClass.isPrimitive()) {
+     * return val;
+     * }
+     */
+    if (classIsPrimitive(cls)) {
+      if (!cls.isPrimitive())
+        if (cls.equals(Integer.class)) {
+          return (int) val;
+        } else if (cls.equals(Double.class)) {
+          return (double) val;
+        } else if (cls.equals(Boolean.class)) {
+          return (boolean) val;
+        }
+    } /*
+       * else if (cls.isArray() && !cls.getComponentType().isPrimitive()) {
+       * // NOTE: This only works for arrays with no variability of size of individual member
+       * // subarrays.
+       * Class<?> fieldArrayCls = cls;
+       * List<Integer> dims = new ArrayList<>();
+       * Object firstVal = val;
+       * while (fieldArrayCls.isArray()) {
+       * dims.add(Array.getLength(firstVal));
+       * fieldArrayCls = fieldArrayCls.getComponentType();
+       * if (fieldArrayCls.isArray()) {
+       * firstVal = Array.get(val, 0);
+       * }
+       * }
+       * int[] arrDims = new int[dims.size()];
+       * for (int i = 0; i < dims.size(); i++) {
+       * arrDims[i] = dims.get(i);
+       * }
+       * Object arr = Array.newInstance(fieldArrayCls, arrDims);
+       * return arr;
+       * }
+       */
+
+    return val;
+  }
+
   protected void setSafe(Field field, Object val) throws CouldNotUpdateEntityException {
     try {
-      if (field.getType().equals(int.class)) {
+      if (field.getType().equals(val.getClass())) {
         field.set(this, val);
-      } else if (field.getType().equals(float.class)) {
-        field.set(this, ((Double) val).floatValue());
       } else {
-        field.set(this, val);
+        field.set(this, handlePrimitives(val));
       }
     } catch (IllegalArgumentException | IllegalAccessException e) {
-      throw new CouldNotUpdateEntityException("Could not set object " + this + " with field "
-          + field + " to val " + val
-          + ". Either the security settings prevented it or you did something silly.");
+      throw new CouldNotUpdateEntityException(
+          "Could not set object " + this + " with field " + field + " to val " + val
+              + ". Either the security settings prevented it or you did something silly.");
     }
   }
 
   @SuppressWarnings("unchecked")
   protected static String writeBody(Object obj, Field field, int indents, boolean useSpaces,
-      int spacesPerTab) throws IllegalArgumentException, IllegalAccessException,
-      CouldNotTranformValueException {
+      int spacesPerTab)
+          throws IllegalArgumentException, IllegalAccessException, CouldNotTranformValueException {
     String tab;
     if (useSpaces) {
       tab = "";
@@ -154,6 +223,8 @@ public abstract class JEFEntity<KEY> {
       result += indent + "{\n"
           + getValueFromObject(field.get(obj), indents + 1, useSpaces, spacesPerTab) + indent
           + "}\n";
+    } else if (field.getType().isArray()) {
+      result += arrayToString(((Object[]) field.get(obj)), indents + 1, useSpaces, spacesPerTab);
     } else if (BuiltInResurrector.containsTranformForObject(field.get(obj).getClass())) {
       result += BuiltInResurrector.transformObject(field.get(obj)).toJEFEntityFormat(indents + 1,
           useSpaces, spacesPerTab);
@@ -162,6 +233,57 @@ public abstract class JEFEntity<KEY> {
     }
     // result += "\n";
     return result;
+  }
+
+  private static String arrayToString(Object[] arr, int indents, boolean useSpaces,
+      int spacesPerTab)
+          throws IllegalArgumentException, IllegalAccessException, CouldNotTranformValueException {
+    // Class<?> arrayClass = arr.getClass();
+    List<String> elements = new ArrayList<>();
+    boolean shouldNest = false;
+    for (Object obj : arr) {
+      if (obj.getClass().isArray()) {
+        elements.add(arrayToString(((Object[]) obj), indents + 1, useSpaces, spacesPerTab));
+        shouldNest = true;
+      } else {
+        elements.add(getValueFromObject(obj, indents + 1, useSpaces, spacesPerTab));
+        if (obj instanceof JEFEntity) {
+          shouldNest = true;
+        }
+      }
+    }
+
+    StringBuilder result = new StringBuilder();
+    result.append("[");
+
+    if (!elements.isEmpty()) {
+      if (shouldNest) {
+        result.append("\n" + getIndent(indents + 1, useSpaces, spacesPerTab));
+      }
+
+      result.append(elements.get(0));
+
+      for (int i = 1; i < elements.size(); i++) {
+        String element = elements.get(i);
+        result.append(",");
+
+        if (shouldNest) {
+          result.append("\n");
+          result.append(getIndent(indents + 1, useSpaces, spacesPerTab));
+        } else {
+          result.append(" ");
+        }
+        result.append(element);
+      }
+    }
+
+    if (shouldNest) {
+      result.append("\n");
+      result.append(getIndent(indents, useSpaces, spacesPerTab));
+    }
+    result.append("]");
+
+    return result.toString();
   }
 
   protected static String getIndent(int indents, boolean useSpaces, int spacesPerTab) {
@@ -189,16 +311,15 @@ public abstract class JEFEntity<KEY> {
 
   @SuppressWarnings("unchecked")
   protected static String getValueFromObject(Object obj, int indents, boolean useSpaces,
-      int spacesPerTab) throws IllegalArgumentException, IllegalAccessException,
-      CouldNotTranformValueException {
+      int spacesPerTab)
+          throws IllegalArgumentException, IllegalAccessException, CouldNotTranformValueException {
     String tab = getTab(useSpaces, spacesPerTab);
     String indent = getIndent(indents, useSpaces, spacesPerTab);
     String result = "";
 
     if (obj instanceof JEFEntityMap) {
-      result += "{\n"
-          + ((JEFEntityMap) obj).toJEFEntityFormat(indents + 1, useSpaces, spacesPerTab) + indent
-          + "}";
+      result += "{\n" + ((JEFEntityMap) obj).toJEFEntityFormat(indents + 1, useSpaces, spacesPerTab)
+          + indent + "}";
     } else if (obj instanceof JEFEntityTuple) {
       result += ((JEFEntityTuple) obj).toJEFEntityFormat(indents + 1, useSpaces, spacesPerTab)
           + indent;
@@ -242,6 +363,8 @@ public abstract class JEFEntity<KEY> {
     } else if (BuiltInResurrector.containsTranformForObject(obj.getClass())) {
       result += BuiltInResurrector.transformObject(obj).toJEFEntityFormat(indents + 1, useSpaces,
           spacesPerTab);
+    } else if (obj instanceof Array) {
+      result += Arrays.deepToString((Object[]) obj);
     } else {
       result += obj.toString();
     }
@@ -282,8 +405,8 @@ public abstract class JEFEntity<KEY> {
       for (Field field : cls.getDeclaredFields()) {
         String typeName = "", valName = "";
 
-        if (!(field.isAnnotationPresent(JEFField.class) && field.getAnnotation(JEFField.class)
-            .ignore())) {
+        if (!(field.isAnnotationPresent(JEFField.class)
+            && field.getAnnotation(JEFField.class).ignore())) {
           typeName = JEFEntity.toTypeName(field);
 
           if (field.isAnnotationPresent(JEFField.class)) {
@@ -335,15 +458,32 @@ public abstract class JEFEntity<KEY> {
       // System.out.println(field);
       // System.out.println(((ParameterizedType)
       // field.getGenericType()).getActualTypeArguments()[0]);
-      return toTypeName((Class<?>) ((ParameterizedType) field.getGenericType())
-          .getActualTypeArguments()[0]) + "<>";
+      return toTypeName(
+          (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0])
+          + "<>";
     } else if (Map.class.isAssignableFrom(cls)) {
       // System.out.println(field);
       // System.out.println(((ParameterizedType)
       // field.getGenericType()).getActualTypeArguments()[1]);
-      return toTypeName((Class<?>) ((ParameterizedType) field.getGenericType())
-          .getActualTypeArguments()[1]) + "{}";
-    } else {
+      return toTypeName(
+          (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[1])
+          + "{}";
+    } else if (cls.isArray()) {
+      Class<?> fieldArrayCls = cls;
+      int dims = 0;
+      while (fieldArrayCls.isArray()) {
+        dims++;
+        fieldArrayCls = fieldArrayCls.getComponentType();
+      }
+      String typeName = toTypeName(fieldArrayCls);
+      for (int i = 0; i < dims; i++) {
+        typeName += "[]";
+      }
+
+      return typeName;
+    }
+
+    else {
       return toTypeName(cls);
     }
   }

@@ -31,7 +31,8 @@ import com.jeffreymanzione.jef.resurrection.exceptions.CouldNotTranformValueExce
 public class Resurrector {
   private Map<String, Class<? extends JEFEntity<?>>> classes;
 
-  private Map<String, Class<?>>                      enums;
+  private Map<String, Class<?>> enums;
+
   {
     classes = new LinkedHashMap<String, Class<? extends JEFEntity<?>>>();
     enums = new HashMap<String, Class<?>>();
@@ -41,9 +42,8 @@ public class Resurrector {
   public final boolean addEntityClass(Class<? extends JEFEntity<?>>... cls) {
     boolean success = true;
     for (Class<? extends JEFEntity<?>> cl : cls) {
-      success &= classes.put(
-          cl.isAnnotationPresent(JEFClass.class) ? cl.getAnnotation(JEFClass.class).name() : cl
-              .getSimpleName(), cl) != null;
+      success &= classes.put(cl.isAnnotationPresent(JEFClass.class)
+          ? cl.getAnnotation(JEFClass.class).name() : cl.getSimpleName(), cl) != null;
     }
     return success;
   }
@@ -90,8 +90,8 @@ public class Resurrector {
 
       return obj;
     } catch (InstantiationException | IllegalAccessException e) {
-      throw new CouldNotAssembleClassException("Failed on newInstance() for val=" + val
-          + ", class=" + cls + " Are we allowed to use the default constructor?");
+      throw new CouldNotAssembleClassException("Failed on newInstance() for val=" + val + ", class="
+          + cls + " Are we allowed to use the default constructor?");
     }
 
   }
@@ -107,8 +107,8 @@ public class Resurrector {
 
       return obj;
     } catch (InstantiationException | IllegalAccessException e) {
-      throw new CouldNotAssembleClassException("Failed on newInstance() for val=" + val
-          + ", class=" + cls + " Are we allowed to use the default constructor?");
+      throw new CouldNotAssembleClassException("Failed on newInstance() for val=" + val + ", class="
+          + cls + " Are we allowed to use the default constructor?");
     }
 
   }
@@ -173,7 +173,7 @@ public class Resurrector {
       throw new ClassFillingException("Expected that value would be an ArrayValue.");
     }
 
-    ArrayValue<T> arrVal = (ArrayValue<T>) value;
+    ArrayValue arrVal = (ArrayValue) value;
 
     T[] result;
     try {
@@ -181,9 +181,10 @@ public class Resurrector {
       // TO FIND A BETTER WAY TO DO THIS!
       result = (T[]) Array.newInstance(
           getClassForName(((Class<T>) ((ParameterizedType) arrVal.getValue().get(0).getClass()
-              .getGenericSuperclass()).getActualTypeArguments()[0]).getName()), arrVal.size());
+              .getGenericSuperclass()).getActualTypeArguments()[0]).getName()),
+          arrVal.size());
       int i = 0;
-      for (Value<T> val : arrVal) {
+      for (Value<?> val : arrVal) {
         result[i++] = parseToObject(val);
       }
       return result;
@@ -219,10 +220,8 @@ public class Resurrector {
           + "' in enum " + enums.get(enumVal.getEntityID() + "."));
 
     } else {
-      throw new CouldNotAssembleClassException(
-          "Could not find enum "
-              + enumVal.getEntityID()
-              + " in enums. Did you add the enum class to the ClassFiller with ClassFiller.addEnumClass()?");
+      throw new CouldNotAssembleClassException("Could not find enum " + enumVal.getEntityID()
+          + " in enums. Did you add the enum class to the ClassFiller with ClassFiller.addEnumClass()?");
 
     }
   }
@@ -233,8 +232,8 @@ public class Resurrector {
   }
 
   public final String convertToJEFEntityFormat(Map<String, Object> map, boolean useSpaces,
-      int spacesPerTab) throws IllegalArgumentException, IllegalAccessException,
-      CouldNotTranformValueException {
+      int spacesPerTab)
+          throws IllegalArgumentException, IllegalAccessException, CouldNotTranformValueException {
     String result = "";
     for (Entry<String, Class<?>> entry : enums.entrySet()) {
       result += JEFEntity.toJEFEntityHeader(entry.getValue()) + "\n";
@@ -250,7 +249,7 @@ public class Resurrector {
 
   public final void writeToFile(Map<String, Object> map, boolean useSpaces, int spacesPerTab,
       File file) throws IOException, IllegalArgumentException, IllegalAccessException,
-      CouldNotTranformValueException {
+          CouldNotTranformValueException {
     if (!file.exists() && !file.createNewFile()) {
       throw new FileNotFoundException();
     } else {
@@ -265,8 +264,8 @@ public class Resurrector {
   }
 
   public final void writeToStream(Map<String, Object> map, boolean useSpaces, int spacesPerTab,
-      OutputStream stream) throws IllegalArgumentException, IllegalAccessException,
-      CouldNotTranformValueException {
+      OutputStream stream)
+          throws IllegalArgumentException, IllegalAccessException, CouldNotTranformValueException {
     try (PrintWriter out = new PrintWriter(stream)) {
       out.print(convertToJEFEntityFormat(map, useSpaces, spacesPerTab));
     }

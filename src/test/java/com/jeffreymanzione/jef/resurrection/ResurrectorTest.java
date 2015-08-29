@@ -1,8 +1,5 @@
 package com.jeffreymanzione.jef.resurrection;
 
-import java.lang.reflect.ParameterizedType;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Queue;
 
 import org.junit.After;
@@ -15,6 +12,7 @@ import com.jeffreymanzione.jef.parsing.value.ArrayValue;
 import com.jeffreymanzione.jef.parsing.value.MapValue;
 import com.jeffreymanzione.jef.parsing.value.primitive.IntValue;
 import com.jeffreymanzione.jef.resurrection.Resurrector;
+import com.jeffreymanzione.jef.test.entities.ArrayTest;
 import com.jeffreymanzione.jef.test.entities.Doge;
 import com.jeffreymanzione.jef.test.entities.Test1;
 import com.jeffreymanzione.jef.test.entities.Test2;
@@ -44,8 +42,8 @@ public class ResurrectorTest {
 
     Parser parser = new JEFParser();
 
-    Queue<Token> tokens = new JEFTokenizer().tokenize(ResurrectorTest.class
-        .getResourceAsStream("/test2.in.jef"));
+    Queue<Token> tokens = new JEFTokenizer()
+        .tokenize(ResurrectorTest.class.getResourceAsStream("/test2.in.jef"));
 
     MapValue mappings = parser.parse(tokens);
 
@@ -62,10 +60,10 @@ public class ResurrectorTest {
   @Test
   public void testArray() throws Exception {
     Resurrector cf = new Resurrector();
-    
+
     Token token = new Token(new Word("nop", new StringBuilder(), 0, 0), TokenType.NOP);
-    
-    ArrayValue<Integer> val = new ArrayValue<Integer>(token);
+
+    ArrayValue val = new ArrayValue(token);
     val.add(new IntValue(0, token));
     val.add(new IntValue(1, token));
     val.add(new IntValue(2, token));
@@ -79,12 +77,36 @@ public class ResurrectorTest {
   }
   
   @Test
+  public void testArray2() throws Exception {
+    Resurrector cf = new Resurrector();
+    cf.addEntityClass(ArrayTest.class);
+
+    Parser parser = new JEFParser();
+
+    Queue<Token> tokens = new JEFTokenizer()
+        .tokenize(ResurrectorTest.class.getResourceAsStream("/test5.in.jef"));
+
+    MapValue mappings = parser.parse(tokens);
+
+    ArrayTest a1 = cf.parseToObject((MapValue) mappings.get("arrTest1"));
+
+    System.out.println(a1);
+    System.out.println(JEFEntity.toJEFEntityHeader(a1.getClass()));
+
+  }
+
+  @Test
   public void testReflect() throws Exception {
-    List<List<Integer>> llint = new ArrayList<>();
-    
-    Class<?> intCls = ((Class<?>) ((ParameterizedType) llint.getClass()
-        .getGenericSuperclass()).getActualTypeArguments()[0]);
-    System.out.println(intCls.toString());
+//    List<List<Integer>> llint = new ArrayList<>();
+//
+//    Class<?> intCls = ((Class<?>) ((ParameterizedType) llint.getClass().getGenericSuperclass())
+//        .getActualTypeArguments()[0]);
+//    System.out.println(intCls.toString());
+//    
+    Integer[][] ints = new Integer[10][10];
+    System.out.println(ints.getClass().getComponentType());
   }
   
+  
+
 }
