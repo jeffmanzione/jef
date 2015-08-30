@@ -77,6 +77,24 @@ public class JEFParser implements Parser {
     return parseTopLevel(tokens);
   }
 
+  private static void assertTokenType(Token token, TokenType expected, String errMessage)
+      throws ParsingException {
+    if (token.getType() != expected) {
+      throw new ParsingException(token, errMessage, expected);
+    }
+  }
+
+  private static boolean nextTwoAre(Queue<Token> tokens, TokenType first, TokenType second) {
+    if (tokens.peek().getType() == first) {
+      tokens.remove();
+      if (tokens.peek().getType() == second) {
+        tokens.remove();
+        return true;
+      }
+    }
+    return false;
+  }
+
   private boolean parseHeaders(Queue<Token> tokens) throws ParsingException {
     boolean isEmpty = false;
     defCheck: do {
@@ -243,7 +261,6 @@ public class JEFParser implements Parser {
   }
 
   private Declaration parseDeclaration(Queue<Token> tokens) throws ParsingException {
-
     Token type = tokens.remove();
     assertTokenType(type, TokenType.DEF, "Unexpected token.");
 
@@ -257,78 +274,34 @@ public class JEFParser implements Parser {
       return new Declaration(innerDef, name.getText());
     }
 
-    Modification mod = getModDeclaration(tokens);
+    Definition innerDef = resolveType(type);
+    Definition def = getModDeclaration(tokens, innerDef);
+    
+    
     Token name = tokens.remove();
-
     assertTokenType(name, TokenType.VAR, "Unexpected token. Expected token VAR_NAME after TYPE.");
 
-    Definition outerDef;
-    Definition innerDef = resolveType(type);
-    System.out.println(innerDef);
-
-    switch (mod.getType()) {
-      case LIST:
-        outerDef = new ListDefinition(innerDef);
-        break;
-      case ARRAY:
-        outerDef = new ArrayDefinition(innerDef);
-        break;
-      case MAP:
-        outerDef = new MapDefinition();
-        ((MapDefinition) outerDef).setRestricted(definitions.get(type.getText()));
-        break;
-      default:
-        throw new ParsingException(null,
-            "This should not happen. Means a new modification type was "
-                + "added, but not added in this switch statement."); // See getModDeclaration(...)
-    }
-
-    return new Declaration(outerDef, name.getText());
+    return new Declaration(def, name.getText());
 
   }
 
-  private boolean nextTwoAre(Queue<Token> tokens, TokenType first, TokenType second) {
-    if (tokens.peek().getType() == first) {
-      tokens.remove();
-      if (tokens.peek().getType() == second) {
-        tokens.remove();
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private Modification getModDeclaration(Queue<Token> tokens) throws ParsingException {
-    Modification mod, tmpMod;
-
+  // Chose to do this recursively because the code is smaller this way.
+  private Definition getModDeclaration(Queue<Token> tokens, Definition innerType)
+      throws ParsingException {
+    Definition def;
     if (nextTwoAre(tokens, TokenType.LBRCE, TokenType.RBRCE)) {
-      mod = new Modification(ModificationType.MAP);
+      def = new MapDefinition();
+      ((MapDefinition) def).setRestricted(getModDeclaration(tokens, innerType));
     } else if (nextTwoAre(tokens, TokenType.LTHAN, TokenType.GTHAN)) {
-      mod = new Modification(ModificationType.LIST);
+      def = new ListDefinition(getModDeclaration(tokens, innerType));
     } else if (nextTwoAre(tokens, TokenType.LBRAC, TokenType.RBRAC)) {
-      mod = new Modification(ModificationType.ARRAY);
+      def = new ArrayDefinition(getModDeclaration(tokens, innerType));
+    } else if (tokens.peek().getType() == TokenType.VAR) {
+      return innerType;
     } else {
       throw new ParsingException(tokens.peek(), "Unexpected token. Expected mod.");
     }
-
-    tmpMod = mod;
-
-    Token type = tokens.peek();
-    while (type.getType() == TokenType.LBRCE || type.getType() == TokenType.LTHAN
-        || type.getType() == TokenType.LBRAC) {
-      System.out.println(tmpMod + " " + type);
-      if (nextTwoAre(tokens, TokenType.LBRCE, TokenType.RBRCE)) {
-        tmpMod.setInnerModification(new Modification(ModificationType.MAP));
-      } else if (nextTwoAre(tokens, TokenType.LTHAN, TokenType.GTHAN)) {
-        tmpMod.setInnerModification(new Modification(ModificationType.LIST));
-      } else if (nextTwoAre(tokens, TokenType.LBRAC, TokenType.RBRAC)) {
-        tmpMod.setInnerModification(new Modification(ModificationType.ARRAY));
-      }
-      tmpMod = tmpMod.getInnerModification();
-      type = tokens.peek();
-    }
-
-    return mod;
+    return def;
   }
 
   private Definition parseTypeInfo(Queue<Token> tokens) throws ParsingException {
@@ -430,7 +403,6 @@ public class JEFParser implements Parser {
     } while (nextTokenIsAndRemove(tokens, TokenType.COMMA));
 
     return list;
-
   }
 
   private MapValue parseMap(Queue<Token> tokens, Token start) throws IndexableException {
@@ -440,13 +412,6 @@ public class JEFParser implements Parser {
     } while (!tokens.isEmpty() && nextTokenIsAndRemove(tokens, TokenType.COMMA));
 
     return map;
-  }
-
-  private void assertTokenType(Token token, TokenType expected, String errMessage)
-      throws ParsingException {
-    if (token.getType() != expected) {
-      throw new ParsingException(token, errMessage, expected);
-    }
   }
 
   private Value<?> parseTypedValues(Queue<Token> tokens) throws IndexableException {
@@ -483,7 +448,6 @@ public class JEFParser implements Parser {
     return val;
   }
 
-  // TODO: Covert to if (bad_thing) { throw exception; } ...
   @SuppressWarnings({ "unchecked", "rawtypes" })
   private Pair<String, ?> parseAssignment(Queue<Token> tokens) throws IndexableException {
     Value<?> val;

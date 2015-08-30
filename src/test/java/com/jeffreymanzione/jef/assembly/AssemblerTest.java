@@ -18,7 +18,8 @@ import com.jeffreymanzione.jef.test.entities.Event;
 import com.jeffreymanzione.jef.test.entities.Test1;
 import com.jeffreymanzione.jef.test.entities.Test2;
 import com.jeffreymanzione.jef.test.entities.Tuple1;
-import com.jeffreymanzione.jef.test.entities.ArrayTest;
+import com.jeffreymanzione.jef.test.entities.ArrayTest1;
+import com.jeffreymanzione.jef.test.entities.ArrayTest2;
 import com.jeffreymanzione.jef.tokenizing.JEFTokenizer;
 import com.jeffreymanzione.jef.tokenizing.Tokenizer;
 
@@ -87,9 +88,23 @@ public class AssemblerTest {
     //assembler.getTokenizer().setVerbose(true);
     assembler.setParser(new JEFParser());
     Resurrector cf = new Resurrector();
-    cf.addEntityClass(ArrayTest.class);
+    cf.addEntityClass(ArrayTest1.class);
     assembler.setFiller(cf);
     assembler.setSource(AssemblerTest.class.getResourceAsStream("/test5.in.jef"));
+    Map<String, Object> map = assembler.assemble();
+    System.out.println(cf.convertToJEFEntityFormat(map));
+  }
+  
+  @Test
+  public void testArray2() throws Exception {
+    Assembler assembler = new Assembler();
+    assembler.setTokenizer(new JEFTokenizer());
+    //assembler.getTokenizer().setVerbose(true);
+    assembler.setParser(new JEFParser());
+    Resurrector cf = new Resurrector();
+    cf.addEntityClass(ArrayTest2.class);
+    assembler.setFiller(cf);
+    assembler.setSource(AssemblerTest.class.getResourceAsStream("/test6.in.jef"));
     Map<String, Object> map = assembler.assemble();
     System.out.println(cf.convertToJEFEntityFormat(map));
   }

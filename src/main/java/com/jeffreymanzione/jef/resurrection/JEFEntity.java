@@ -23,9 +23,9 @@ public abstract class JEFEntity<KEY> {
    * Put here what needs to be done after this object is created to fully initialized.
    */
   protected void initialize() {
-    
+
   }
-  
+
   public abstract boolean set(KEY key, Object val) throws CouldNotUpdateEntityException;
 
   public abstract Object get(KEY key) throws CouldNotUpdateEntityException;
@@ -163,19 +163,7 @@ public abstract class JEFEntity<KEY> {
   protected static String writeBody(Object obj, Field field, int indents, boolean useSpaces,
       int spacesPerTab)
           throws IllegalArgumentException, IllegalAccessException, CouldNotTranformValueException {
-    String tab;
-    if (useSpaces) {
-      tab = "";
-      for (int i = 0; i < spacesPerTab; i++) {
-        tab += " ";
-      }
-    } else {
-      tab = "\t";
-    }
-    String indent = "";
-    for (int i = 0; i < indents; i++) {
-      indent += tab;
-    }
+    String indent = getIndent(indents, useSpaces, spacesPerTab);
     field.setAccessible(true);
     String result = "";
     // System.out.println(field.getType());
@@ -200,18 +188,16 @@ public abstract class JEFEntity<KEY> {
       result += "$" + field.get(obj).toString();
 
     } else if (List.class.isAssignableFrom(field.getType())) {
-      result += "<\n";
-      for (Object entry : ((List<Object>) field.get(obj))) {
-        result += indent + tab + getValueFromObject(entry, indents + 1, useSpaces, spacesPerTab)
-            + "\n";
-      }
-      result += indent + ">";
+      result += "<"
+          + listToString((List<Object>) field.get(obj), indents + 1, useSpaces, spacesPerTab);
+      result += ">";
     } else if (Map.class.isAssignableFrom(field.getType())) {
       result += indent + "{\n"
           + getValueFromObject(field.get(obj), indents + 1, useSpaces, spacesPerTab) + indent
           + "}\n";
     } else if (field.getType().isArray()) {
-      result += arrayToString(((Object[]) field.get(obj)), indents + 1, useSpaces, spacesPerTab);
+      result += "["
+          + arrayToString(((Object[]) field.get(obj)), indents + 1, useSpaces, spacesPerTab) + "]";
     } else if (BuiltInResurrector.containsTranformForObject(field.get(obj).getClass())) {
       result += BuiltInResurrector.transformObject(field.get(obj)).toJEFEntityFormat(indents + 1,
           useSpaces, spacesPerTab);
@@ -222,6 +208,46 @@ public abstract class JEFEntity<KEY> {
     return result;
   }
 
+  private static String listToString(List<Object> list, int indents, boolean useSpaces,
+      int spacesPerTab)
+          throws IllegalArgumentException, IllegalAccessException, CouldNotTranformValueException {
+
+    String indent = getIndent(indents, useSpaces, spacesPerTab);
+    StringBuilder result = new StringBuilder();
+
+    boolean shouldNest = false;
+
+    if (!list.isEmpty()) {
+      Object first = list.get(0);
+
+      if (first instanceof JEFEntity || List.class.isAssignableFrom(first.getClass())
+          || Map.class.isAssignableFrom(first.getClass())) {
+        shouldNest = true;
+      }
+
+      if (shouldNest) {
+        result.append("\n" + indent);
+      }
+
+      result.append(getValueFromObject(first, indents, useSpaces, spacesPerTab));
+
+      for (int i = 1; i < list.size(); i++) {
+        Object entry = list.get(i);
+        if (shouldNest) {
+          result.append("\n" + indent);
+        } else {
+          result.append(", ");
+        }
+        result.append(getValueFromObject(entry, indents, useSpaces, spacesPerTab));
+      }
+
+      if (shouldNest) {
+        result.append("\n" + getIndent(indents - 1, useSpaces, spacesPerTab));
+      }
+    }
+    return result.toString();
+  }
+
   private static String arrayToString(Object[] arr, int indents, boolean useSpaces,
       int spacesPerTab)
           throws IllegalArgumentException, IllegalAccessException, CouldNotTranformValueException {
@@ -230,35 +256,33 @@ public abstract class JEFEntity<KEY> {
     boolean shouldNest = false;
     for (Object obj : arr) {
       if (obj.getClass().isArray()) {
-        elements.add(arrayToString(((Object[]) obj), indents + 1, useSpaces, spacesPerTab));
+        elements
+            .add("[" + arrayToString(((Object[]) obj), indents + 1, useSpaces, spacesPerTab) + "]");
         shouldNest = true;
       } else {
         elements.add(getValueFromObject(obj, indents + 1, useSpaces, spacesPerTab));
-        if (obj instanceof JEFEntity) {
+        if (obj instanceof JEFEntity || List.class.isAssignableFrom(obj.getClass())
+            || Map.class.isAssignableFrom(obj.getClass())) {
           shouldNest = true;
         }
       }
     }
 
     StringBuilder result = new StringBuilder();
-    result.append("[");
-
     if (!elements.isEmpty()) {
       if (shouldNest) {
-        result.append("\n" + getIndent(indents + 1, useSpaces, spacesPerTab));
+        result.append("\n" + getIndent(indents, useSpaces, spacesPerTab));
       }
 
       result.append(elements.get(0));
 
       for (int i = 1; i < elements.size(); i++) {
         String element = elements.get(i);
-        result.append(",");
-
         if (shouldNest) {
           result.append("\n");
-          result.append(getIndent(indents + 1, useSpaces, spacesPerTab));
+          result.append(getIndent(indents, useSpaces, spacesPerTab));
         } else {
-          result.append(" ");
+          result.append(", ");
         }
         result.append(element);
       }
@@ -266,9 +290,8 @@ public abstract class JEFEntity<KEY> {
 
     if (shouldNest) {
       result.append("\n");
-      result.append(getIndent(indents, useSpaces, spacesPerTab));
+      result.append(getIndent(indents - 1, useSpaces, spacesPerTab));
     }
-    result.append("]");
 
     return result.toString();
   }
@@ -315,20 +338,16 @@ public abstract class JEFEntity<KEY> {
       result += obj.toString();
 
     } else if (obj instanceof String) {
-      result = "'" + obj.toString() + "'";
+      result += "'" + obj.toString() + "'";
 
     } else if (obj.getClass().isEnum()) {
       result = "$" + obj.toString();
 
     } else if (obj instanceof Boolean || obj.getClass().equals(boolean.class)) {
-      result += "$" + obj.toString();
+      result = "$" + obj.toString();
 
     } else if (obj instanceof List) {
-      result = "<\n";
-      for (Object entry : ((List<Object>) obj)) {
-        result += indent + getValueFromObject(entry, indents + 1, useSpaces, spacesPerTab) + "\n";
-      }
-      result += indent + ">";
+      result = "<" + listToString((List<Object>) obj, indents + 1, useSpaces, spacesPerTab) + ">";
     } else if (obj instanceof Map) {
       result += /* (indents < 0 ? "" : tab) + */"{\n";
       for (Entry<String, Object> entry : ((Map<String, Object>) obj).entrySet()) {
@@ -351,7 +370,7 @@ public abstract class JEFEntity<KEY> {
       result += BuiltInResurrector.transformObject(obj).toJEFEntityFormat(indents + 1, useSpaces,
           spacesPerTab);
     } else if (obj instanceof Array) {
-      result += Arrays.deepToString((Object[]) obj);
+      result += "[" + arrayToString((Object[]) obj, indents + 1, useSpaces, spacesPerTab) + "]";
     } else {
       result += obj.toString();
     }

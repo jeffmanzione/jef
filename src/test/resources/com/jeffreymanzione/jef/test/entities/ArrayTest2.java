@@ -4,8 +4,8 @@ import java.util.Arrays;
 
 import com.jeffreymanzione.jef.resurrection.JEFEntityMap;
 
-public class ArrayTest extends JEFEntityMap {
-  private String[] stringArray;
+public class ArrayTest2 extends JEFEntityMap {
+  private String[][] stringArray;
   private Integer[] intArray;
   
   @Override

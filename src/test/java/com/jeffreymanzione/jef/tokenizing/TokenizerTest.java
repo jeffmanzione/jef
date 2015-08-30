@@ -55,7 +55,7 @@ public class TokenizerTest {
         // System.err.println("Expected another token " + token);
         // fail();
         // }
-        System.out.println(token.toString());
+        //System.out.println(token.toString());
       }
 
       // if (scanner.hasNext()) {

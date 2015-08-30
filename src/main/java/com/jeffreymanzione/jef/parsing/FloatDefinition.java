@@ -5,7 +5,7 @@ public class FloatDefinition extends SingletonDefintion {
   public static volatile FloatDefinition instance;
 
   private FloatDefinition() {
-    super("Float");
+    super("Float", Float.class);
   }
 
   public static Definition instance() {

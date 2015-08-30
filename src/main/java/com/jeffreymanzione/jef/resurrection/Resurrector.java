@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Array;
-import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -19,6 +18,12 @@ import com.jeffreymanzione.jef.parsing.value.EnumValue;
 import com.jeffreymanzione.jef.parsing.value.ListValue;
 import com.jeffreymanzione.jef.parsing.value.MapValue;
 import com.jeffreymanzione.jef.parsing.value.Pair;
+import com.jeffreymanzione.jef.parsing.ArrayDefinition;
+import com.jeffreymanzione.jef.parsing.Definition;
+import com.jeffreymanzione.jef.parsing.ListDefinition;
+import com.jeffreymanzione.jef.parsing.MapDefinition;
+import com.jeffreymanzione.jef.parsing.SingletonDefintion;
+import com.jeffreymanzione.jef.parsing.TupleDefinition;
 import com.jeffreymanzione.jef.parsing.value.ArrayValue;
 import com.jeffreymanzione.jef.parsing.value.TupleValue;
 import com.jeffreymanzione.jef.parsing.value.Value;
@@ -67,6 +72,14 @@ public class Resurrector {
       BuiltInResurrector.addTransformer(trans);
     }
     return true;
+  }
+
+  private boolean hasClassForDefinition(String name) {
+    if (classes.containsKey(name) || enums.containsKey(name)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   private Class<?> getClassForName(String name) throws ClassNotFoundException {
@@ -179,21 +192,38 @@ public class Resurrector {
 
     T[] result;
     try {
-      // TODO: THE FOLLOWING IS DANGEROUS. IT DEPENDS ON THE ARRAY HAVING AT LEAST ONE VALUE. NEED
-      // TO FIND A BETTER WAY TO DO THIS!
-      result = (T[]) Array.newInstance(
-          getClassForName(((Class<T>) ((ParameterizedType) arrVal.getValue().get(0).getClass()
-              .getGenericSuperclass()).getActualTypeArguments()[0]).getName()),
-          arrVal.size());
+      result = (T[]) Array.newInstance(definitionToClass(arrVal.getDefinedType()), arrVal.size());
       int i = 0;
       for (Value<?> val : arrVal) {
         result[i++] = parseToObject(val);
       }
       return result;
     } catch (NegativeArraySizeException | ClassNotFoundException e) {
+      e.printStackTrace();
       throw new ClassFillingException("FAILED HERE.");
     }
+  }
 
+  private Class<?> definitionToClass(Definition definedType) throws ClassNotFoundException {
+    if (definedType == null) {
+      return Object.class;
+    } else if (definedType instanceof SingletonDefintion) {
+      return ((SingletonDefintion) definedType).getRepresentedClass();
+    } else if (hasClassForDefinition(definedType.getName())) {
+      return getClassForName(definedType.getName());
+    } else if (definedType instanceof MapDefinition) {
+      return HashMap.class;
+    } else if (definedType instanceof ListDefinition) {
+      return ArrayList.class;
+    }  else if (definedType instanceof ArrayDefinition) {
+      // TODO: THIS IS A HORRIBLE WAY TO DO THIS. FIND A BETTER ONE.
+      return Array.newInstance(definitionToClass(((ArrayDefinition) definedType).getType()), 1)
+          .getClass();
+    } else if (definedType instanceof TupleDefinition) {
+      return Array.newInstance(Object.class, 1).getClass();
+    } else {
+      return getClassForName(definedType.getName());
+    }
   }
 
   private List<Object> parseToList(Value<?> value) throws ClassFillingException {

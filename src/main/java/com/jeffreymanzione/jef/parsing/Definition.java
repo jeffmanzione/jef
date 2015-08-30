@@ -196,6 +196,7 @@ public abstract class Definition {
             response.addResponse(innerResponse);
           }
         }
+        arrVal.setDefinedType(((ArrayDefinition) def).getType());
       } else {
         response.addException(new DoesNotConformToDefintionException(val,
             "Expected a ARRAY but was a " + val.getType() + "."));

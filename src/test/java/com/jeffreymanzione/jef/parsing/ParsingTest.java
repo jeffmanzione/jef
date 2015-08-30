@@ -31,7 +31,7 @@ public class ParsingTest {
   @Test
   public void test() throws IndexableException, IOException, TokenizeException {
     Tokenizer tokenizer = new JEFTokenizer();
-    tokenizer.setVerbose(true);
+    //tokenizer.setVerbose(true);
     Queue<Token> tokens = tokenizer.tokenize(TokenizerTest.class
         .getResourceAsStream("/test2.in.jef"));
 
