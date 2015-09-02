@@ -1,10 +1,8 @@
 package com.jeffreymanzione.jef.resurrection;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -87,14 +85,9 @@ public abstract class JEFEntity<KEY> {
       throws CouldNotUpdateEntityException {
     if (field.getName().equals(key.toString())) {
       field.setAccessible(true);
-
-      // System.out.println(field.getType() + " " + val.getClass().getName());
       if (matches(field, val)) {
-        // System.out.println(field.getName() + " " + fieldName);
-
         setSafe(field, val);
         return true;
-
       } else {
         throw new CouldNotUpdateEntityException(
             "Could not match types between field '" + field.getName() + "' and val " + val + ".");
@@ -166,7 +159,6 @@ public abstract class JEFEntity<KEY> {
     String indent = getIndent(indents, useSpaces, spacesPerTab);
     field.setAccessible(true);
     String result = "";
-    // System.out.println(field.getType());
     if (JEFEntityMap.class.isAssignableFrom(field.getType())) {
       result += "{\n"
           + ((JEFEntityMap) field.get(obj)).toJEFEntityFormat(indents + 1, useSpaces, spacesPerTab)
@@ -180,21 +172,16 @@ public abstract class JEFEntity<KEY> {
       } else {
         result += field.get(obj).toString();
       }
-
     } else if (field.getType().equals(String.class)) {
       result += "'" + field.get(obj).toString() + "'";
-
     } else if (field.getType().isEnum()) {
       result += "$" + field.get(obj).toString();
-
     } else if (List.class.isAssignableFrom(field.getType())) {
       result += "<"
           + listToString((List<Object>) field.get(obj), indents + 1, useSpaces, spacesPerTab);
       result += ">";
     } else if (Map.class.isAssignableFrom(field.getType())) {
-      result += indent + "{\n"
-          + getValueFromObject(field.get(obj), indents + 1, useSpaces, spacesPerTab) + indent
-          + "}\n";
+      result += getValueFromObject(field.get(obj), indents, useSpaces, spacesPerTab);
     } else if (field.getType().isArray()) {
       result += "["
           + arrayToString(((Object[]) field.get(obj)), indents + 1, useSpaces, spacesPerTab) + "]";
@@ -204,7 +191,6 @@ public abstract class JEFEntity<KEY> {
     } else {
       result += field.get(obj).toString();
     }
-    // result += "\n";
     return result;
   }
 
@@ -221,7 +207,7 @@ public abstract class JEFEntity<KEY> {
       Object first = list.get(0);
 
       if (first instanceof JEFEntity || List.class.isAssignableFrom(first.getClass())
-          || Map.class.isAssignableFrom(first.getClass())) {
+          || Map.class.isAssignableFrom(first.getClass()) || first.getClass().isArray()) {
         shouldNest = true;
       }
 
@@ -260,7 +246,7 @@ public abstract class JEFEntity<KEY> {
             .add("[" + arrayToString(((Object[]) obj), indents + 1, useSpaces, spacesPerTab) + "]");
         shouldNest = true;
       } else {
-        elements.add(getValueFromObject(obj, indents + 1, useSpaces, spacesPerTab));
+        elements.add(getValueFromObject(obj, indents, useSpaces, spacesPerTab));
         if (obj instanceof JEFEntity || List.class.isAssignableFrom(obj.getClass())
             || Map.class.isAssignableFrom(obj.getClass())) {
           shouldNest = true;
@@ -369,7 +355,7 @@ public abstract class JEFEntity<KEY> {
     } else if (BuiltInResurrector.containsTranformForObject(obj.getClass())) {
       result += BuiltInResurrector.transformObject(obj).toJEFEntityFormat(indents + 1, useSpaces,
           spacesPerTab);
-    } else if (obj instanceof Array) {
+    } else if (obj.getClass().isArray()) {
       result += "[" + arrayToString((Object[]) obj, indents + 1, useSpaces, spacesPerTab) + "]";
     } else {
       result += obj.toString();
@@ -474,22 +460,7 @@ public abstract class JEFEntity<KEY> {
       return toTypeName(
           (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[1])
           + "{}";
-    } else if (cls.isArray()) {
-      Class<?> fieldArrayCls = cls;
-      int dims = 0;
-      while (fieldArrayCls.isArray()) {
-        dims++;
-        fieldArrayCls = fieldArrayCls.getComponentType();
-      }
-      String typeName = toTypeName(fieldArrayCls);
-      for (int i = 0; i < dims; i++) {
-        typeName += "[]";
-      }
-
-      return typeName;
-    }
-
-    else {
+    } else {
       return toTypeName(cls);
     }
   }
@@ -498,13 +469,20 @@ public abstract class JEFEntity<KEY> {
     if (cls.isAnnotationPresent(JEFClass.class)) {
       return cls.getAnnotation(JEFClass.class).name();
     } else {
-      if (cls.equals(double.class) || cls.equals(Double.class)) {
+      if (cls.equals(int.class) || cls.equals(Integer.class)) {
+        return "Int";
+      } else if (cls.equals(double.class) || cls.equals(Double.class)) {
         return "Float";
       } else if (cls.equals(boolean.class) || cls.equals(Boolean.class)) {
         return "Bool";
       } else if (classIsPrimitive(cls) || cls.equals(String.class)) {
         String name = cls.getSimpleName();
         return name.substring(0, 1).toUpperCase() + name.substring(1);
+      } else if (List.class.isAssignableFrom(cls)) {
+        return toTypeName((Class<?>) ((ParameterizedType) cls.getGenericInterfaces()[0])
+            .getActualTypeArguments()[0]) + "<>";
+      } else if (cls.isArray()) {
+        return toTypeName(cls.getComponentType()) + "[]";
       } else {
         return cls.getSimpleName();
       }

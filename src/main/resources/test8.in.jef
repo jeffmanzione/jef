@@ -1,0 +1,6 @@
+type : ArrayTest3 { String{}[] stringArray, Int[] intArray }
+
+arrTest1 = ArrayTest3 {
+	stringArray = [ {a='One', b='Two'}, {a='Three', b='Four'}, {a='Five', b='Six', c='Seven'} ]
+	intArray    = [1, 2, 3]
+}

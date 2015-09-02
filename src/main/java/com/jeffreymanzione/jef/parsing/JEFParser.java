@@ -276,8 +276,7 @@ public class JEFParser implements Parser {
 
     Definition innerDef = resolveType(type);
     Definition def = getModDeclaration(tokens, innerDef);
-    
-    
+
     Token name = tokens.remove();
     assertTokenType(name, TokenType.VAR, "Unexpected token. Expected token VAR_NAME after TYPE.");
 
@@ -291,11 +290,12 @@ public class JEFParser implements Parser {
     Definition def;
     if (nextTwoAre(tokens, TokenType.LBRCE, TokenType.RBRCE)) {
       def = new MapDefinition();
-      ((MapDefinition) def).setRestricted(getModDeclaration(tokens, innerType));
+      ((MapDefinition) def).setRestricted(innerType);
+      def = getModDeclaration(tokens, def);
     } else if (nextTwoAre(tokens, TokenType.LTHAN, TokenType.GTHAN)) {
-      def = new ListDefinition(getModDeclaration(tokens, innerType));
+      def = getModDeclaration(tokens, new ListDefinition(innerType));
     } else if (nextTwoAre(tokens, TokenType.LBRAC, TokenType.RBRAC)) {
-      def = new ArrayDefinition(getModDeclaration(tokens, innerType));
+      def = getModDeclaration(tokens, new ArrayDefinition(innerType));
     } else if (tokens.peek().getType() == TokenType.VAR) {
       return innerType;
     } else {
