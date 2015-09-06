@@ -3,6 +3,7 @@ package com.jeffreymanzione.jef.parsing;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
@@ -84,12 +85,24 @@ public class JEFParser implements Parser {
     }
   }
 
-  private static boolean nextTwoAre(Queue<Token> tokens, TokenType first, TokenType second) {
-    if (tokens.peek().getType() == first) {
+  private boolean nextTokenIsAndRemove(Queue<Token> tokens, TokenType type) {
+    if (tokens.peek().getType() == type) {
       tokens.remove();
+      return true;
+    }
+    return false;
+  }
+
+  private static boolean nextTwoAreAndRemove(Queue<Token> tokens, TokenType first,
+      TokenType second) {
+    if (tokens.peek().getType() == first) {
+      Token tmp = tokens.remove();
       if (tokens.peek().getType() == second) {
         tokens.remove();
         return true;
+      } else {
+        // TODO: This is ugly, consider doing this a different way.
+        ((LinkedList<Token>) tokens).set(0, tmp);
       }
     }
     return false;
@@ -220,14 +233,6 @@ public class JEFParser implements Parser {
     return def;
   }
 
-  private boolean nextTokenIsAndRemove(Queue<Token> tokens, TokenType type) {
-    if (tokens.peek().getType() == type) {
-      tokens.remove();
-      return true;
-    }
-    return false;
-  }
-
   private Definition parseType(Queue<Token> tokens) throws ParsingException {
 
     assertTokenType(tokens.remove(), TokenType.COLON, "For some reason we expected a ':'.");
@@ -251,13 +256,13 @@ public class JEFParser implements Parser {
   private Definition parseModificationsOnDefinition(Queue<Token> tokens, Definition innerType)
       throws ParsingException {
     Definition def;
-    if (nextTwoAre(tokens, TokenType.LBRCE, TokenType.RBRCE)) {
+    if (nextTwoAreAndRemove(tokens, TokenType.LBRCE, TokenType.RBRCE)) {
       def = new MapDefinition();
       ((MapDefinition) def).setRestricted(innerType);
       def = parseModificationsOnDefinition(tokens, def);
-    } else if (nextTwoAre(tokens, TokenType.LTHAN, TokenType.GTHAN)) {
+    } else if (nextTwoAreAndRemove(tokens, TokenType.LTHAN, TokenType.GTHAN)) {
       def = parseModificationsOnDefinition(tokens, new ListDefinition(innerType));
-    } else if (nextTwoAre(tokens, TokenType.LBRAC, TokenType.RBRAC)) {
+    } else if (nextTwoAreAndRemove(tokens, TokenType.LBRAC, TokenType.RBRAC)) {
       def = parseModificationsOnDefinition(tokens, new ArrayDefinition(innerType));
     } else /*
             * if (tokens.peek().getType() == TokenType.VAR || tokens.peek().getType() ==
