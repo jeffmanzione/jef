@@ -1,6 +1,6 @@
 type : ArrayTest1 { String[]<> stringArray, Int[] intArray }
 
 arrTest1 = ArrayTest1 {
-	stringArray = <['One', 'Two'], ['Three', 'Four'], ['Five', 'Six', 'Seven']>
-	intArray    = [1, 2, 3]
+	stringArray<String[]> = <['One', 'Two'], ['Three', 'Four'], ['Five', 'Six', 'Seven']>
+	intArray = [1, 2, 3]
 }

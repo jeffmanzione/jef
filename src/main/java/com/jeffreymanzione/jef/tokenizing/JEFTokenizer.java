@@ -72,10 +72,12 @@ public class JEFTokenizer implements Tokenizer {
         } else if (tokens.get(tokens.size() - 1).getType() != TokenType.QUOTE
             && Character.isUpperCase(word.getText().charAt(0))) {
           token = new Token(word, TokenType.DEF);
-        } else if (tokens.size() > 0 && tokens.get(tokens.size() - 1).getType() == TokenType.DOLLAR) {
+        } else
+          if (tokens.size() > 0 && tokens.get(tokens.size() - 1).getType() == TokenType.DOLLAR) {
           tokens.remove(tokens.size() - 1);
           token = new Token(word, TokenType.ENUMVAL);
-        } else if (tokens.size() > 0 && tokens.get(tokens.size() - 1).getType() == TokenType.QUOTE) {
+        } else
+            if (tokens.size() > 0 && tokens.get(tokens.size() - 1).getType() == TokenType.QUOTE) {
           tokens.remove(tokens.size() - 1);
           token = new Token(word, TokenType.STRING);
           if (index < words.size() + 1) {
@@ -125,26 +127,20 @@ public class JEFTokenizer implements Tokenizer {
     int column = 0;
 
     for (char c : line.toCharArray()) {
+      // TODO: Make this so that it handles different indentations
       column += (c == '\t') ? 4 : 1;
 
       if (!isComment) {
         if (c == '\'') {
           sQuote = !sQuote;
         }
-
         if (c == '\"') {
           dQuote = !dQuote;
         }
-
         if (splitters.contains(c + "")) {
           if (!buffer.toString().equals("")) {
-            // if (buffer.equals("*/")) {
-            // isComment = false;
-            // } else {
             words.add(new Word(buffer.toString(), lineText, lineNumber, column));
-            // }
           }
-
           if (c == '\n') {
             lineNumber++;
             column = 0;
@@ -155,7 +151,7 @@ public class JEFTokenizer implements Tokenizer {
             words.add(new Word(c + "", lineText, lineNumber, column));
           }
           buffer.setLength(0);
-          ;
+
         } else if (Character.isWhitespace(c) && !sQuote && !dQuote) {
           if (buffer.toString().startsWith("/*")) {
             if (!buffer.toString().endsWith("*/")) {
@@ -165,18 +161,15 @@ public class JEFTokenizer implements Tokenizer {
             words.add(new Word(buffer.toString(), lineText, lineNumber, column));
           }
           buffer.setLength(0);
-          ;
         } else {
           buffer.append(c);
         }
-
       } else {
         buffer.append(c);
         if (buffer.toString().endsWith("*/")) {
           isComment = false;
           buffer.setLength(0);
         }
-
       }
 
       if (c == '\n') {
@@ -184,7 +177,6 @@ public class JEFTokenizer implements Tokenizer {
       } else {
         lineText.append(c);
       }
-
     }
 
     if (words.get(words.size() - 1).getText().equals(",")) {
@@ -194,11 +186,11 @@ public class JEFTokenizer implements Tokenizer {
     return words;
   }
 
-  private static List<String>    splitters = Arrays.asList("\'", "\"", "[", "]", "{", "}", "(",
-                                               ")", "=", "<", ">", "\n", ",", "$");
+  private static List<String> splitters = Arrays.asList("\'", "\"", "[", "]", "{", "}", "(", ")",
+      "=", "<", ">", "\n", ",", "$", "?");
 
-  private static List<String>    preline   = Arrays.asList("[", "{", "(", "<", ",", "=", ":");
+  private static List<String> preline = Arrays.asList("[", "{", "(", "<", ",", "=", ":");
 
-  private static List<TokenType> closers   = Arrays.asList(TokenType.RBRCE, TokenType.RBRAC,
-                                               TokenType.RPAREN, TokenType.GTHAN);
+  private static List<TokenType> closers = Arrays.asList(TokenType.RBRCE, TokenType.RBRAC,
+      TokenType.RPAREN, TokenType.GTHAN);
 }

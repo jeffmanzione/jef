@@ -235,7 +235,7 @@ public class JEFParser implements Parser {
     Token defName = tokens.remove();
     assertTokenType(defName, TokenType.DEF, "Expected definition constrictions after ':'.");
 
-    return parseTypeInner(tokens).setName(defName.getText());
+    return parseToAnonymousType(tokens).setName(defName.getText());
   }
 
   private Definition resolveType(Token type) {
@@ -247,61 +247,59 @@ public class JEFParser implements Parser {
     return innerDef;
   }
 
-  private Definition parseTypeInner(Queue<Token> tokens) throws ParsingException {
-    Token howToProceed = tokens.peek();
-
-    switch (howToProceed.getType()) {
-      case LPAREN:
-        return parseTypeTuple(tokens);
-      case LBRCE:
-        return parseTypeMap(tokens);
-      default:
-        throw new ParsingException(howToProceed, "Unexpected token. Expected '{' or '('.");
-    }
-  }
-
-  private Declaration parseDeclaration(Queue<Token> tokens) throws ParsingException {
-    Token type = tokens.remove();
-    assertTokenType(type, TokenType.DEF, "Unexpected token.");
-
-    Token mods = tokens.peek();
-
-    if (mods.getType() == TokenType.VAR) {
-      Token name = tokens.remove();
-      assertTokenType(name, TokenType.VAR, "Unexpected token. Expected token VAR_NAME after TYPE.");
-      Definition innerDef = resolveType(type);
-
-      return new Declaration(innerDef, name.getText());
-    }
-
-    Definition innerDef = resolveType(type);
-    Definition def = getModDeclaration(tokens, innerDef);
-
-    Token name = tokens.remove();
-    assertTokenType(name, TokenType.VAR, "Unexpected token. Expected token VAR_NAME after TYPE.");
-
-    return new Declaration(def, name.getText());
-
-  }
-
   // Chose to do this recursively because the code is smaller this way.
-  private Definition getModDeclaration(Queue<Token> tokens, Definition innerType)
+  private Definition parseModificationsOnDefinition(Queue<Token> tokens, Definition innerType)
       throws ParsingException {
     Definition def;
     if (nextTwoAre(tokens, TokenType.LBRCE, TokenType.RBRCE)) {
       def = new MapDefinition();
       ((MapDefinition) def).setRestricted(innerType);
-      def = getModDeclaration(tokens, def);
+      def = parseModificationsOnDefinition(tokens, def);
     } else if (nextTwoAre(tokens, TokenType.LTHAN, TokenType.GTHAN)) {
-      def = getModDeclaration(tokens, new ListDefinition(innerType));
+      def = parseModificationsOnDefinition(tokens, new ListDefinition(innerType));
     } else if (nextTwoAre(tokens, TokenType.LBRAC, TokenType.RBRAC)) {
-      def = getModDeclaration(tokens, new ArrayDefinition(innerType));
-    } else if (tokens.peek().getType() == TokenType.VAR) {
+      def = parseModificationsOnDefinition(tokens, new ArrayDefinition(innerType));
+    } else /*
+            * if (tokens.peek().getType() == TokenType.VAR || tokens.peek().getType() ==
+            * TokenType.GTHAN || )
+            */ {
       return innerType;
-    } else {
-      throw new ParsingException(tokens.peek(), "Unexpected token. Expected mod.");
-    }
+    } /*
+       * else {
+       * throw new ParsingException(tokens.peek(), "Unexpected token. Expected mod.");
+       * }
+       */
     return def;
+  }
+
+  private Definition parseToAnonymousType(Queue<Token> tokens) throws ParsingException {
+    Definition def;
+    if (tokens.peek().getType() == TokenType.DEF) {
+      def = resolveType(tokens.remove());
+    } else if (tokens.peek().getType() == TokenType.LBRCE) {
+      def = parseTypeMap(tokens);
+    } else if (tokens.peek().getType() == TokenType.LPAREN) {
+      def = parseTypeTuple(tokens);
+    } else {
+      throw new ParsingException(tokens.peek(), "Unexpected token. Definition is malformed.");
+    }
+    if (!tokens.isEmpty()
+        && (tokens.peek().getType() == TokenType.LBRCE || tokens.peek().getType() == TokenType.LTHAN
+            || tokens.peek().getType() == TokenType.LBRAC)) {
+      return parseModificationsOnDefinition(tokens, def);
+    } else {
+      return def;
+    }
+  }
+
+  private Declaration parseDeclaration(Queue<Token> tokens) throws ParsingException {
+    Definition def = parseToAnonymousType(tokens);
+
+    Token name = tokens.remove();
+    assertTokenType(name, TokenType.VAR,
+        "Unexpected token. Expected token VAR_NAME after TYPE but token was " + name);
+
+    return new Declaration(def, name.getText());
   }
 
   private Definition parseTypeInfo(Queue<Token> tokens) throws ParsingException {
@@ -316,6 +314,12 @@ public class JEFParser implements Parser {
     MapDefinition def = new MapDefinition();
     tokens.remove();
 
+    // Just a map with no requirements
+    if (tokens.peek().getType() == TokenType.RBRCE) {
+      tokens.remove();
+      return def;
+    }
+
     do {
       Declaration dec = parseDeclaration(tokens);
       def.add(dec.getName(), dec.getDefinition());
@@ -329,7 +333,6 @@ public class JEFParser implements Parser {
   private TupleDefinition parseTypeTuple(Queue<Token> tokens) throws ParsingException {
     TupleDefinition format = new TupleDefinition();
     tokens.remove();
-
     do {
       format.add(parseTypeInfo(tokens));
     } while (nextTokenIsAndRemove(tokens, TokenType.COMMA));
@@ -407,6 +410,9 @@ public class JEFParser implements Parser {
 
   private MapValue parseMap(Queue<Token> tokens, Token start) throws IndexableException {
     MapValue map = new MapValue(start);
+    if (tokens.peek().getType() == TokenType.RBRCE) {
+      return map;
+    }
     do {
       map.add(parseAssignment(tokens));
     } while (!tokens.isEmpty() && nextTokenIsAndRemove(tokens, TokenType.COMMA));
@@ -416,13 +422,7 @@ public class JEFParser implements Parser {
 
   private Value<?> parseTypedValues(Queue<Token> tokens) throws IndexableException {
     Value<?> val;
-    Token className = tokens.remove();
-    assertTokenType(className, TokenType.DEF, "Expect ClassName.");
-    if (!definitions.containsKey(className.getText())) {
-      throw new ParsingException(className, "ClassName is undefined.");
-    }
-
-    Definition def = definitions.get(className.getText());
+    Definition def = parseToAnonymousType(tokens);
 
     assertTokenType(tokens.remove(), TokenType.GTHAN, "Expect '>'.");
     assertTokenType(tokens.remove(), TokenType.EQUALS, "Expected '='.");
@@ -469,10 +469,12 @@ public class JEFParser implements Parser {
     return new Pair(var.getText(), val);
   }
 
-  // make it so you do not need equals (anonymous)
+  // Makes it so you do not need equals (anonymous)
   private Value<?> parseValues(Queue<Token> tokens) throws IndexableException {
     Value<?> val;
     Token className = tokens.peek();
+    // TODO: Decide if we should change this so it uses parseToAnon and accepts anon defined types
+    // in addition to definitions.
     if (className.getType() == TokenType.DEF) {
       tokens.remove();
       if (!definitions.containsKey(className.getText())) {

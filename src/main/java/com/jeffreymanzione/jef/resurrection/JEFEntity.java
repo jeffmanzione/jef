@@ -3,6 +3,8 @@ package com.jeffreymanzione.jef.resurrection;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,7 +17,31 @@ import com.jeffreymanzione.jef.resurrection.annotations.JEFTuple;
 import com.jeffreymanzione.jef.resurrection.exceptions.CouldNotTranformValueException;
 import com.jeffreymanzione.jef.resurrection.exceptions.CouldNotUpdateEntityException;
 
+/**
+ * 
+ * Class which represents a JEF type.
+ * 
+ * @author Jeff Manzione
+ *
+ * @param <KEY>
+ *          The key that the entity should use for lookup of values stored within the entity
+ * 
+ * @see JEFEntityMap
+ * @see JEFEntityTuple
+ */
 public abstract class JEFEntity<KEY> {
+
+  public JEFEntity() {
+
+  }
+
+  protected Map<KEY, Object>   mappings;
+  protected Map<KEY, Class<?>> classes;
+
+  {
+    mappings = new HashMap<>();
+    classes = new HashMap<>();
+  }
 
   /**
    * Put here what needs to be done after this object is created to fully initialized.
@@ -33,7 +59,7 @@ public abstract class JEFEntity<KEY> {
   public abstract String toJEFEntityFormat(int indents, boolean useSpaces, int spacesPerTab)
       throws IllegalArgumentException, IllegalAccessException, CouldNotTranformValueException;
 
-  protected boolean setFieldAnnot(Field field, KEY key, Object val)
+  protected boolean setFieldWithAnnotation(Field field, KEY key, Object val)
       throws CouldNotUpdateEntityException {
     if (field.isAnnotationPresent(JEFField.class)) {
       JEFField annot = field.getAnnotation(JEFField.class);
@@ -59,7 +85,6 @@ public abstract class JEFEntity<KEY> {
   }
 
   protected boolean matches(Field field, Object val) {
-    // System.out.println(field.getType().getSimpleName() + " " + val.getClass().getSimpleName());
     if (field.getType().isInstance(val)) {
       return true;
     } else if (field.getType().isArray() && val.getClass().isArray()) {
@@ -98,11 +123,6 @@ public abstract class JEFEntity<KEY> {
 
   protected Object handlePrimitives(Object val) {
     Class<?> cls = val.getClass();
-    /*
-     * if (cls.isPrimitive() && fieldClass.isPrimitive()) {
-     * return val;
-     * }
-     */
     if (classIsPrimitive(cls)) {
       if (!cls.isPrimitive())
         if (cls.equals(Integer.class)) {
@@ -112,29 +132,7 @@ public abstract class JEFEntity<KEY> {
         } else if (cls.equals(Boolean.class)) {
           return (boolean) val;
         }
-    } /*
-       * else if (cls.isArray() && !cls.getComponentType().isPrimitive()) {
-       * // NOTE: This only works for arrays with no variability of size of individual member
-       * // subarrays.
-       * Class<?> fieldArrayCls = cls;
-       * List<Integer> dims = new ArrayList<>();
-       * Object firstVal = val;
-       * while (fieldArrayCls.isArray()) {
-       * dims.add(Array.getLength(firstVal));
-       * fieldArrayCls = fieldArrayCls.getComponentType();
-       * if (fieldArrayCls.isArray()) {
-       * firstVal = Array.get(val, 0);
-       * }
-       * }
-       * int[] arrDims = new int[dims.size()];
-       * for (int i = 0; i < dims.size(); i++) {
-       * arrDims[i] = dims.get(i);
-       * }
-       * Object arr = Array.newInstance(fieldArrayCls, arrDims);
-       * return arr;
-       * }
-       */
-
+    }
     return val;
   }
 
@@ -150,48 +148,6 @@ public abstract class JEFEntity<KEY> {
           "Could not set object " + this + " with field " + field + " to val " + val
               + ". Either the security settings prevented it or you did something silly.");
     }
-  }
-
-  @SuppressWarnings("unchecked")
-  protected static String writeBody(Object obj, Field field, int indents, boolean useSpaces,
-      int spacesPerTab)
-          throws IllegalArgumentException, IllegalAccessException, CouldNotTranformValueException {
-    String indent = getIndent(indents, useSpaces, spacesPerTab);
-    field.setAccessible(true);
-    String result = "";
-    if (JEFEntityMap.class.isAssignableFrom(field.getType())) {
-      result += "{\n"
-          + ((JEFEntityMap) field.get(obj)).toJEFEntityFormat(indents + 1, useSpaces, spacesPerTab)
-          + indent + "}";
-    } else if (JEFEntityTuple.class.isAssignableFrom(field.getType())) {
-      result += ((JEFEntityTuple) field.get(obj)).toJEFEntityFormat(indents + 1, useSpaces,
-          spacesPerTab) + indent;
-    } else if (fieldIsPrimitive(field)) {
-      if (field.getType().equals(boolean.class)) {
-        result += "$" + field.get(obj).toString();
-      } else {
-        result += field.get(obj).toString();
-      }
-    } else if (field.getType().equals(String.class)) {
-      result += "'" + field.get(obj).toString() + "'";
-    } else if (field.getType().isEnum()) {
-      result += "$" + field.get(obj).toString();
-    } else if (List.class.isAssignableFrom(field.getType())) {
-      result += "<"
-          + listToString((List<Object>) field.get(obj), indents + 1, useSpaces, spacesPerTab);
-      result += ">";
-    } else if (Map.class.isAssignableFrom(field.getType())) {
-      result += getValueFromObject(field.get(obj), indents, useSpaces, spacesPerTab);
-    } else if (field.getType().isArray()) {
-      result += "["
-          + arrayToString(((Object[]) field.get(obj)), indents + 1, useSpaces, spacesPerTab) + "]";
-    } else if (BuiltInResurrector.containsTranformForObject(field.get(obj).getClass())) {
-      result += BuiltInResurrector.transformObject(field.get(obj)).toJEFEntityFormat(indents + 1,
-          useSpaces, spacesPerTab);
-    } else {
-      result += field.get(obj).toString();
-    }
-    return result;
   }
 
   private static String listToString(List<Object> list, int indents, boolean useSpaces,
@@ -237,7 +193,6 @@ public abstract class JEFEntity<KEY> {
   private static String arrayToString(Object[] arr, int indents, boolean useSpaces,
       int spacesPerTab)
           throws IllegalArgumentException, IllegalAccessException, CouldNotTranformValueException {
-    // Class<?> arrayClass = arr.getClass();
     List<String> elements = new ArrayList<>();
     boolean shouldNest = false;
     for (Object obj : arr) {
@@ -305,6 +260,13 @@ public abstract class JEFEntity<KEY> {
     return tab;
   }
 
+  protected static String getValueFromField(Object obj, Field field, int indents, boolean useSpaces,
+      int spacesPerTab)
+          throws IllegalArgumentException, IllegalAccessException, CouldNotTranformValueException {
+    field.setAccessible(true);
+    return getValueFromObject(field.get(obj), indents, useSpaces, spacesPerTab);
+  }
+
   @SuppressWarnings("unchecked")
   protected static String getValueFromObject(Object obj, int indents, boolean useSpaces,
       int spacesPerTab)
@@ -335,7 +297,7 @@ public abstract class JEFEntity<KEY> {
     } else if (obj instanceof List) {
       result = "<" + listToString((List<Object>) obj, indents + 1, useSpaces, spacesPerTab) + ">";
     } else if (obj instanceof Map) {
-      result += /* (indents < 0 ? "" : tab) + */"{\n";
+      result += "{\n";
       for (Entry<String, Object> entry : ((Map<String, Object>) obj).entrySet()) {
 
         String typeName = "";
@@ -360,13 +322,7 @@ public abstract class JEFEntity<KEY> {
     } else {
       result += obj.toString();
     }
-    // result += "\n";
-
     return result;
-  }
-
-  private static boolean fieldIsPrimitive(Field field) {
-    return classIsPrimitive(field.getType());
   }
 
   private static boolean classIsPrimitive(Class<?> cls) {
@@ -384,12 +340,21 @@ public abstract class JEFEntity<KEY> {
     if (cls.isEnum()) {
       return "enum : " + name + " of [" + asEnum(cls) + "]";
     } else {
-
-      return "type : " + name + " " + toHeader(cls);
+      return "type : " + name + " " + asType(cls);
     }
   }
 
-  protected static String toHeader(Class<?> cls) {
+  private static String asEnum(Class<?> cls) {
+    String result = "";
+    boolean first = true;
+    for (Object obj : cls.getEnumConstants()) {
+      result += (first ? "" : ", ") + obj.toString();
+      first = false;
+    }
+    return result;
+  }
+
+  protected static String asType(Class<?> cls) {
     String result;
     if (JEFEntityMap.class.isAssignableFrom(cls)) {
       result = "{";
@@ -447,16 +412,10 @@ public abstract class JEFEntity<KEY> {
     Class<?> cls = field.getType();
 
     if (List.class.isAssignableFrom(cls)) {
-      // System.out.println(field);
-      // System.out.println(((ParameterizedType)
-      // field.getGenericType()).getActualTypeArguments()[0]);
       return toTypeName(
           (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0])
           + "<>";
     } else if (Map.class.isAssignableFrom(cls)) {
-      // System.out.println(field);
-      // System.out.println(((ParameterizedType)
-      // field.getGenericType()).getActualTypeArguments()[1]);
       return toTypeName(
           (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[1])
           + "{}";
@@ -478,6 +437,13 @@ public abstract class JEFEntity<KEY> {
       } else if (classIsPrimitive(cls) || cls.equals(String.class)) {
         String name = cls.getSimpleName();
         return name.substring(0, 1).toUpperCase() + name.substring(1);
+      } else if (Map.class.isAssignableFrom(cls)) {
+        if (cls.getGenericInterfaces().length == 0) {
+          return "?{}";
+        } else {
+          return toTypeName((Class<?>) ((ParameterizedType) cls.getGenericInterfaces()[0])
+              .getActualTypeArguments()[1]) + "{}";
+        }
       } else if (List.class.isAssignableFrom(cls)) {
         return toTypeName((Class<?>) ((ParameterizedType) cls.getGenericInterfaces()[0])
             .getActualTypeArguments()[0]) + "<>";
@@ -489,27 +455,4 @@ public abstract class JEFEntity<KEY> {
     }
   }
 
-  @Deprecated
-  public static String toJEFEnumHeader(Class<?> cls) {
-    String name;
-    if (cls.isAnnotationPresent(JEFClass.class)) {
-      name = cls.getAnnotation(JEFClass.class).name();
-    } else {
-      name = cls.getSimpleName();
-    }
-    String type = "enum";
-
-    return type + " : " + name + " of [" + asEnum(cls) + "]";
-  }
-
-  private static String asEnum(Class<?> cls) {
-    String result = "";
-    boolean first = true;
-    for (Object obj : cls.getEnumConstants()) {
-      result += (first ? "" : ", ") + obj.toString();
-      first = false;
-    }
-    return result;
-
-  }
 }

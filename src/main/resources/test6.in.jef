@@ -1,6 +1,23 @@
 type : ArrayTest2 { String[][] stringArray, Int[] intArray }
+type : TupTest    { (Int, Int, String)[] tups }
+type : StrArr     String[]
+type : Str2DArr   StrArr[]
+type : Test       String[]
+type : Test2      String<>
 
 arrTest2 = ArrayTest2 {
-	stringArray = [['One', 'Two'], ['Three', 'Four'], ['Five', 'Six', 'Seven']]
-	intArray    = [1, 2, 3]
+	stringArray   = Str2DArr [['One', 'Two'], ['Three', 'Four'], ['Five', 'Six', 'Seven']]
+	intArray<Int> = [1, 2, 3]
+}
+
+test1 = Test ['A', 'B', 'C']
+
+test2 = Test2 <'A', 'B', 'C'>
+
+tupTest1 = TupTest {
+	tups = [
+		(0, 1, 'A')
+		(1, 2, 'B')
+		(2, 3, 'C')
+	]
 }

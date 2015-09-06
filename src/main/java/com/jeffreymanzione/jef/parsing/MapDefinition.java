@@ -44,9 +44,8 @@ public class MapDefinition extends Definition implements Iterable<String> {
 
   public void setRestricted(Definition restriction) {
     this.restriction = restriction;
-
   }
-
+  
   public void validateInnerTypes(Map<String, Definition> definitions) {
     for (String varName : this) {
       Definition def = this.get(varName);

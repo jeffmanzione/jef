@@ -47,11 +47,11 @@ public class IndexableException extends Exception implements Indexable {
 
   public String getLineAnnotation() {
     StringBuilder lineAnnotation = new StringBuilder();
-    for (int i = 0; i < inner.getColumnNumber() - 1; i++) {
+    for (int i = 0; i < inner.getColumnNumber(); i++) {
       lineAnnotation.append(' ');
     }
-    for (int i = inner.getColumnNumber() - 1; i < inner.getColumnNumber()
-        + inner.getText().length() - 1; i++) {
+    for (int i = inner.getColumnNumber(); i < inner.getColumnNumber()
+        + inner.getText().length(); i++) {
       lineAnnotation.append('^');
     }
     return lineAnnotation.toString();

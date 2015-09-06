@@ -26,7 +26,7 @@ public abstract class Definition {
   }
 
   public String toString() {
-    return "Definition(" + name + ")";
+    return "Definition(" + getName() + ")";
   }
 
   private boolean validated = false;

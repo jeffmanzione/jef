@@ -92,10 +92,23 @@ public class Resurrector {
     }
   }
 
+  private void checkIfDefaultConstructorExists(Value<?> val, Class<?> cls) throws CouldNotAssembleClassException {
+    try {
+      if (!cls.getConstructor().isAccessible()) {
+        cls.getConstructor().setAccessible(true);
+      }
+    } catch (SecurityException | NoSuchMethodException e) {
+      throw new CouldNotAssembleClassException("Cannot create an instance for val=" + val
+          + ", class=" + cls + " because there is no default constructor.");
+    }
+  }
+  
   private <T extends JEFEntityTuple> T create(TupleValue val, Class<T> cls)
       throws ClassFillingException {
     T obj;
     try {
+      checkIfDefaultConstructorExists(val, cls);
+      
       obj = cls.newInstance();
       for (Pair<Integer, ?> p : val) {
         obj.set(p.getKey(), parseToObject(p.getValue()));
@@ -114,6 +127,8 @@ public class Resurrector {
       throws ClassFillingException {
     T obj;
     try {
+      checkIfDefaultConstructorExists(val, cls);
+
       obj = cls.newInstance();
       for (Pair<String, ?> p : val) {
         obj.set(p.getKey(), parseToObject(p.getValue()));
@@ -215,12 +230,12 @@ public class Resurrector {
       return HashMap.class;
     } else if (definedType instanceof ListDefinition) {
       return ArrayList.class;
-    }  else if (definedType instanceof ArrayDefinition) {
+    } else if (definedType instanceof ArrayDefinition) {
       // TODO: THIS IS A HORRIBLE WAY TO DO THIS. FIND A BETTER ONE.
-      return Array.newInstance(definitionToClass(((ArrayDefinition) definedType).getType()), 1)
+      return Array.newInstance(definitionToClass(((ArrayDefinition) definedType).getType()), 0)
           .getClass();
     } else if (definedType instanceof TupleDefinition) {
-      return Array.newInstance(Object.class, 1).getClass();
+      return Array.newInstance(Object.class, 0).getClass();
     } else {
       return getClassForName(definedType.getName());
     }

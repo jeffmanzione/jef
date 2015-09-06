@@ -1,9 +1,7 @@
 package com.jeffreymanzione.jef.resurrection;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import com.jeffreymanzione.jef.resurrection.annotations.JEFField;
@@ -12,24 +10,15 @@ import com.jeffreymanzione.jef.resurrection.exceptions.CouldNotUpdateEntityExcep
 
 public class JEFEntityMap extends JEFEntity<String> {
 
-  private Map<String, Object>   mappings;
-  private Map<String, Class<?>> classes;
-
-  {
-    mappings = new HashMap<>();
-    classes = new HashMap<>();
-  }
-
   @Override
   public boolean set(String fieldName, Object val) throws CouldNotUpdateEntityException {
     for (Field field : this.getClass().getDeclaredFields()) {
-      if (this.setFieldAnnot(field, fieldName, val)) {
+      if (this.setFieldWithAnnotation(field, fieldName, val)) {
         return true;
       }
     }
     try {
       Field field = this.getClass().getDeclaredField(fieldName);
-      // System.out.println(">|< " + field.getName() + ", " + fieldName + ", " + val);
       if (field != null && this.setField(field, fieldName, val)) {
         return true;
       }
@@ -45,15 +34,10 @@ public class JEFEntityMap extends JEFEntity<String> {
                   + mappings.get(fieldName) + ".");
         }
       } else {
-        System.err
-            .println("Warning: Tried to add (key="
-                + fieldName
-                + ",val="
-                + val
-                + ") to a "
-                + this.getClass().getName()
-                + ", but it does not have a field that matches it. Going to add it to the auxilliary map, "
-                + "but check to see if this is a mistake.");
+        System.err.println("Warning: Tried to add (key=" + fieldName + ",val=" + val + ") to a "
+            + this.getClass().getName()
+            + ", but it does not have a field that matches it. Going to add it to the auxilliary map, "
+            + "but check to see if this is a mistake.");
 
         classes.put(fieldName, val.getClass());
         mappings.put(fieldName, val);
@@ -77,7 +61,6 @@ public class JEFEntityMap extends JEFEntity<String> {
           } catch (IllegalArgumentException | IllegalAccessException e) {
             throw new CouldNotUpdateEntityException("Field " + field + " in " + this
                 + " could not be read. Check the security settings.");
-
           }
         }
       }
@@ -104,8 +87,8 @@ public class JEFEntityMap extends JEFEntity<String> {
                 + " nor in the map: fieldName='" + fieldName + ".");
       }
     } catch (SecurityException e) {
-      throw new CouldNotUpdateEntityException("Unexpected security exception: fieldName='"
-          + fieldName + ".");
+      throw new CouldNotUpdateEntityException(
+          "Unexpected security exception: fieldName='" + fieldName + ".");
     }
     return false;
   }
@@ -138,9 +121,8 @@ public class JEFEntityMap extends JEFEntity<String> {
                 + " nor in the map: fieldName='" + fieldName + ".");
       }
     } catch (SecurityException e) {
-      throw new CouldNotUpdateEntityException("Unexpected security exception: fieldName='"
-          + fieldName + ".");
-      // e.printStackTrace();
+      throw new CouldNotUpdateEntityException(
+          "Unexpected security exception: fieldName='" + fieldName + ".");
     }
     return null;
   }
@@ -149,7 +131,6 @@ public class JEFEntityMap extends JEFEntity<String> {
   public String toJEFEntityFormat(int indents, boolean useSpaces, int spacesPerTab)
       throws IllegalArgumentException, IllegalAccessException, CouldNotTranformValueException {
     String result = "";
-    // String tab = getTab(useSpaces, spacesPerTab);
     String indent = getIndent(indents, useSpaces, spacesPerTab);
 
     for (Field field : this.getClass().getDeclaredFields()) {
@@ -178,8 +159,8 @@ public class JEFEntityMap extends JEFEntity<String> {
       } else {
         preamble = " = ";
       }
-      result += indent + name + preamble + writeBody(this, field, indents, useSpaces, spacesPerTab)
-          + "\n";
+      result += indent + name + preamble
+          + getValueFromField(this, field, indents, useSpaces, spacesPerTab) + "\n";
     }
     for (Entry<String, Object> entry : this.mappings.entrySet()) {
       String name = entry.getKey();
@@ -191,7 +172,6 @@ public class JEFEntityMap extends JEFEntity<String> {
       result += indent + name + " =" + typeName + " "
           + getValueFromObject(entry.getValue(), indents, useSpaces, spacesPerTab) + "\n";
     }
-    // result += "\n";
 
     return result;
   }
