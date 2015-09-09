@@ -9,6 +9,9 @@ import java.util.Queue;
 import com.jeffreymanzione.jef.parsing.TupleDefinition;
 import com.jeffreymanzione.jef.parsing.TupleException;
 import com.jeffreymanzione.jef.parsing.exceptions.ParsingException;
+import com.jeffreymanzione.jef.resurrection.Tuple;
+import com.jeffreymanzione.jef.resurrection.exceptions.CouldNotTranformValueException;
+import com.jeffreymanzione.jef.resurrection.exceptions.CouldNotUpdateEntityException;
 import com.jeffreymanzione.jef.tokenizing.Token;
 
 public class TupleValue extends Value<List<Value<?>>> implements Iterable<Pair<Integer, ?>> {

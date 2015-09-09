@@ -190,7 +190,7 @@ public class Resurrector {
     } else {
       Object[] objs = new Object[tupVal.size()];
       for (int i = 0; i < objs.length; i++) {
-        objs[i] = tupVal.get(i);
+        objs[i] = parseToObject(tupVal.get(i));
       }
       return objs;
     }

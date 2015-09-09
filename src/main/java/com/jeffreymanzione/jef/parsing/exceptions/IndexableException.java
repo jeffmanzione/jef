@@ -5,13 +5,13 @@ import com.jeffreymanzione.jef.tokenizing.Indexable;
 public class IndexableException extends Exception implements Indexable {
 
   /**
-	 * 
-	 */
+   * 
+   */
   private static final long serialVersionUID = -5370945001284100616L;
 
-  private final Indexable   inner;
-  private final String      message;
-  private final String      fullText;
+  private final Indexable inner;
+  private final String    message;
+  private final String    fullText;
 
   public IndexableException(Indexable indexable, String message) {
     super("On line " + indexable.getLineNumber() + " column " + indexable.getColumnNumber() + ": "
@@ -47,11 +47,11 @@ public class IndexableException extends Exception implements Indexable {
 
   public String getLineAnnotation() {
     StringBuilder lineAnnotation = new StringBuilder();
-    for (int i = 0; i < inner.getColumnNumber(); i++) {
+    for (int i = 0; i < inner.getColumnNumber() - 1; i++) {
       lineAnnotation.append(' ');
     }
-    for (int i = inner.getColumnNumber(); i < inner.getColumnNumber()
-        + inner.getText().length(); i++) {
+    for (int i = inner.getColumnNumber() - 1; i < inner.getColumnNumber() + inner.getText().length()
+        - 1; i++) {
       lineAnnotation.append('^');
     }
     return lineAnnotation.toString();

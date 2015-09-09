@@ -6,7 +6,7 @@ import com.jeffreymanzione.jef.resurrection.JEFEntityMap;
 
 public class ArrayTest2 extends JEFEntityMap {
   private String[][] stringArray;
-  private Integer[] intArray;
+  private int[] intArray;
   
   @Override
   public String toString() {
