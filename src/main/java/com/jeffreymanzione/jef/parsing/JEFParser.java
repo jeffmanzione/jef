@@ -264,16 +264,9 @@ public class JEFParser implements Parser {
       def = parseModificationsOnDefinition(tokens, new ListDefinition(innerType));
     } else if (nextTwoAreAndRemove(tokens, TokenType.LBRAC, TokenType.RBRAC)) {
       def = parseModificationsOnDefinition(tokens, new ArrayDefinition(innerType));
-    } else /*
-            * if (tokens.peek().getType() == TokenType.VAR || tokens.peek().getType() ==
-            * TokenType.GTHAN || )
-            */ {
+    } else {
       return innerType;
-    } /*
-       * else {
-       * throw new ParsingException(tokens.peek(), "Unexpected token. Expected mod.");
-       * }
-       */
+    }
     return def;
   }
 
@@ -522,12 +515,6 @@ public class JEFParser implements Parser {
 
       definitions.put(key, value);
     }
-
-    // void putAll(Map<String, Definition> defs) throws ParsingException {
-    // for (Entry<String, Definition> entry : defs.entrySet()) {
-    // put(entry.getKey(), entry.getValue());
-    // }
-    // }
 
     Set<Entry<String, Definition>> entrySet() {
       return definitions.entrySet();

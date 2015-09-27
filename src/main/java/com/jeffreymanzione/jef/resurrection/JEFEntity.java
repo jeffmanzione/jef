@@ -216,11 +216,7 @@ public abstract class JEFEntity<KEY> {
 
   protected void setSafe(Field field, Object val) throws CouldNotUpdateEntityException {
     try {
-      if (field.getType().equals(val.getClass())) {
-        field.set(this, val);
-      } else {
-        field.set(this, handleTypeConversion(field.getType(), val));
-      }
+      field.set(this, handleTypeConversion(field.getType(), val));
     } catch (IllegalArgumentException | IllegalAccessException e) {
       e.printStackTrace();
       throw new CouldNotUpdateEntityException(
@@ -385,10 +381,6 @@ public abstract class JEFEntity<KEY> {
         result += indent + (indents < 0 ? "" : tab) + entry.getKey() + " =" + typeName + " ";
 
         String map = getValueFromObject(entry.getValue(), indents + 1, useSpaces, spacesPerTab);
-        // System.out.println(map);
-        while (map.startsWith(tab)) {
-          map = map.substring(1);
-        }
         result += map + "\n";
       }
       result += indent + "}";
