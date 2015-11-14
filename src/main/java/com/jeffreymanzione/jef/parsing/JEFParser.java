@@ -78,15 +78,20 @@ public class JEFParser implements Parser {
     return parseTopLevel(tokens);
   }
 
-  private static void assertTokenType (Token token, TokenType expected,
+  private static Token assertNextToken (Queue<Token> tokens, TokenType expected,
       String errMessage) throws ParsingException {
+    if (tokens.isEmpty()) {
+      throw new ParsingException("Strange.", expected);
+    }
+    Token token = tokens.remove();
     if (token.getType() != expected) {
       throw new ParsingException(token, errMessage, expected);
     }
+    return token;
   }
 
   private boolean nextTokenIsAndRemove (Queue<Token> tokens, TokenType type) {
-    if (tokens.peek().getType() == type) {
+    if (!tokens.isEmpty() && tokens.peek().getType() == type) {
       tokens.remove();
       return true;
     }
@@ -108,11 +113,9 @@ public class JEFParser implements Parser {
     return false;
   }
 
-  private boolean parseHeaders (Queue<Token> tokens) throws ParsingException {
-    boolean isEmpty = false;
-    defCheck: do {
-      Token first = tokens.peek();
-      switch (first.getType()) {
+  private void parseHeaders (Queue<Token> tokens) throws ParsingException {
+    Loop: while (!tokens.isEmpty()) {
+      switch (tokens.peek().getType()) {
         case TYPE:
           parseHeadersType(tokens);
           break;
@@ -123,16 +126,15 @@ public class JEFParser implements Parser {
           parseHeaderFile(tokens);
           break;
         default:
-          break defCheck;
+          break Loop;
       }
-    } while (!(isEmpty = tokens.isEmpty())
-        && nextTokenIsAndRemove(tokens, TokenType.COMMA));
+      nextTokenIsAndRemove(tokens, TokenType.COMMA);
+    }
 
     for (Entry<String, Definition> entry : definitions.entrySet()) {
       Definition definition = entry.getValue();
       definition.validate(definitions.definitions);
     }
-    return isEmpty;
   }
 
   private void parseHeadersType (Queue<Token> tokens) throws ParsingException {
@@ -155,8 +157,7 @@ public class JEFParser implements Parser {
 
   private void parseHeaderFile (Queue<Token> tokens) throws ParsingException {
     tokens.remove();
-    Token filePath = tokens.remove();
-    assertTokenType(filePath, TokenType.STRING,
+    Token filePath = assertNextToken(tokens, TokenType.STRING,
         "Expected a string after keyword type : INCLUDE.");
 
     File file = new File(filePath.getText());
@@ -187,10 +188,9 @@ public class JEFParser implements Parser {
     Token val = tokens.peek();
     switch (val.getType()) {
       case INT:
-        return new IntValue(Integer.parseInt(tokens.remove().getText()), val);
+        return new IntValue(Integer.valueOf(tokens.remove().getText()), val);
       case FLOAT:
-        return new FloatValue(Double.parseDouble(tokens.remove().getText()),
-            val);
+        return new FloatValue(Double.valueOf(tokens.remove().getText()), val);
       case ENUMVAL:
         return new EnumValue(tokens.remove().getText(), val);
       case STRING:
@@ -202,17 +202,15 @@ public class JEFParser implements Parser {
 
   private Definition parseEnum (Queue<Token> tokens) throws ParsingException {
 
-    assertTokenType(tokens.remove(), TokenType.COLON,
+    assertNextToken(tokens, TokenType.COLON,
         "Expected ':' after keyword type.");
 
-    Token defName = tokens.remove();
-    assertTokenType(defName, TokenType.DEF,
+    Token defName = assertNextToken(tokens, TokenType.DEF,
         "Expected DEFINITION after keyword type and ':'.");
-    // assertTokenType(tokens.remove(), TokenType.OF, "Expected OF after keyword type : ENUM.");
+    // assertNextToken(tokens, TokenType.OF,
+    // "Expected OF after keyword type : ENUM.");
     // OF is now optional for enum defs. =)
-    if (tokens.peek().getType() == TokenType.OF) {
-      tokens.remove();
-    }
+    nextTokenIsAndRemove(tokens, TokenType.OF);
 
     return parseEnumInner(tokens).setName(defName.getText());
   }
@@ -220,12 +218,11 @@ public class JEFParser implements Parser {
   private Definition parseEnumInner (Queue<Token> tokens)
       throws ParsingException {
 
-    assertTokenType(tokens.remove(), TokenType.LBRAC,
-        "Expected '[' after keyword OF.");
+    assertNextToken(tokens, TokenType.LBRAC, "Expected '[' after keyword OF.");
 
     Definition def = parseEnumSet(tokens);
 
-    assertTokenType(tokens.remove(), TokenType.RBRAC,
+    assertNextToken(tokens, TokenType.RBRAC,
         "Expected ']' at end of an enumaration.");
 
     return def;
@@ -235,8 +232,8 @@ public class JEFParser implements Parser {
       throws ParsingException {
     EnumDefinition def = new EnumDefinition();
     do {
-      Token name = tokens.remove();
-      assertTokenType(name, TokenType.VAR, "Invalid within an enumaration.");
+      Token name = assertNextToken(tokens, TokenType.VAR,
+          "Invalid within an enumaration.");
       def.add(name.getText());
 
     } while (nextTokenIsAndRemove(tokens, TokenType.COMMA));
@@ -246,11 +243,10 @@ public class JEFParser implements Parser {
 
   private Definition parseType (Queue<Token> tokens) throws ParsingException {
 
-    assertTokenType(tokens.remove(), TokenType.COLON,
+    assertNextToken(tokens, TokenType.COLON,
         "For some reason we expected a ':'.");
 
-    Token defName = tokens.remove();
-    assertTokenType(defName, TokenType.DEF,
+    Token defName = assertNextToken(tokens, TokenType.DEF,
         "Expected definition constrictions after ':'.");
 
     return parseToAnonymousType(tokens).setName(defName.getText());
@@ -259,7 +255,6 @@ public class JEFParser implements Parser {
   private Definition resolveType (Token type) {
     Definition innerDef = definitions.get(type.getText());
     if (innerDef == null) {
-      // System.out.println("1Could not find " + type.getText());
       innerDef = new TempDefinition(type.getText());
     }
     return innerDef;
@@ -288,16 +283,21 @@ public class JEFParser implements Parser {
   private Definition parseToAnonymousType (Queue<Token> tokens)
       throws ParsingException {
     Definition def;
-    if (tokens.peek().getType() == TokenType.DEF) {
-      def = resolveType(tokens.remove());
-    } else if (tokens.peek().getType() == TokenType.LBRCE) {
-      def = parseTypeMap(tokens);
-    } else if (tokens.peek().getType() == TokenType.LPAREN) {
-      def = parseTypeTuple(tokens);
-    } else {
-      throw new ParsingException(tokens.peek(),
-          "Unexpected token. Definition is malformed.");
+    switch (tokens.peek().getType()) {
+      case DEF:
+        def = resolveType(tokens.remove());
+        break;
+      case LBRCE:
+        def = parseTypeMap(tokens);
+        break;
+      case LPAREN:
+        def = parseTypeTuple(tokens);
+        break;
+      default:
+        throw new ParsingException(tokens.peek(),
+            "Unexpected token. Definition is malformed.");
     }
+
     if (!tokens.isEmpty() && (tokens.peek().getType() == TokenType.LBRCE
         || tokens.peek().getType() == TokenType.LTHAN
         || tokens.peek().getType() == TokenType.LBRAC)) {
@@ -311,20 +311,15 @@ public class JEFParser implements Parser {
       throws ParsingException {
     Definition def = parseToAnonymousType(tokens);
 
-    Token name = tokens.remove();
-    assertTokenType(name, TokenType.VAR,
-        "Unexpected token. Expected token VAR_NAME after TYPE but token was "
-            + name);
+    Token name = assertNextToken(tokens, TokenType.VAR,
+        "Unexpected token. Expected token VAR_NAME after TYPE.");
 
     return new Declaration(def, name.getText());
   }
 
   private Definition parseTypeInfo (Queue<Token> tokens)
       throws ParsingException {
-    Token type = tokens.remove();
-
-    assertTokenType(type, TokenType.DEF, "Unexpected token.");
-
+    Token type = assertNextToken(tokens, TokenType.DEF, "Unexpected token.");
     return definitions.get(type.getText());
   }
 
@@ -344,7 +339,7 @@ public class JEFParser implements Parser {
       def.add(dec.getName(), dec.getDefinition());
     } while (nextTokenIsAndRemove(tokens, TokenType.COMMA));
 
-    assertTokenType(tokens.remove(), TokenType.RBRCE,
+    assertNextToken(tokens, TokenType.RBRCE,
         "Missing '}' ending map declaration.");
 
     return def;
@@ -358,7 +353,7 @@ public class JEFParser implements Parser {
       format.add(parseTypeInfo(tokens));
     } while (nextTokenIsAndRemove(tokens, TokenType.COMMA));
 
-    assertTokenType(tokens.remove(), TokenType.RPAREN,
+    assertNextToken(tokens, TokenType.RPAREN,
         "Missing ')' ending tuple declaration.");
 
     return format;
@@ -395,8 +390,7 @@ public class JEFParser implements Parser {
     }
 
     try {
-      assertTokenType(tokens.remove(), closeToken, "Struct closure missmatch.");
-
+      assertNextToken(tokens, closeToken, "Struct closure missmatch.");
       return val;
 
     } catch (NoSuchElementException e) {
@@ -453,8 +447,8 @@ public class JEFParser implements Parser {
     Value<?> val;
     Definition def = parseToAnonymousType(tokens);
 
-    assertTokenType(tokens.remove(), TokenType.GTHAN, "Expect '>'.");
-    assertTokenType(tokens.remove(), TokenType.EQUALS, "Expected '='.");
+    assertNextToken(tokens, TokenType.GTHAN, "Expect '>'.");
+    assertNextToken(tokens, TokenType.EQUALS, "Expected '='.");
 
     val = parseValuesUntyped(tokens);
     Definition tmp;
@@ -481,8 +475,8 @@ public class JEFParser implements Parser {
   private Pair<String, ?> parseAssignment (Queue<Token> tokens)
       throws IndexableException {
     Value<?> val;
-    Token var = tokens.remove();
-    assertTokenType(var, TokenType.VAR, "Where is the variable name?");
+    Token var = assertNextToken(tokens, TokenType.VAR,
+        "Where is the variable name?");
 
     Token eq = tokens.remove();
     switch (eq.getType()) {
@@ -560,5 +554,4 @@ public class JEFParser implements Parser {
       return definitions.containsKey(key);
     }
   }
-
 }

@@ -15,14 +15,16 @@ public class ParsingException extends IndexableException {
   private static final long serialVersionUID = -8845784388792588721L;
 
   public ParsingException (Token token, String message, TokenType expected) {
-    super(token, "Expected token type " + expected + " but was "
-        + token.getType() + ". Message: " + message);
+    super(token,
+        "Expected token type " + expected + " but was " + token.getType()
+            + ". Token contents=" + token + ". Message: " + message);
     this.token = token;
     this.expected = expected;
   }
 
   public ParsingException (Token token, String message) {
-    super(token, "Token was " + token.getType() + ". Message: " + message);
+    super(token, "Token was " + token.getType() + "Token contents=" + token
+        + ". Message: " + message);
     this.token = token;
     this.expected = null;
   }
