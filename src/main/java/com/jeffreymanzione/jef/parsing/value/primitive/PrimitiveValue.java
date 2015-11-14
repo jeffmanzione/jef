@@ -6,7 +6,7 @@ import com.jeffreymanzione.jef.tokenizing.Token;
 
 public abstract class PrimitiveValue<T> extends Value<T> {
 
-  protected PrimitiveValue(ValueType type, Token token) {
+  protected PrimitiveValue (ValueType type, Token token) {
     super(type, token);
   }
 

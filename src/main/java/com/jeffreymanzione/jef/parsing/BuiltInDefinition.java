@@ -8,17 +8,17 @@ public class BuiltInDefinition<T> extends Definition {
 
   private Transformer<T> trans;
 
-  public BuiltInDefinition(Transformer<T> trans) {
+  public BuiltInDefinition (Transformer<T> trans) {
     this.setName(trans.id);
     this.trans = trans;
   }
 
-  public Definition getInnerDefintion() {
+  public Definition getInnerDefintion () {
     return trans.internalDef;
   }
 
   @Override
-  protected void validateInnerTypes(Map<String, Definition> definitions) {
+  protected void validateInnerTypes (Map<String, Definition> definitions) {
 
   }
 

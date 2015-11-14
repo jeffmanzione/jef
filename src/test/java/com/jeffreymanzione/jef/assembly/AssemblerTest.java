@@ -28,15 +28,15 @@ import com.jeffreymanzione.jef.tokenizing.Tokenizer;
 public class AssemblerTest {
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp () throws Exception {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown () throws Exception {
   }
 
   @Test
-  public void test() throws Exception {
+  public void test () throws Exception {
     Assembler assembler = new Assembler();
     assembler.setTokenizer(new JEFTokenizer());
     assembler.setParser(new JEFParser());
@@ -44,14 +44,15 @@ public class AssemblerTest {
     cf.addEntityClass(Test1.class, Test2.class, Tuple1.class);
     cf.addEnumClass(Doge.class);
     assembler.setFiller(cf);
-    assembler.setSource(AssemblerTest.class.getResourceAsStream("/test2.in.jef"));
+    assembler
+        .setSource(AssemblerTest.class.getResourceAsStream("/test2.in.jef"));
     Map<String, Object> map = assembler.assemble();
     System.out.println(((Test2) map.get("a2")));
     System.out.println(cf.convertToJEFEntityFormat(map, false, -1));
   }
 
   @Test
-  public void test2() throws Exception {
+  public void test2 () throws Exception {
     Assembler assembler = new Assembler();
     Tokenizer tokenizer = new JEFTokenizer();
     // tokenizer.setVerbose(true);
@@ -60,14 +61,15 @@ public class AssemblerTest {
     Resurrector cf = new Resurrector();
     cf.addEntityClass(Event.class, Datapoint.class);
     assembler.setFiller(cf);
-    assembler.setSource(AssemblerTest.class.getResourceAsStream("/test3.in.jef"));
+    assembler
+        .setSource(AssemblerTest.class.getResourceAsStream("/test3.in.jef"));
     Map<String, Object> map = assembler.assemble();
     System.out.println(cf.convertToJEFEntityFormat(map));
     cf.writeToFile(map, new File("test.out.jef"));
   }
 
   @Test
-  public void test3() throws Exception {
+  public void test3 () throws Exception {
     Assembler assembler = new Assembler();
     assembler.setTokenizer(new JEFTokenizer());
     assembler.setParser(new JEFParser());
@@ -75,7 +77,8 @@ public class AssemblerTest {
     cf.addEntityClass(Test1.class, Test2.class, Tuple1.class);
     cf.addEnumClass(Doge.class);
     assembler.setFiller(cf);
-    assembler.setSource(AssemblerTest.class.getResourceAsStream("/test4.in.jef"));
+    assembler
+        .setSource(AssemblerTest.class.getResourceAsStream("/test4.in.jef"));
     try {
       assembler.assemble();
       fail();
@@ -84,7 +87,7 @@ public class AssemblerTest {
   }
 
   @Test
-  public void testArray() throws Exception {
+  public void testArray () throws Exception {
     Assembler assembler = new Assembler();
     assembler.setTokenizer(new JEFTokenizer());
     // assembler.getTokenizer().setVerbose(true);
@@ -92,13 +95,14 @@ public class AssemblerTest {
     Resurrector cf = new Resurrector();
     cf.addEntityClass(ArrayTest1.class);
     assembler.setFiller(cf);
-    assembler.setSource(AssemblerTest.class.getResourceAsStream("/test5.in.jef"));
+    assembler
+        .setSource(AssemblerTest.class.getResourceAsStream("/test5.in.jef"));
     Map<String, Object> map = assembler.assemble();
     System.out.println(cf.convertToJEFEntityFormat(map));
   }
 
   @Test
-  public void testArray2() throws Exception {
+  public void testArray2 () throws Exception {
     Assembler assembler = new Assembler();
     assembler.setTokenizer(new JEFTokenizer());
     // assembler.getTokenizer().setVerbose(true);
@@ -106,13 +110,14 @@ public class AssemblerTest {
     Resurrector cf = new Resurrector();
     cf.addEntityClass(ArrayTest2.class);
     assembler.setFiller(cf);
-    assembler.setSource(AssemblerTest.class.getResourceAsStream("/test6.in.jef"));
+    assembler
+        .setSource(AssemblerTest.class.getResourceAsStream("/test6.in.jef"));
     Map<String, Object> map = assembler.assemble();
     System.out.println(cf.convertToJEFEntityFormat(map));
   }
 
   @Test
-  public void testArray3() throws Exception {
+  public void testArray3 () throws Exception {
     Assembler assembler = new Assembler();
     assembler.setTokenizer(new JEFTokenizer());
     // assembler.getTokenizer().setVerbose(true);
@@ -120,13 +125,14 @@ public class AssemblerTest {
     Resurrector cf = new Resurrector();
     cf.addEntityClass(ArrayTest3.class);
     assembler.setFiller(cf);
-    assembler.setSource(AssemblerTest.class.getResourceAsStream("/test7.in.jef"));
+    assembler
+        .setSource(AssemblerTest.class.getResourceAsStream("/test7.in.jef"));
     Map<String, Object> map = assembler.assemble();
     System.out.println(cf.convertToJEFEntityFormat(map));
   }
 
   @Test
-  public void testArray4() throws Exception {
+  public void testArray4 () throws Exception {
     Assembler assembler = new Assembler();
     assembler.setTokenizer(new JEFTokenizer());
     // assembler.getTokenizer().setVerbose(true);
@@ -134,7 +140,8 @@ public class AssemblerTest {
     Resurrector cf = new Resurrector();
     cf.addEntityClass(ArrayTest4.class);
     assembler.setFiller(cf);
-    assembler.setSource(AssemblerTest.class.getResourceAsStream("/test8.in.jef"));
+    assembler
+        .setSource(AssemblerTest.class.getResourceAsStream("/test8.in.jef"));
     Map<String, Object> map = assembler.assemble();
     System.out.println(cf.convertToJEFEntityFormat(map));
   }

@@ -10,8 +10,8 @@ public class ArrayTest4 extends JEFEntityMap {
   private Integer[]             intArray;
 
   @Override
-  public String toString() {
-    return "ArrayTest [stringArray=" + stringArray + ", intArray=" + Arrays.toString(intArray)
-        + "]";
+  public String toString () {
+    return "ArrayTest [stringArray=" + stringArray + ", intArray="
+        + Arrays.toString(intArray) + "]";
   }
 }

@@ -8,7 +8,7 @@ import com.jeffreymanzione.jef.resurrection.annotations.JEFTuple;
 public class Tuple1 extends JEFEntityTuple {
 
   @Override
-  public int size() {
+  public int size () {
     return 3;
   }
 
@@ -22,7 +22,7 @@ public class Tuple1 extends JEFEntityTuple {
   int  y;
 
   @Override
-  public String toString() {
+  public String toString () {
     return "Tuple1 [name=" + name + ", x=" + x + ", y=" + y + "]";
   }
 

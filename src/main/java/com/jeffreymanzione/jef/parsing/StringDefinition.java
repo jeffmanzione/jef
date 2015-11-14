@@ -4,11 +4,11 @@ public class StringDefinition extends SingletonDefintion {
 
   public static volatile StringDefinition instance;
 
-  private StringDefinition() {
+  private StringDefinition () {
     super("String", String.class);
   }
 
-  public static Definition instance() {
+  public static Definition instance () {
     synchronized (StringDefinition.class) {
       if (instance == null) {
         instance = new StringDefinition();

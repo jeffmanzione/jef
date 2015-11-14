@@ -23,21 +23,23 @@ public final class BuiltInResurrector {
   static {
     classesToTransformers = new HashMap<Class<?>, BuiltInResurrector.Transformer<?>>();
     transformers = new HashMap<String, BuiltInResurrector.Transformer<?>>();
-    addTransformer(new Transformer<Color>(ValueType.TUPLE, ColorDefinition.instance(), Color.class) {
+    addTransformer(new Transformer<Color>(ValueType.TUPLE,
+        ColorDefinition.instance(), Color.class) {
       @Override
-      public Color protectedTransformResurrection(Value<?> input) {
+      public Color protectedTransformResurrection (Value<?> input) {
         TupleValue tupleValue = (TupleValue) input;
-        Color color = new Color((Integer) tupleValue.get(1).getValue(), (Integer) tupleValue.get(2)
-            .getValue(), (Integer) tupleValue.get(3).getValue(), (Integer) tupleValue.get(0)
-            .getValue());
+        Color color = new Color((Integer) tupleValue.get(1).getValue(),
+            (Integer) tupleValue.get(2).getValue(),
+            (Integer) tupleValue.get(3).getValue(),
+            (Integer) tupleValue.get(0).getValue());
         return color;
       }
 
       @Override
-      protected JEFEntityTuple protectedTransformToValue(Color input) {
+      protected JEFEntityTuple protectedTransformToValue (Color input) {
         JEFEntityTuple entity = new JEFEntityTuple() {
           @Override
-          public int size() {
+          public int size () {
             return 4;
           }
         };
@@ -56,40 +58,45 @@ public final class BuiltInResurrector {
     });
   }
 
-  private BuiltInResurrector() {
+  private BuiltInResurrector () {
     throw new RuntimeException();
   }
 
-  private static void putClassToTransformer(Transformer<?> transformer) {
+  private static void putClassToTransformer (Transformer<?> transformer) {
     classesToTransformers.put(transformer.externalClass, transformer);
   }
 
-  public static void addTransformer(BuiltInResurrector.Transformer<?> transformer) {
+  public static void addTransformer (
+      BuiltInResurrector.Transformer<?> transformer) {
     transformers.put(transformer.id, transformer);
     putClassToTransformer(transformer);
   }
 
-  public static Object transformValue(Value<?> value) throws CouldNotTranformValueException {
+  public static Object transformValue (Value<?> value)
+      throws CouldNotTranformValueException {
     if (value.hasEntityID()) {
       if (transformers.containsKey(value.getEntityID())) {
         return transformers.get(value.getEntityID()).transformToClass(value);
       } else {
-        throw new CouldNotTranformValueException("There was no transformer with this entity ID.");
+        throw new CouldNotTranformValueException(
+            "There was no transformer with this entity ID.");
       }
     } else {
-      throw new CouldNotTranformValueException("Value does not have this entity ID.");
+      throw new CouldNotTranformValueException(
+          "Value does not have this entity ID.");
     }
   }
 
   @SuppressWarnings("unchecked")
-  public static JEFEntity<?> transformObject(Object obj) throws CouldNotTranformValueException {
+  public static JEFEntity<?> transformObject (Object obj)
+      throws CouldNotTranformValueException {
     if (classesToTransformers.containsKey(obj.getClass())) {
       return ((Transformer<Object>) classesToTransformers.get(obj.getClass()))
           .transformToValue(obj);
     } else {
       throw new CouldNotTranformValueException(
-          "No transformer could be found for specified object=" + obj + " of type="
-              + obj.getClass().getSimpleName());
+          "No transformer could be found for specified object=" + obj
+              + " of type=" + obj.getClass().getSimpleName());
     }
   }
 
@@ -99,29 +106,33 @@ public final class BuiltInResurrector {
     public final Definition internalDef;
     public final Class<T>   externalClass;
 
-    Transformer(ValueType type, Definition internalDef, Class<T> cls) {
+    Transformer (ValueType type, Definition internalDef, Class<T> cls) {
       this.id = cls.getSimpleName();
       this.type = type;
       this.internalDef = internalDef;
       this.externalClass = cls;
     }
 
-    protected abstract T protectedTransformResurrection(Value<?> input)
+    protected abstract T protectedTransformResurrection (Value<?> input)
         throws CouldNotTranformValueException;
 
-    public final T transformToClass(Value<?> input) throws CouldNotTranformValueException {
-      if (correctType(input, type) && input.hasEntityID() && input.getEntityID().equals(id)) {
+    public final T transformToClass (Value<?> input)
+        throws CouldNotTranformValueException {
+      if (correctType(input, type) && input.hasEntityID()
+          && input.getEntityID().equals(id)) {
         return protectedTransformResurrection(input);
       } else {
         throw new CouldNotTranformValueException(
             "Input did not have the proper type during transformation of value to object. Value ="
-                + input + " of type=" + input.getType() + " but expected type=" + type);
+                + input + " of type=" + input.getType() + " but expected type="
+                + type);
       }
     }
 
-    protected abstract JEFEntity<?> protectedTransformToValue(T input);
+    protected abstract JEFEntity<?> protectedTransformToValue (T input);
 
-    public final JEFEntity<?> transformToValue(T input) throws CouldNotTranformValueException {
+    public final JEFEntity<?> transformToValue (T input)
+        throws CouldNotTranformValueException {
       if (input.getClass().equals(externalClass)) {
         return protectedTransformToValue(input);
       } else {
@@ -133,9 +144,10 @@ public final class BuiltInResurrector {
     }
   }
 
-  private static boolean correctType(Value<?> val, ValueType type) {
-    if (val instanceof TupleValue && type == ValueType.TUPLE || val instanceof MapValue
-        && type == ValueType.MAP || val instanceof ListValue && type == ValueType.LIST
+  private static boolean correctType (Value<?> val, ValueType type) {
+    if (val instanceof TupleValue && type == ValueType.TUPLE
+        || val instanceof MapValue && type == ValueType.MAP
+        || val instanceof ListValue && type == ValueType.LIST
         || val instanceof EnumValue && type == ValueType.ENUM) {
       return true;
     } else {
@@ -143,7 +155,7 @@ public final class BuiltInResurrector {
     }
   }
 
-  public static boolean containsTrasformer(Value<?> value) {
+  public static boolean containsTrasformer (Value<?> value) {
     if (value.hasEntityID()) {
       if (transformers.containsKey(value.getEntityID())) {
         return true;
@@ -155,11 +167,11 @@ public final class BuiltInResurrector {
     }
   }
 
-  public static Iterable<Transformer<?>> getTransformers() {
+  public static Iterable<Transformer<?>> getTransformers () {
     return transformers.values();
   }
 
-  public static boolean containsTranformForObject(Class<?> cls) {
+  public static boolean containsTranformForObject (Class<?> cls) {
     return classesToTransformers.containsKey(cls);
   }
 }

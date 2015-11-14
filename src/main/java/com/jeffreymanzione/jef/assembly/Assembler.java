@@ -26,53 +26,53 @@ public class Assembler {
   private File               fileSource;
   private ValidationResponse response;
 
-  public boolean setSource(String source) {
+  public boolean setSource (String source) {
     streamSource = null;
     fileSource = null;
     stringSource = source;
     return true;
   }
 
-  public boolean setSource(InputStream source) {
+  public boolean setSource (InputStream source) {
     streamSource = source;
     fileSource = null;
     stringSource = null;
     return true;
   }
 
-  public boolean setSource(File source) {
+  public boolean setSource (File source) {
     streamSource = null;
     fileSource = source;
     stringSource = null;
     return true;
   }
 
-  public Parser getParser() {
+  public Parser getParser () {
     return parser;
   }
 
-  public void setParser(Parser parser) {
+  public void setParser (Parser parser) {
     this.parser = parser;
   }
 
-  public Tokenizer getTokenizer() {
+  public Tokenizer getTokenizer () {
     return tokenizer;
   }
 
-  public void setTokenizer(Tokenizer tokenizer) {
+  public void setTokenizer (Tokenizer tokenizer) {
     this.tokenizer = tokenizer;
   }
 
-  public Resurrector getFiller() {
+  public Resurrector getFiller () {
     return filler;
   }
 
-  public void setFiller(Resurrector filler) {
+  public void setFiller (Resurrector filler) {
     this.filler = filler;
   }
 
-  public Map<String, Object> assemble() throws TokenizeException, IOException, IndexableException,
-      ClassFillingException {
+  public Map<String, Object> assemble () throws TokenizeException, IOException,
+      IndexableException, ClassFillingException {
     if (tokenizer == null) {
       throw new NullPointerException();
     } else if (parser == null) {
@@ -101,7 +101,8 @@ public class Assembler {
           System.out.println(e.getLineText());
           System.out.println(e.getLineAnnotation());
         }
-        throw new ClassFillingException("There were errors in parsing and validation.");
+        throw new ClassFillingException(
+            "There were errors in parsing and validation.");
       } else {
         Map<String, Object> map = filler.parseToObject(value);
         return map;
@@ -110,7 +111,7 @@ public class Assembler {
     }
   }
 
-  public ValidationResponse getValidationResponse() {
+  public ValidationResponse getValidationResponse () {
     return response;
   }
 }

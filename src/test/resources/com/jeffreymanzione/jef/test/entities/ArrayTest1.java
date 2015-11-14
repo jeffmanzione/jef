@@ -7,10 +7,10 @@ import com.jeffreymanzione.jef.resurrection.JEFEntityMap;
 
 public class ArrayTest1 extends JEFEntityMap {
   private List<String[]> stringArray;
-  private Integer[] intArray;
-  
+  private Integer[]      intArray;
+
   @Override
-  public String toString() {
+  public String toString () {
     return "ArrayTest [stringArray=" + stringArray + ", intArray="
         + Arrays.toString(intArray) + "]";
   }

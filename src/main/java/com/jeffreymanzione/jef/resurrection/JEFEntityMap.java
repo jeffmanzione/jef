@@ -11,7 +11,8 @@ import com.jeffreymanzione.jef.resurrection.exceptions.CouldNotUpdateEntityExcep
 public class JEFEntityMap extends JEFEntity<String> {
 
   @Override
-  public boolean set(String fieldName, Object val) throws CouldNotUpdateEntityException {
+  public boolean set (String fieldName, Object val)
+      throws CouldNotUpdateEntityException {
     for (Field field : this.getClass().getDeclaredFields()) {
       if (this.setFieldWithAnnotation(field, fieldName, val)) {
         return true;
@@ -30,12 +31,12 @@ public class JEFEntityMap extends JEFEntity<String> {
         } else {
           throw new CouldNotUpdateEntityException(
               "Could not set field's value in map as it was already set to a different type "
-                  + " nor in the map: fieldName='" + fieldName + "' and val=" + val + " expected="
-                  + mappings.get(fieldName) + ".");
+                  + " nor in the map: fieldName='" + fieldName + "' and val="
+                  + val + " expected=" + mappings.get(fieldName) + ".");
         }
       } else {
-        System.err.println("Warning: Tried to add (key=" + fieldName + ",val=" + val + ") to a "
-            + this.getClass().getName()
+        System.err.println("Warning: Tried to add (key=" + fieldName + ",val="
+            + val + ") to a " + this.getClass().getName()
             + ", but it does not have a field that matches it. Going to add it to the auxilliary map, "
             + "but check to see if this is a mistake.");
 
@@ -43,14 +44,15 @@ public class JEFEntityMap extends JEFEntity<String> {
         mappings.put(fieldName, val);
       }
     } catch (SecurityException e) {
-      throw new CouldNotUpdateEntityException("Unexpected security exception: fieldName='"
-          + fieldName + "' and val=" + val + ".\n See Exception in the stack trace.");
+      throw new CouldNotUpdateEntityException(
+          "Unexpected security exception: fieldName='" + fieldName
+              + "' and val=" + val + ".\n See Exception in the stack trace.");
     }
     return false;
   }
 
   @Override
-  public Object get(String fieldName) throws CouldNotUpdateEntityException {
+  public Object get (String fieldName) throws CouldNotUpdateEntityException {
     for (Field field : this.getClass().getFields()) {
       if (field.isAnnotationPresent(JEFField.class)) {
         JEFField annot = field.getAnnotation(JEFField.class);
@@ -59,8 +61,8 @@ public class JEFEntityMap extends JEFEntity<String> {
           try {
             return field.get(this);
           } catch (IllegalArgumentException | IllegalAccessException e) {
-            throw new CouldNotUpdateEntityException("Field " + field + " in " + this
-                + " could not be read. Check the security settings.");
+            throw new CouldNotUpdateEntityException("Field " + field + " in "
+                + this + " could not be read. Check the security settings.");
           }
         }
       }
@@ -73,8 +75,8 @@ public class JEFEntityMap extends JEFEntity<String> {
           try {
             return field.get(this);
           } catch (IllegalArgumentException | IllegalAccessException e) {
-            throw new CouldNotUpdateEntityException("Field " + field + " in " + this
-                + " could not be read. Check the security settings.");
+            throw new CouldNotUpdateEntityException("Field " + field + " in "
+                + this + " could not be read. Check the security settings.");
           }
         }
       }
@@ -94,7 +96,8 @@ public class JEFEntityMap extends JEFEntity<String> {
   }
 
   @Override
-  public Class<?> getType(String fieldName) throws CouldNotUpdateEntityException {
+  public Class<?> getType (String fieldName)
+      throws CouldNotUpdateEntityException {
     for (Field field : this.getClass().getFields()) {
       if (field.isAnnotationPresent(JEFField.class)) {
         JEFField annot = field.getAnnotation(JEFField.class);
@@ -128,8 +131,9 @@ public class JEFEntityMap extends JEFEntity<String> {
   }
 
   @Override
-  public String toJEFEntityFormat(int indents, boolean useSpaces, int spacesPerTab)
-      throws IllegalArgumentException, IllegalAccessException, CouldNotTranformValueException {
+  public String toJEFEntityFormat (int indents, boolean useSpaces,
+      int spacesPerTab) throws IllegalArgumentException, IllegalAccessException,
+          CouldNotTranformValueException {
     String result = "";
     String indent = getIndent(indents, useSpaces, spacesPerTab);
 
@@ -154,13 +158,15 @@ public class JEFEntityMap extends JEFEntity<String> {
         preamble = " = " + typeName + " ";
       } else if (List.class.isAssignableFrom(field.getType())) {
         String typeNameSimple = toTypeName(field);
-        typeName = "<" + typeNameSimple.substring(0, typeNameSimple.length() - 2) + ">";
+        typeName = "<"
+            + typeNameSimple.substring(0, typeNameSimple.length() - 2) + ">";
         preamble = typeName + " = ";
       } else {
         preamble = " = ";
       }
       result += indent + name + preamble
-          + getValueFromField(this, field, indents, useSpaces, spacesPerTab) + "\n";
+          + getValueFromField(this, field, indents, useSpaces, spacesPerTab)
+          + "\n";
     }
     for (Entry<String, Object> entry : this.mappings.entrySet()) {
       String name = entry.getKey();
@@ -169,8 +175,8 @@ public class JEFEntityMap extends JEFEntity<String> {
       if (JEFEntityMap.class.isAssignableFrom(classes.get(entry.getKey()))) {
         typeName = " " + toTypeName(classes.get(entry.getKey()));
       }
-      result += indent + name + " =" + typeName + " "
-          + getValueFromObject(entry.getValue(), indents, useSpaces, spacesPerTab) + "\n";
+      result += indent + name + " =" + typeName + " " + getValueFromObject(
+          entry.getValue(), indents, useSpaces, spacesPerTab) + "\n";
     }
 
     return result;

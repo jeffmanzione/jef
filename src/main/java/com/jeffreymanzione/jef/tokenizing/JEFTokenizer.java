@@ -16,35 +16,38 @@ public class JEFTokenizer implements Tokenizer {
   private boolean isVerbose;
 
   @Override
-  public void setVerbose(boolean isVerbose) {
+  public void setVerbose (boolean isVerbose) {
     this.isVerbose = isVerbose;
   }
 
   @Override
-  public boolean isVerbose() {
+  public boolean isVerbose () {
     return isVerbose;
   }
 
   @Override
-  public Queue<Token> tokenize(String string) throws TokenizeException {
+  public Queue<Token> tokenize (String string) throws TokenizeException {
     return this.tokenizeWords(JEFTokenizer.split(string));
   }
 
   @Override
-  public Queue<Token> tokenize(InputStream stream) throws IOException, TokenizeException {
+  public Queue<Token> tokenize (InputStream stream)
+      throws IOException, TokenizeException {
     return this.tokenize(JEFTokenizer.fileToString(stream));
   }
 
   @Override
-  public Queue<Token> tokenize(File file) throws IOException, TokenizeException {
+  public Queue<Token> tokenize (File file)
+      throws IOException, TokenizeException {
     return this.tokenize(new FileInputStream(file));
   }
 
-  private Queue<Token> tokenizeWords(List<Word> words) throws TokenizeException {
+  private Queue<Token> tokenizeWords (List<Word> words)
+      throws TokenizeException {
     LinkedList<Token> tokens = isVerbose ? new LinkedList<Token>() {
       private static final long serialVersionUID = 1L;
 
-      public Token remove() {
+      public Token remove () {
 
         Token token = super.remove();
         System.out.println("Removing token: " + token);
@@ -62,7 +65,8 @@ public class JEFTokenizer implements Tokenizer {
       } else {
         if (word.getText().startsWith("'") && word.getText().endsWith("'")) {
           token = new Token(word, TokenType.QUOTE);
-        } else if (word.getText().startsWith("-") || word.getText().startsWith(".")
+        } else if (word.getText().startsWith("-")
+            || word.getText().startsWith(".")
             || Character.isDigit(word.getText().toCharArray()[0])) {
           if (word.getText().contains(".")) {
             token = new Token(word, TokenType.FLOAT);
@@ -72,18 +76,19 @@ public class JEFTokenizer implements Tokenizer {
         } else if (tokens.get(tokens.size() - 1).getType() != TokenType.QUOTE
             && Character.isUpperCase(word.getText().charAt(0))) {
           token = new Token(word, TokenType.DEF);
-        } else
-          if (tokens.size() > 0 && tokens.get(tokens.size() - 1).getType() == TokenType.DOLLAR) {
+        } else if (tokens.size() > 0
+            && tokens.get(tokens.size() - 1).getType() == TokenType.DOLLAR) {
           tokens.remove(tokens.size() - 1);
           token = new Token(word, TokenType.ENUMVAL);
-        } else
-            if (tokens.size() > 0 && tokens.get(tokens.size() - 1).getType() == TokenType.QUOTE) {
+        } else if (tokens.size() > 0
+            && tokens.get(tokens.size() - 1).getType() == TokenType.QUOTE) {
           tokens.remove(tokens.size() - 1);
           token = new Token(word, TokenType.STRING);
           if (index < words.size() + 1) {
             index++;
           } else {
-            throw new TokenizeException("Expected token: '. Reached end of file.");
+            throw new TokenizeException(
+                "Expected token: '. Reached end of file.");
           }
         } else {
           token = new Token(word, TokenType.VAR);
@@ -102,7 +107,7 @@ public class JEFTokenizer implements Tokenizer {
     return tokens;
   }
 
-  private static String fileToString(InputStream file) throws IOException {
+  private static String fileToString (InputStream file) throws IOException {
     StringBuilder strBuilder = new StringBuilder();
     try (Scanner scan = new Scanner(file)) {
       while (scan.hasNextLine()) {
@@ -113,7 +118,7 @@ public class JEFTokenizer implements Tokenizer {
     return strBuilder.toString();
   }
 
-  private static List<Word> split(String line) {
+  private static List<Word> split (String line) {
     List<Word> words = new ArrayList<>();
 
     StringBuilder buffer = new StringBuilder();
@@ -139,12 +144,14 @@ public class JEFTokenizer implements Tokenizer {
         }
         if (splitters.contains(c + "")) {
           if (!buffer.toString().equals("")) {
-            words.add(new Word(buffer.toString(), lineText, lineNumber, column));
+            words
+                .add(new Word(buffer.toString(), lineText, lineNumber, column));
           }
           if (c == '\n') {
             lineNumber++;
             column = 0;
-            if (words.size() != 0 && !preline.contains(words.get(words.size() - 1).getText())) {
+            if (words.size() != 0
+                && !preline.contains(words.get(words.size() - 1).getText())) {
               words.add(new Word(",", lineText, lineNumber, column));
             }
           } else {
@@ -158,7 +165,8 @@ public class JEFTokenizer implements Tokenizer {
               isComment = true;
             }
           } else if (!buffer.toString().equals("") && !isComment) {
-            words.add(new Word(buffer.toString(), lineText, lineNumber, column));
+            words
+                .add(new Word(buffer.toString(), lineText, lineNumber, column));
           }
           buffer.setLength(0);
         } else {
@@ -186,11 +194,12 @@ public class JEFTokenizer implements Tokenizer {
     return words;
   }
 
-  private static List<String> splitters = Arrays.asList("\'", "\"", "[", "]", "{", "}", "(", ")",
-      "=", "<", ">", "\n", ",", "$", "?");
+  private static List<String>    splitters = Arrays.asList("\'", "\"", "[", "]",
+      "{", "}", "(", ")", "=", "<", ">", "\n", ",", "$", "?");
 
-  private static List<String> preline = Arrays.asList("[", "{", "(", "<", ",", "=", ":");
+  private static List<String>    preline   = Arrays.asList("[", "{", "(", "<",
+      ",", "=", ":");
 
-  private static List<TokenType> closers = Arrays.asList(TokenType.RBRCE, TokenType.RBRAC,
-      TokenType.RPAREN, TokenType.GTHAN);
+  private static List<TokenType> closers   = Arrays.asList(TokenType.RBRCE,
+      TokenType.RBRAC, TokenType.RPAREN, TokenType.GTHAN);
 }

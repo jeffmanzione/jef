@@ -5,7 +5,7 @@ import com.jeffreymanzione.jef.tokenizing.Token;
 
 public class FloatValue extends PrimitiveValue<Double> {
 
-  public FloatValue(double val, Token token) {
+  public FloatValue (double val, Token token) {
     super(ValueType.FLOAT, token);
     super.set(val);
   }

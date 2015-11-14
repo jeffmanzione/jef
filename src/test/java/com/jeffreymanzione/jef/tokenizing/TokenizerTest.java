@@ -17,11 +17,11 @@ import com.jeffreymanzione.jef.tokenizing.JEFTokenizer;
 public class TokenizerTest {
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp () throws Exception {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown () throws Exception {
   }
 
   // @Test
@@ -37,11 +37,12 @@ public class TokenizerTest {
   // }
 
   @Test
-  public void test1() throws IOException, TokenizeException {
-    Queue<Token> tokens = new JEFTokenizer().tokenize(TokenizerTest.class
-        .getResourceAsStream("/test1.in.jef"));
+  public void test1 () throws IOException, TokenizeException {
+    Queue<Token> tokens = new JEFTokenizer()
+        .tokenize(TokenizerTest.class.getResourceAsStream("/test1.in.jef"));
 
-    try (Scanner scanner = new Scanner(TokenizerTest.class.getResourceAsStream("/test1.out"))) {
+    try (Scanner scanner = new Scanner(
+        TokenizerTest.class.getResourceAsStream("/test1.out"))) {
 
       for (Token token : tokens) {
         // if (scanner.hasNext()) {
@@ -55,7 +56,7 @@ public class TokenizerTest {
         // System.err.println("Expected another token " + token);
         // fail();
         // }
-        //System.out.println(token.toString());
+        // System.out.println(token.toString());
       }
 
       // if (scanner.hasNext()) {

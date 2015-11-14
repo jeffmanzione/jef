@@ -11,8 +11,8 @@ public class Test1 extends JEFEntityMap {
   private Tuple1 tup;
 
   @Override
-  public String toString() {
-    return "Test1 [int1=" + int1 + ", float1=" + float1 + ", string1=" + string1 + ", tup=" + tup
-        + "]";
+  public String toString () {
+    return "Test1 [int1=" + int1 + ", float1=" + float1 + ", string1=" + string1
+        + ", tup=" + tup + "]";
   }
 }

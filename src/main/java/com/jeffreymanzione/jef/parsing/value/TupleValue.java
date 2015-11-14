@@ -9,28 +9,27 @@ import java.util.Queue;
 import com.jeffreymanzione.jef.parsing.TupleDefinition;
 import com.jeffreymanzione.jef.parsing.TupleException;
 import com.jeffreymanzione.jef.parsing.exceptions.ParsingException;
-import com.jeffreymanzione.jef.resurrection.Tuple;
-import com.jeffreymanzione.jef.resurrection.exceptions.CouldNotTranformValueException;
-import com.jeffreymanzione.jef.resurrection.exceptions.CouldNotUpdateEntityException;
 import com.jeffreymanzione.jef.tokenizing.Token;
 
-public class TupleValue extends Value<List<Value<?>>> implements Iterable<Pair<Integer, ?>> {
+public class TupleValue extends Value<List<Value<?>>>
+    implements Iterable<Pair<Integer, ?>> {
 
   private List<Value<?>> values = new ArrayList<>();
 
-  public TupleValue(Token token) {
+  public TupleValue (Token token) {
     super(ValueType.TUPLE, token);
     super.set(values);
   }
 
-  public void add(Value<?> value) throws ParsingException {
+  public void add (Value<?> value) throws ParsingException {
     values.add(value);
   }
 
-  public void validate(TupleDefinition format) throws TupleException {
+  public void validate (TupleDefinition format) throws TupleException {
 
     if (format.length() != values.size()) {
-      throw new TupleException("Tuple does not fit size requirement of format.");
+      throw new TupleException(
+          "Tuple does not fit size requirement of format.");
     }
 
     for (int i = 0; i < values.size(); i++) {
@@ -41,7 +40,7 @@ public class TupleValue extends Value<List<Value<?>>> implements Iterable<Pair<I
   }
 
   @Override
-  public String toStringType() {
+  public String toStringType () {
     String result = "(" + values.get(0).toStringType();
 
     for (int index = 1; index < values.size(); index++) {
@@ -50,16 +49,16 @@ public class TupleValue extends Value<List<Value<?>>> implements Iterable<Pair<I
     return result + ")";
   }
 
-  public Value<?> get(int index) {
+  public Value<?> get (int index) {
     return values.get(index);
   }
 
-  public int size() {
+  public int size () {
     return values.size();
   }
 
   @Override
-  public String toString() {
+  public String toString () {
     String result = "(" + values.get(0).toString();
 
     for (int index = 1; index < values.size(); index++) {
@@ -70,10 +69,11 @@ public class TupleValue extends Value<List<Value<?>>> implements Iterable<Pair<I
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
   @Override
-  public Iterator<Pair<Integer, ?>> iterator() {
+  public Iterator<Pair<Integer, ?>> iterator () {
     return new Iterator<Pair<Integer, ?>>() {
 
       Queue<Pair<Integer, ?>> queue;
+
       {
         queue = new LinkedList<Pair<Integer, ?>>();
         for (int i = 0; i < values.size(); i++) {
@@ -82,12 +82,12 @@ public class TupleValue extends Value<List<Value<?>>> implements Iterable<Pair<I
       }
 
       @Override
-      public boolean hasNext() {
+      public boolean hasNext () {
         return !queue.isEmpty();
       }
 
       @Override
-      public Pair<Integer, ?> next() {
+      public Pair<Integer, ?> next () {
         return queue.remove();
       }
     };

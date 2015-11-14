@@ -14,11 +14,11 @@ public class TupleDefinition extends Definition {
   private List<ValueType>          types  = new ArrayList<>();
   private Map<Integer, Definition> toDefs = new HashMap<>();
 
-  public void add(ValueType type) {
+  public void add (ValueType type) {
     types.add(type);
   }
 
-  public void add(Definition def) {
+  public void add (Definition def) {
     if (def instanceof IntDefinition) {
       types.add(ValueType.INT);
     } else if (def instanceof FloatDefinition) {
@@ -33,20 +33,20 @@ public class TupleDefinition extends Definition {
     size++;
   }
 
-  public int length() {
+  public int length () {
     return types.size();
   }
 
-  public ValueType getTypeAt(int i) {
+  public ValueType getTypeAt (int i) {
     return types.get(i);
   }
 
-  public Definition getDefinitionAt(int i) {
+  public Definition getDefinitionAt (int i) {
     // System.out.println("TO DEFS " + toDefs);
     return toDefs.get(i);
   }
 
-  public String toString() {
+  public String toString () {
     Iterator<ValueType> tupleType = types.iterator();
 
     String result;
@@ -76,22 +76,24 @@ public class TupleDefinition extends Definition {
     return "(" + result + ")";
   }
 
-  public void validateInnerTypes(Map<String, Definition> definitions) {
+  public void validateInnerTypes (Map<String, Definition> definitions) {
     for (Entry<Integer, Definition> entry : toDefs.entrySet()) {
       Definition def = entry.getValue();
       if (def instanceof TempDefinition) {
-        toDefs.put(entry.getKey(), definitions.get(((TempDefinition) def).getName()));
+        toDefs.put(entry.getKey(),
+            definitions.get(((TempDefinition) def).getName()));
       }
     }
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals (Object obj) {
     if (super.equals(obj)) {
       TupleDefinition other;
       if (obj instanceof TupleDefinition) {
         other = (TupleDefinition) obj;
-        return this.toDefs.equals(other.toDefs) && this.types.equals(other.types);
+        return this.toDefs.equals(other.toDefs)
+            && this.types.equals(other.types);
       } else {
         return false;
       }

@@ -28,15 +28,15 @@ import com.jeffreymanzione.jef.tokenizing.Word;
 public class ResurrectorTest {
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp () throws Exception {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown () throws Exception {
   }
 
   @Test
-  public void test() throws Exception {
+  public void test () throws Exception {
     Resurrector cf = new Resurrector();
     cf.addEntityClass(Test1.class);
     cf.addEntityClass(Test2.class);
@@ -61,7 +61,7 @@ public class ResurrectorTest {
   }
 
   @Test
-  public void testArray() throws Exception {
+  public void testArray () throws Exception {
 
     // String[] strs = (String[]) new Object[] {"One", "Two", "Three"};
 
@@ -69,7 +69,8 @@ public class ResurrectorTest {
 
     Resurrector cf = new Resurrector();
 
-    Token token = new Token(new Word("nop", new StringBuilder(), 0, 0), TokenType.NOP);
+    Token token = new Token(new Word("nop", new StringBuilder(), 0, 0),
+        TokenType.NOP);
 
     ArrayValue val = new ArrayValue(token);
     val.add(new IntValue(0, token));
@@ -86,7 +87,7 @@ public class ResurrectorTest {
   }
 
   @Test
-  public void testArray2() throws Exception {
+  public void testArray2 () throws Exception {
     Resurrector cf = new Resurrector();
     cf.addEntityClass(ArrayTest1.class);
 
@@ -103,9 +104,9 @@ public class ResurrectorTest {
     System.out.println(JEFEntity.toJEFEntityHeader(a1.getClass()));
 
   }
-  
+
   @Test
-  public void testArray3() throws Exception {
+  public void testArray3 () throws Exception {
     Resurrector cf = new Resurrector();
     cf.addEntityClass(ArrayTest2.class);
 
@@ -124,7 +125,7 @@ public class ResurrectorTest {
   }
 
   @Test
-  public void testRefXlect() throws Exception {
+  public void testRefXlect () throws Exception {
     // List<List<Integer>> llint = new ArrayList<>();
     //
     // Class<?> intCls = ((Class<?>) ((ParameterizedType) llint.getClass().getGenericSuperclass())
@@ -134,7 +135,9 @@ public class ResurrectorTest {
     // Integer[][] ints = new Integer[10][10];
     // System.out.println(ints.getClass().getComponentType());
     System.out.println(new String[5][5].getClass());
-    System.out.println(Array.newInstance(Array.newInstance(String.class, 5).getClass(), 5).getClass());
+    System.out.println(
+        Array.newInstance(Array.newInstance(String.class, 5).getClass(), 5)
+            .getClass());
   }
 
 }

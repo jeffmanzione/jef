@@ -7,13 +7,15 @@ import com.jeffreymanzione.jef.resurrection.exceptions.CouldNotUpdateEntityExcep
 
 public abstract class JEFEntityTuple extends JEFEntity<Integer> {
 
-  public abstract int size();
+  public abstract int size ();
 
   @Override
-  public boolean set(Integer key, Object val) throws CouldNotUpdateEntityException {
+  public boolean set (Integer key, Object val)
+      throws CouldNotUpdateEntityException {
     if (key < 0 || key > size()) {
       throw new CouldNotUpdateEntityException(
-          "Could not set field because index was " + key + " and not in range [0," + size()
+          "Could not set field because index was " + key
+              + " and not in range [0," + size()
               + "). Maybe you used indexing starting with 1 instead of 0?");
     } else {
       for (Field field : this.getClass().getDeclaredFields()) {
@@ -24,10 +26,11 @@ public abstract class JEFEntityTuple extends JEFEntity<Integer> {
             setSafe(field, val);
             return true;
           } else {
-            throw new CouldNotUpdateEntityException("Found index " + key
-                + " in tuple, but it was a " + "different type from its associated field. Expected "
-                + field.getType().getSimpleName() + " but was " + val.getClass().getSimpleName()
-                + ".");
+            throw new CouldNotUpdateEntityException(
+                "Found index " + key + " in tuple, but it was a "
+                    + "different type from its associated field. Expected "
+                    + field.getType().getSimpleName() + " but was "
+                    + val.getClass().getSimpleName() + ".");
           }
         }
       }
@@ -45,10 +48,11 @@ public abstract class JEFEntityTuple extends JEFEntity<Integer> {
   }
 
   @Override
-  public Object get(Integer key) throws CouldNotUpdateEntityException {
+  public Object get (Integer key) throws CouldNotUpdateEntityException {
     if (key < 0 || key > size()) {
       throw new CouldNotUpdateEntityException(
-          "Could not set field because index was " + key + " and not in range [0," + size() + ").");
+          "Could not set field because index was " + key
+              + " and not in range [0," + size() + ").");
     } else {
       for (Field field : this.getClass().getDeclaredFields()) {
         if (field.isAnnotationPresent(JEFTuple.class)
@@ -57,8 +61,10 @@ public abstract class JEFEntityTuple extends JEFEntity<Integer> {
           try {
             return field.get(this);
           } catch (IllegalArgumentException | IllegalAccessException e) {
-            throw new CouldNotUpdateEntityException("Unexpected security exception: fieldName='"
-                + field.getName() + "' index=" + key + ".\n See Exception in the stack trace.");
+            throw new CouldNotUpdateEntityException(
+                "Unexpected security exception: fieldName='" + field.getName()
+                    + "' index=" + key
+                    + ".\n See Exception in the stack trace.");
           }
         }
       }
@@ -74,10 +80,11 @@ public abstract class JEFEntityTuple extends JEFEntity<Integer> {
   }
 
   @Override
-  public Class<?> getType(Integer key) throws CouldNotUpdateEntityException {
+  public Class<?> getType (Integer key) throws CouldNotUpdateEntityException {
     if (key < 0 || key > size()) {
       throw new CouldNotUpdateEntityException(
-          "Could not set field because index was " + key + " and not in range [0," + size() + ").");
+          "Could not set field because index was " + key
+              + " and not in range [0," + size() + ").");
     } else {
       for (Field field : this.getClass().getDeclaredFields()) {
         if (field.isAnnotationPresent(JEFTuple.class)
@@ -98,13 +105,14 @@ public abstract class JEFEntityTuple extends JEFEntity<Integer> {
   }
 
   @Override
-  public String toJEFEntityFormat(int indents, boolean useSpaces, int spacesPerTab)
-      throws IllegalArgumentException, IllegalAccessException, CouldNotTranformValueException {
+  public String toJEFEntityFormat (int indents, boolean useSpaces,
+      int spacesPerTab) throws IllegalArgumentException, IllegalAccessException,
+          CouldNotTranformValueException {
     String result;
     result = "(";
     try {
-      result += JEFEntity.getValueFromObject(this.get((Integer) 0), indents, useSpaces,
-          spacesPerTab);
+      result += JEFEntity.getValueFromObject(this.get((Integer) 0), indents,
+          useSpaces, spacesPerTab);
     } catch (CouldNotUpdateEntityException e) {
       result += "!!!";
       e.printStackTrace();
@@ -112,8 +120,8 @@ public abstract class JEFEntityTuple extends JEFEntity<Integer> {
     for (int i = 1; i < size(); i++) {
       result += ", ";
       try {
-        result += JEFEntity.getValueFromObject(this.get((Integer) i), indents, useSpaces,
-            spacesPerTab);
+        result += JEFEntity.getValueFromObject(this.get((Integer) i), indents,
+            useSpaces, spacesPerTab);
       } catch (CouldNotUpdateEntityException e) {
         result += "!!!";
         e.printStackTrace();

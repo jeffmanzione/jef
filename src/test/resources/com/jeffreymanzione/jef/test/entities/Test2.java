@@ -30,10 +30,10 @@ public class Test2 extends JEFEntityMap {
   private Doge        secret = Doge.a;
 
   @Override
-  public String toString() {
-    return "Test2 [nombre=" + nombre + ", x=" + x + ", y=" + y + ", a=" + a + ", test1List="
-        + test1List + ", doge=" + doge + ", happy=" + happy + ", col=" + col + ", secret=" + secret
-        + "]";
+  public String toString () {
+    return "Test2 [nombre=" + nombre + ", x=" + x + ", y=" + y + ", a=" + a
+        + ", test1List=" + test1List + ", doge=" + doge + ", happy=" + happy
+        + ", col=" + col + ", secret=" + secret + "]";
   }
 
 }

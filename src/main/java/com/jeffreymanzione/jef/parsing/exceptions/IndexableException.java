@@ -9,13 +9,13 @@ public class IndexableException extends Exception implements Indexable {
    */
   private static final long serialVersionUID = -5370945001284100616L;
 
-  private final Indexable inner;
-  private final String    message;
-  private final String    fullText;
+  private final Indexable   inner;
+  private final String      message;
+  private final String      fullText;
 
-  public IndexableException(Indexable indexable, String message) {
-    super("On line " + indexable.getLineNumber() + " column " + indexable.getColumnNumber() + ": "
-        + message);
+  public IndexableException (Indexable indexable, String message) {
+    super("On line " + indexable.getLineNumber() + " column "
+        + indexable.getColumnNumber() + ": " + message);
     this.inner = indexable;
     this.message = message;
     this.fullText = "On line " + indexable.getLineNumber() + " column "
@@ -23,47 +23,47 @@ public class IndexableException extends Exception implements Indexable {
   }
 
   @Override
-  public int getLineNumber() {
+  public int getLineNumber () {
     return inner.getLineNumber();
   }
 
   @Override
-  public String getLineText() {
+  public String getLineText () {
     return inner.getLineText();
   }
 
   @Override
-  public int getColumnNumber() {
+  public int getColumnNumber () {
     return inner.getColumnNumber();
   }
 
-  public String getParsingMessage() {
+  public String getParsingMessage () {
     return message;
   }
 
-  public String getFullText() {
+  public String getFullText () {
     return fullText;
   }
 
-  public String getLineAnnotation() {
+  public String getLineAnnotation () {
     StringBuilder lineAnnotation = new StringBuilder();
     for (int i = 0; i < inner.getColumnNumber() - 1; i++) {
       lineAnnotation.append(' ');
     }
-    for (int i = inner.getColumnNumber() - 1; i < inner.getColumnNumber() + inner.getText().length()
-        - 1; i++) {
+    for (int i = inner.getColumnNumber() - 1; i < inner.getColumnNumber()
+        + inner.getText().length() - 1; i++) {
       lineAnnotation.append('^');
     }
     return lineAnnotation.toString();
   }
 
   @Override
-  public String getText() {
+  public String getText () {
     return toString();
   }
 
   @Override
-  public int hashCode() {
+  public int hashCode () {
     final int prime = 31;
     int result = 1;
     result = prime * result + ((fullText == null) ? 0 : fullText.hashCode());
@@ -73,7 +73,7 @@ public class IndexableException extends Exception implements Indexable {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals (Object obj) {
     if (this == obj)
       return true;
     if (obj == null)
@@ -100,7 +100,7 @@ public class IndexableException extends Exception implements Indexable {
   }
 
   @Override
-  public StringBuilder getLineTextBuilder() {
+  public StringBuilder getLineTextBuilder () {
     throw new UnsupportedOperationException();
   }
 

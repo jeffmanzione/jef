@@ -21,19 +21,20 @@ import com.jeffreymanzione.jef.tokenizing.TokenizerTest;
 public class ParsingTest {
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp () throws Exception {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown () throws Exception {
   }
 
   @Test
-  public void test() throws IndexableException, IOException, TokenizeException {
+  public void test ()
+      throws IndexableException, IOException, TokenizeException {
     Tokenizer tokenizer = new JEFTokenizer();
-    //tokenizer.setVerbose(true);
-    Queue<Token> tokens = tokenizer.tokenize(TokenizerTest.class
-        .getResourceAsStream("/test2.in.jef"));
+    // tokenizer.setVerbose(true);
+    Queue<Token> tokens = tokenizer
+        .tokenize(TokenizerTest.class.getResourceAsStream("/test2.in.jef"));
 
     Parser parser = new JEFParser();
     MapValue mappings = parser.parse(tokens);

@@ -31,7 +31,7 @@ import com.jeffreymanzione.jef.resurrection.exceptions.CouldNotUpdateEntityExcep
  */
 public abstract class JEFEntity<KEY> {
 
-  public JEFEntity() {
+  public JEFEntity () {
 
   }
 
@@ -46,45 +46,50 @@ public abstract class JEFEntity<KEY> {
   /**
    * Put here what needs to be done after this object is created to fully initialized.
    */
-  protected void initialize() {
+  protected void initialize () {
 
   }
 
-  public abstract boolean set(KEY key, Object val) throws CouldNotUpdateEntityException;
+  public abstract boolean set (KEY key, Object val)
+      throws CouldNotUpdateEntityException;
 
-  public abstract Object get(KEY key) throws CouldNotUpdateEntityException;
+  public abstract Object get (KEY key) throws CouldNotUpdateEntityException;
 
-  public abstract Class<?> getType(KEY key) throws CouldNotUpdateEntityException;
+  public abstract Class<?> getType (KEY key)
+      throws CouldNotUpdateEntityException;
 
-  public abstract String toJEFEntityFormat(int indents, boolean useSpaces, int spacesPerTab)
-      throws IllegalArgumentException, IllegalAccessException, CouldNotTranformValueException;
+  public abstract String toJEFEntityFormat (int indents, boolean useSpaces,
+      int spacesPerTab) throws IllegalArgumentException, IllegalAccessException,
+          CouldNotTranformValueException;
 
-  protected boolean setFieldWithAnnotation(Field field, KEY key, Object val)
+  protected boolean setFieldWithAnnotation (Field field, KEY key, Object val)
       throws CouldNotUpdateEntityException {
 
     JEFField annot = field.getAnnotation(JEFField.class);
-    if (!field.isAnnotationPresent(JEFField.class) || !annot.key().equals(key.toString())) {
+    if (!field.isAnnotationPresent(JEFField.class)
+        || !annot.key().equals(key.toString())) {
       return false;
     }
 
     field.setAccessible(true);
 
     if (!field.getType().isInstance(val)) {
-      throw new CouldNotUpdateEntityException("Could not set object " + this + " with field "
-          + field + " to val " + val + ". Value was not instanceof field.");
+      throw new CouldNotUpdateEntityException(
+          "Could not set object " + this + " with field " + field + " to val "
+              + val + ". Value was not instanceof field.");
     }
 
     try {
       field.set(this, val);
       return true;
     } catch (IllegalArgumentException | IllegalAccessException e) {
-      throw new CouldNotUpdateEntityException(
-          "Could not set object " + this + " with field " + field + " to val " + val
-              + ". Either the security settings prevented it or you did something silly.");
+      throw new CouldNotUpdateEntityException("Could not set object " + this
+          + " with field " + field + " to val " + val
+          + ". Either the security settings prevented it or you did something silly.");
     }
   }
 
-  protected static boolean matches(Field field, Object val) {
+  protected static boolean matches (Field field, Object val) {
     return matches(field.getType(), val.getClass());
     // if (field.getType().isInstance(val)) {
     // return true;
@@ -101,30 +106,33 @@ public abstract class JEFEntity<KEY> {
     // }
   }
 
-  protected static boolean matches(Class<?> cls1, Class<?> cls2) {
+  protected static boolean matches (Class<?> cls1, Class<?> cls2) {
     if (cls1.equals(cls2)) {
       return true;
     }
 
-    if ((cls1.equals(int.class) || cls1.equals(Integer.class) || cls1.equals(Long.class)
-        || cls1.equals(long.class))
-        && (cls2.equals(int.class) || cls2.equals(Integer.class) || cls2.equals(Long.class)
-            || cls2.equals(long.class))) {
+    if ((cls1.equals(int.class) || cls1.equals(Integer.class)
+        || cls1.equals(Long.class) || cls1.equals(long.class))
+        && (cls2.equals(int.class) || cls2.equals(Integer.class)
+            || cls2.equals(Long.class) || cls2.equals(long.class))) {
       return true;
-    } else if ((cls1.equals(double.class) || cls1.equals(Double.class) || cls1.equals(Float.class)
-        || cls1.equals(float.class))
-        && (cls2.equals(double.class) || cls2.equals(Double.class) || cls2.equals(Float.class)
-            || cls2.equals(float.class))) {
+    } else if ((cls1.equals(double.class) || cls1.equals(Double.class)
+        || cls1.equals(Float.class) || cls1.equals(float.class))
+        && (cls2.equals(double.class) || cls2.equals(Double.class)
+            || cls2.equals(Float.class) || cls2.equals(float.class))) {
       return true;
     } else if ((cls1.equals(boolean.class) || cls1.equals(Boolean.class))
         && (cls2.equals(boolean.class) || cls2.equals(Boolean.class))) {
       return true;
-    } else if (Map.class.isAssignableFrom(cls1) && Map.class.isAssignableFrom(cls2)) {
+    } else if (Map.class.isAssignableFrom(cls1)
+        && Map.class.isAssignableFrom(cls2)) {
       return true;
-    } else if (List.class.isAssignableFrom(cls1) && List.class.isAssignableFrom(cls2)) {
+    } else if (List.class.isAssignableFrom(cls1)
+        && List.class.isAssignableFrom(cls2)) {
       return true;
     } else if (cls1.isArray() && cls2.isArray()) {
-      Class<?> cls1Type = cls1.getComponentType(), cls2Type = cls2.getComponentType();
+      Class<?> cls1Type = cls1.getComponentType(),
+          cls2Type = cls2.getComponentType();
       while (cls1Type.isArray() && cls2Type.isArray()) {
         cls1Type = cls1Type.getComponentType();
         cls2Type = cls2Type.getComponentType();
@@ -134,19 +142,22 @@ public abstract class JEFEntity<KEY> {
     return false;
   }
 
-  protected static boolean matchesPrimitive(Class<?> cls, Object val) {
-    if ((cls.equals(int.class) || cls.equals(long.class)) && val instanceof Integer) {
+  protected static boolean matchesPrimitive (Class<?> cls, Object val) {
+    if ((cls.equals(int.class) || cls.equals(long.class))
+        && val instanceof Integer) {
       return true;
-    } else if ((cls.equals(float.class) || cls.equals(double.class)) && val instanceof Double) {
+    } else if ((cls.equals(float.class) || cls.equals(double.class))
+        && val instanceof Double) {
       return true;
-    } else if ((cls.equals(boolean.class) || cls.equals(Boolean.class)) && val instanceof Boolean) {
+    } else if ((cls.equals(boolean.class) || cls.equals(Boolean.class))
+        && val instanceof Boolean) {
       return true;
     } else {
       return false;
     }
   }
 
-  protected boolean setField(Field field, KEY key, Object val)
+  protected boolean setField (Field field, KEY key, Object val)
       throws CouldNotUpdateEntityException {
     if (!field.getName().equals(key.toString())) {
       return false;
@@ -156,13 +167,14 @@ public abstract class JEFEntity<KEY> {
 
     if (!matches(field, val)) {
       throw new CouldNotUpdateEntityException(
-          "Could not match types between field '" + field.getName() + "' and val " + val + ".");
+          "Could not match types between field '" + field.getName()
+              + "' and val " + val + ".");
     }
     setSafe(field, val);
     return true;
   }
 
-  protected Object handlePrimitives(Class<?> fieldType, Object val)
+  protected Object handlePrimitives (Class<?> fieldType, Object val)
       throws CouldNotUpdateEntityException {
     Class<?> cls = val.getClass();
     if (classIsPrimitive(cls) && !cls.isPrimitive()) {
@@ -179,7 +191,7 @@ public abstract class JEFEntity<KEY> {
     return val;
   }
 
-  private Object handleTypeConversion(Class<?> fieldType, Object val)
+  private Object handleTypeConversion (Class<?> fieldType, Object val)
       throws CouldNotUpdateEntityException {
     Class<?> valType = val.getClass();
     if (fieldType.equals(valType)) {
@@ -205,29 +217,32 @@ public abstract class JEFEntity<KEY> {
       return val;
     }
 
-    Object output = Array.newInstance(fieldType.getComponentType(), Array.getLength(val));
+    Object output = Array.newInstance(fieldType.getComponentType(),
+        Array.getLength(val));
     for (int i = 0; i < Array.getLength(output); i++) {
       Object elt = Array.get(val, i);
-      Array.set(output, i, handleTypeConversion(fieldType.getComponentType(), elt));
+      Array.set(output, i,
+          handleTypeConversion(fieldType.getComponentType(), elt));
     }
 
     return output;
   }
 
-  protected void setSafe(Field field, Object val) throws CouldNotUpdateEntityException {
+  protected void setSafe (Field field, Object val)
+      throws CouldNotUpdateEntityException {
     try {
       field.set(this, handleTypeConversion(field.getType(), val));
     } catch (IllegalArgumentException | IllegalAccessException e) {
       e.printStackTrace();
-      throw new CouldNotUpdateEntityException(
-          "Could not set object " + this + " with field " + field + " to val " + val
-              + ". Either the security settings prevented it or you did something silly.");
+      throw new CouldNotUpdateEntityException("Could not set object " + this
+          + " with field " + field + " to val " + val
+          + ". Either the security settings prevented it or you did something silly.");
     }
   }
 
-  private static String listToString(List<Object> list, int indents, boolean useSpaces,
-      int spacesPerTab)
-          throws IllegalArgumentException, IllegalAccessException, CouldNotTranformValueException {
+  private static String listToString (List<Object> list, int indents,
+      boolean useSpaces, int spacesPerTab) throws IllegalArgumentException,
+          IllegalAccessException, CouldNotTranformValueException {
 
     String indent = getIndent(indents, useSpaces, spacesPerTab);
     StringBuilder result = new StringBuilder();
@@ -237,8 +252,10 @@ public abstract class JEFEntity<KEY> {
     if (!list.isEmpty()) {
       Object first = list.get(0);
 
-      if (first instanceof JEFEntity || List.class.isAssignableFrom(first.getClass())
-          || Map.class.isAssignableFrom(first.getClass()) || first.getClass().isArray()) {
+      if (first instanceof JEFEntity
+          || List.class.isAssignableFrom(first.getClass())
+          || Map.class.isAssignableFrom(first.getClass())
+          || first.getClass().isArray()) {
         shouldNest = true;
       }
 
@@ -246,7 +263,8 @@ public abstract class JEFEntity<KEY> {
         result.append("\n" + indent);
       }
 
-      result.append(getValueFromObject(first, indents, useSpaces, spacesPerTab));
+      result
+          .append(getValueFromObject(first, indents, useSpaces, spacesPerTab));
 
       for (int i = 1; i < list.size(); i++) {
         Object entry = list.get(i);
@@ -255,7 +273,8 @@ public abstract class JEFEntity<KEY> {
         } else {
           result.append(", ");
         }
-        result.append(getValueFromObject(entry, indents, useSpaces, spacesPerTab));
+        result.append(
+            getValueFromObject(entry, indents, useSpaces, spacesPerTab));
       }
 
       if (shouldNest) {
@@ -265,18 +284,21 @@ public abstract class JEFEntity<KEY> {
     return result.toString();
   }
 
-  private static String arrayToString(Object arr, int indents, boolean useSpaces, int spacesPerTab)
-      throws IllegalArgumentException, IllegalAccessException, CouldNotTranformValueException {
+  private static String arrayToString (Object arr, int indents,
+      boolean useSpaces, int spacesPerTab) throws IllegalArgumentException,
+          IllegalAccessException, CouldNotTranformValueException {
     List<String> elements = new ArrayList<>();
     boolean shouldNest = false;
     for (int i = 0; i < Array.getLength(arr); i++) {
       Object obj = Array.get(arr, i);
       if (obj.getClass().isArray()) {
-        elements.add("[" + arrayToString(obj, indents + 1, useSpaces, spacesPerTab) + "]");
+        elements.add("["
+            + arrayToString(obj, indents + 1, useSpaces, spacesPerTab) + "]");
         shouldNest = true;
       } else {
         elements.add(getValueFromObject(obj, indents, useSpaces, spacesPerTab));
-        if (obj instanceof JEFEntity || List.class.isAssignableFrom(obj.getClass())
+        if (obj instanceof JEFEntity
+            || List.class.isAssignableFrom(obj.getClass())
             || Map.class.isAssignableFrom(obj.getClass())) {
           shouldNest = true;
         }
@@ -311,7 +333,8 @@ public abstract class JEFEntity<KEY> {
     return result.toString();
   }
 
-  protected static String getIndent(int indents, boolean useSpaces, int spacesPerTab) {
+  protected static String getIndent (int indents, boolean useSpaces,
+      int spacesPerTab) {
     String tab = getTab(useSpaces, spacesPerTab);
     String indent = "";
     for (int i = 0; i < indents; i++) {
@@ -320,7 +343,7 @@ public abstract class JEFEntity<KEY> {
     return indent;
   }
 
-  protected static String getTab(boolean useSpaces, int spacesPerTab) {
+  protected static String getTab (boolean useSpaces, int spacesPerTab) {
     String tab;
     if (useSpaces) {
       tab = "";
@@ -334,27 +357,28 @@ public abstract class JEFEntity<KEY> {
     return tab;
   }
 
-  protected static String getValueFromField(Object obj, Field field, int indents, boolean useSpaces,
-      int spacesPerTab)
-          throws IllegalArgumentException, IllegalAccessException, CouldNotTranformValueException {
+  protected static String getValueFromField (Object obj, Field field,
+      int indents, boolean useSpaces, int spacesPerTab)
+          throws IllegalArgumentException, IllegalAccessException,
+          CouldNotTranformValueException {
     field.setAccessible(true);
     return getValueFromObject(field.get(obj), indents, useSpaces, spacesPerTab);
   }
 
   @SuppressWarnings("unchecked")
-  protected static String getValueFromObject(Object obj, int indents, boolean useSpaces,
-      int spacesPerTab)
-          throws IllegalArgumentException, IllegalAccessException, CouldNotTranformValueException {
+  protected static String getValueFromObject (Object obj, int indents,
+      boolean useSpaces, int spacesPerTab) throws IllegalArgumentException,
+          IllegalAccessException, CouldNotTranformValueException {
     String tab = getTab(useSpaces, spacesPerTab);
     String indent = getIndent(indents, useSpaces, spacesPerTab);
     String result = "";
 
     if (obj instanceof JEFEntityMap) {
-      result += "{\n" + ((JEFEntityMap) obj).toJEFEntityFormat(indents + 1, useSpaces, spacesPerTab)
-          + indent + "}";
+      result += "{\n" + ((JEFEntityMap) obj).toJEFEntityFormat(indents + 1,
+          useSpaces, spacesPerTab) + indent + "}";
     } else if (obj instanceof JEFEntityTuple) {
-      result += ((JEFEntityTuple) obj).toJEFEntityFormat(indents + 1, useSpaces, spacesPerTab)
-          + indent;
+      result += ((JEFEntityTuple) obj).toJEFEntityFormat(indents + 1, useSpaces,
+          spacesPerTab) + indent;
 
     } else if (classIsPrimitive(obj.getClass())) {
       result += obj.toString();
@@ -369,37 +393,42 @@ public abstract class JEFEntity<KEY> {
       result = "$" + obj.toString();
 
     } else if (obj instanceof List) {
-      result = "<" + listToString((List<Object>) obj, indents + 1, useSpaces, spacesPerTab) + ">";
+      result = "<" + listToString((List<Object>) obj, indents + 1, useSpaces,
+          spacesPerTab) + ">";
     } else if (obj instanceof Map) {
       result += "{\n";
-      for (Entry<String, Object> entry : ((Map<String, Object>) obj).entrySet()) {
+      for (Entry<String, Object> entry : ((Map<String, Object>) obj)
+          .entrySet()) {
 
         String typeName = "";
         if (JEFEntityMap.class.isAssignableFrom(entry.getValue().getClass())) {
           typeName = " " + toTypeName(entry.getValue().getClass());
         }
-        result += indent + (indents < 0 ? "" : tab) + entry.getKey() + " =" + typeName + " ";
+        result += indent + (indents < 0 ? "" : tab) + entry.getKey() + " ="
+            + typeName + " ";
 
-        String map = getValueFromObject(entry.getValue(), indents + 1, useSpaces, spacesPerTab);
+        String map = getValueFromObject(entry.getValue(), indents + 1,
+            useSpaces, spacesPerTab);
         result += map + "\n";
       }
       result += indent + "}";
     } else if (BuiltInResurrector.containsTranformForObject(obj.getClass())) {
-      result += BuiltInResurrector.transformObject(obj).toJEFEntityFormat(indents + 1, useSpaces,
-          spacesPerTab);
+      result += BuiltInResurrector.transformObject(obj)
+          .toJEFEntityFormat(indents + 1, useSpaces, spacesPerTab);
     } else if (obj.getClass().isArray()) {
-      result += "[" + arrayToString(obj, indents + 1, useSpaces, spacesPerTab) + "]";
+      result += "[" + arrayToString(obj, indents + 1, useSpaces, spacesPerTab)
+          + "]";
     } else {
       result += obj.toString();
     }
     return result;
   }
 
-  private static boolean classIsPrimitive(Class<?> cls) {
+  private static boolean classIsPrimitive (Class<?> cls) {
     return Number.class.isAssignableFrom(cls) || cls.isPrimitive();
   }
 
-  public static final String toJEFEntityHeader(Class<?> cls) {
+  public static final String toJEFEntityHeader (Class<?> cls) {
     String name;
     if (cls.isAnnotationPresent(JEFClass.class)) {
       name = cls.getAnnotation(JEFClass.class).name();
@@ -414,7 +443,7 @@ public abstract class JEFEntity<KEY> {
     }
   }
 
-  private static String asEnum(Class<?> cls) {
+  private static String asEnum (Class<?> cls) {
     String result = "";
     boolean first = true;
     for (Object obj : cls.getEnumConstants()) {
@@ -424,7 +453,7 @@ public abstract class JEFEntity<KEY> {
     return result;
   }
 
-  protected static String asType(Class<?> cls) {
+  protected static String asType (Class<?> cls) {
     String result;
     if (JEFEntityMap.class.isAssignableFrom(cls)) {
       result = "{";
@@ -458,7 +487,8 @@ public abstract class JEFEntity<KEY> {
       Map<Integer, String> ordering = new TreeMap<Integer, String>();
       for (Field field : cls.getDeclaredFields()) {
         if (field.isAnnotationPresent(JEFTuple.class)) {
-          ordering.put(field.getAnnotation(JEFTuple.class).value(), JEFEntity.toTypeName(field));
+          ordering.put(field.getAnnotation(JEFTuple.class).value(),
+              JEFEntity.toTypeName(field));
         } else {
           continue;
         }
@@ -478,23 +508,21 @@ public abstract class JEFEntity<KEY> {
     return result;
   }
 
-  protected static String toTypeName(Field field) {
+  protected static String toTypeName (Field field) {
     Class<?> cls = field.getType();
 
     if (List.class.isAssignableFrom(cls)) {
-      return toTypeName(
-          (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0])
-          + "<>";
+      return toTypeName((Class<?>) ((ParameterizedType) field.getGenericType())
+          .getActualTypeArguments()[0]) + "<>";
     } else if (Map.class.isAssignableFrom(cls)) {
-      return toTypeName(
-          (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[1])
-          + "{}";
+      return toTypeName((Class<?>) ((ParameterizedType) field.getGenericType())
+          .getActualTypeArguments()[1]) + "{}";
     } else {
       return toTypeName(cls);
     }
   }
 
-  protected static String toTypeName(Class<?> cls) {
+  protected static String toTypeName (Class<?> cls) {
     if (cls.isAnnotationPresent(JEFClass.class)) {
       return cls.getAnnotation(JEFClass.class).name();
     } else if (cls.equals(int.class) || cls.equals(Integer.class)) {
@@ -510,12 +538,16 @@ public abstract class JEFEntity<KEY> {
       if (cls.getGenericInterfaces().length == 0) {
         return "{}";
       } else {
-        return toTypeName((Class<?>) ((ParameterizedType) cls.getGenericInterfaces()[0])
-            .getActualTypeArguments()[1]) + "{}";
+        return toTypeName(
+            (Class<?>) ((ParameterizedType) cls.getGenericInterfaces()[0])
+                .getActualTypeArguments()[1])
+            + "{}";
       }
     } else if (List.class.isAssignableFrom(cls)) {
-      return toTypeName((Class<?>) ((ParameterizedType) cls.getGenericInterfaces()[0])
-          .getActualTypeArguments()[0]) + "<>";
+      return toTypeName(
+          (Class<?>) ((ParameterizedType) cls.getGenericInterfaces()[0])
+              .getActualTypeArguments()[0])
+          + "<>";
     } else if (cls.isArray()) {
       return toTypeName(cls.getComponentType()) + "[]";
     } else {

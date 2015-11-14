@@ -9,47 +9,47 @@ public abstract class Value<T> extends IndexedObject {
   private final Token     token;
   private T               value;
 
-  protected Value(ValueType type, Token token) {
+  protected Value (ValueType type, Token token) {
     super(token);
     this.type = type;
     this.token = token;
   }
 
-  public Token getToken() {
+  public Token getToken () {
     return token;
   }
 
-  protected void set(T value) {
+  protected void set (T value) {
     this.value = value;
   }
 
-  public ValueType getType() {
+  public ValueType getType () {
     return type;
   }
 
-  public T getValue() {
+  public T getValue () {
     return value;
   }
 
   private String entityID;
 
-  public String getEntityID() {
+  public String getEntityID () {
     return entityID;
   }
 
-  public void setEntityID(String entityID) {
+  public void setEntityID (String entityID) {
     this.entityID = entityID;
   }
 
-  public boolean hasEntityID() {
+  public boolean hasEntityID () {
     return entityID != null;
   }
 
-  public String toStringType() {
+  public String toStringType () {
     return type.toString();
   }
 
-  public String toString() {
+  public String toString () {
     return value.toString();
   }
 }
