@@ -13,6 +13,7 @@ import java.util.TreeMap;
 
 import com.jeffreymanzione.jef.resurrection.annotations.JEFClass;
 import com.jeffreymanzione.jef.resurrection.annotations.JEFField;
+import com.jeffreymanzione.jef.resurrection.annotations.JEFField.Base;
 import com.jeffreymanzione.jef.resurrection.annotations.JEFTuple;
 import com.jeffreymanzione.jef.resurrection.exceptions.CouldNotTranformValueException;
 import com.jeffreymanzione.jef.resurrection.exceptions.CouldNotUpdateEntityException;
@@ -362,6 +363,12 @@ public abstract class JEFEntity<KEY> {
           throws IllegalArgumentException, IllegalAccessException,
           CouldNotTranformValueException {
     field.setAccessible(true);
+    if (field.isAnnotationPresent(JEFField.class)) {
+      JEFField annot = field.getAnnotation(JEFField.class);
+      if (annot.base() != Base.NOT_AN_INTEGER) {
+        return annot.base().convertToString((Number) field.get(obj));
+      }
+    }
     return getValueFromObject(field.get(obj), indents, useSpaces, spacesPerTab);
   }
 

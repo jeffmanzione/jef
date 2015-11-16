@@ -2,8 +2,9 @@ include 'src/main/resources/test2.in.jefh'
 include 'src/main/resources/test2-0.in.jefh'
 
 a1 = Test1 {
-	int1 = 5
-	float1 = 0.1
+	/* int1 = 0xff5 */
+    int1 = #azbycx
+	float1 = 1.2f
 	string1 = 'test string'
 	tup = ($a, 0, 0)
 }

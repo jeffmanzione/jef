@@ -66,9 +66,14 @@ public class JEFTokenizer implements Tokenizer {
         if (word.getText().startsWith("'") && word.getText().endsWith("'")) {
           token = new Token(word, TokenType.QUOTE);
         } else if (word.getText().startsWith("-")
+            || word.getText().startsWith("!") || word.getText().startsWith("#")
             || word.getText().startsWith(".")
             || Character.isDigit(word.getText().toCharArray()[0])) {
-          if (word.getText().contains(".")) {
+          if (word.getText().contains(".")
+              || (!(word.getText().toLowerCase().startsWith("0x")
+                  || word.getText().toLowerCase().startsWith("!")
+                  || word.getText().toLowerCase().startsWith("#"))
+                  && word.getText().toLowerCase().endsWith("f"))) {
             token = new Token(word, TokenType.FLOAT);
           } else {
             token = new Token(word, TokenType.INT);

@@ -188,7 +188,23 @@ public class JEFParser implements Parser {
     Token val = tokens.peek();
     switch (val.getType()) {
       case INT:
-        return new IntValue(Integer.valueOf(tokens.remove().getText()), val);
+        try {
+          String num = tokens.remove().getText();
+          if (num.toLowerCase().startsWith("0x")) {
+            return new IntValue(Integer.valueOf(num.substring(2), 16), val);
+          } else if (num.startsWith("0")) {
+            return new IntValue(Integer.valueOf(num, 8), val);
+          } else if (num.startsWith("#")) {
+            return new IntValue(Integer.valueOf(num.substring(1), 36), val);
+          } else if (num.startsWith("!")) {
+            return new IntValue(Integer.valueOf(num.substring(1), 2), val);
+          } else {
+            return new IntValue(Integer.valueOf(num), val);
+          }
+        } catch (NumberFormatException e) {
+          throw new ParsingException(val, "Value was " + val.toString()
+              + " and was not in the expecte format.");
+        }
       case FLOAT:
         return new FloatValue(Double.valueOf(tokens.remove().getText()), val);
       case ENUMVAL:
