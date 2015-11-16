@@ -12,7 +12,8 @@ public @interface JEFField {
   boolean ignore() default false;
 
   public static enum Base {
-    NOT_AN_INTEGER, BIN, BINARY, BASE2, OCT, OCTAL, BASE8, DEC, DECIMAL, BASE10, HEX, HEXIDECIMAL, BASE16, HEXATRIGESIMAL, ALPHANUMERIC, BASE36;
+    NOT_AN_INTEGER, BIN, BINARY, BASE2, OCT, OCTAL, BASE8, DEC, DECIMAL, BASE10,
+    HEX, HEXIDECIMAL, BASE16, HEXATRIGESIMAL, ALPHANUMERIC, BASE36;
 
     public String convertToString (Number num) {
       switch (this) {

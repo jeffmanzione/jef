@@ -9,15 +9,15 @@ public enum TokenType {
   /* Keywords */
   TYPE ("type"), ENUM ("enum"), OF ("of"), INCLUDE ("include"),
   /* Operators */
-  COLON (":"), COMMA (","), LPAREN ("("), RPAREN (")"), LBRAC ("["), RBRAC (
-      "]"), LTHAN ("<"), GTHAN (">"), EQUALS ("="), LBRCE ("{"), RBRCE (
-          "}"), DOLLAR ("$"), WILDCARD ("?"),
-          /* Syntactical */
-          QUOTE (null),
-          /* Data types */
-          STRING (null), INT (null), FLOAT (null),
-          /* special words */
-          DEF (null), VAR (null), ENUMVAL (null), NOP ("nop");
+  COLON (":"), COMMA (","), LPAREN ("("), RPAREN (")"), LBRAC ("["),
+  RBRAC ("]"), LTHAN ("<"), GTHAN (">"), EQUALS ("="), LBRCE ("{"), RBRCE ("}"),
+  DOLLAR ("$"), WILDCARD ("?"),
+  /* Syntactical */
+  QUOTE (null),
+  /* Data types */
+  STRING (null), INT (null), FLOAT (null),
+  /* special words */
+  DEF (null), VAR (null), ENUMVAL (null), NOP ("nop");
 
   // TokenType utilities
   private static Map<String, TokenType> tokens;

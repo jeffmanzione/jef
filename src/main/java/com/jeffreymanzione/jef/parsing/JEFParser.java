@@ -285,8 +285,8 @@ public class JEFParser implements Parser {
       ((MapDefinition) def).setRestricted(innerType);
       def = parseModificationsOnDefinition(tokens, def);
     } else if (nextTwoAreAndRemove(tokens, TokenType.LTHAN, TokenType.GTHAN)) {
-      def = parseModificationsOnDefinition(tokens,
-          new ListDefinition(innerType));
+      def =
+          parseModificationsOnDefinition(tokens, new ListDefinition(innerType));
     } else if (nextTwoAreAndRemove(tokens, TokenType.LBRAC, TokenType.RBRAC)) {
       def = parseModificationsOnDefinition(tokens,
           new ArrayDefinition(innerType));
@@ -491,8 +491,8 @@ public class JEFParser implements Parser {
   private Pair<String, ?> parseAssignment (Queue<Token> tokens)
       throws IndexableException {
     Value<?> val;
-    Token var = assertNextToken(tokens, TokenType.VAR,
-        "Where is the variable name?");
+    Token var =
+        assertNextToken(tokens, TokenType.VAR, "Where is the variable name?");
 
     Token eq = tokens.remove();
     switch (eq.getType()) {

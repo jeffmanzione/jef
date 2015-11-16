@@ -70,8 +70,8 @@ public class Resurrector {
   }
 
   @SafeVarargs
-  public final boolean addTransformer (
-      BuiltInResurrector.Transformer<?>... transformers) {
+  public final boolean
+      addTransformer (BuiltInResurrector.Transformer<?>... transformers) {
     for (BuiltInResurrector.Transformer<?> trans : transformers) {
       BuiltInResurrector.addTransformer(trans);
     }
@@ -218,8 +218,9 @@ public class Resurrector {
 
     T[] result;
     try {
-      result = (T[]) Array.newInstance(
-          definitionToClass(arrVal.getDefinedType()), arrVal.size());
+      result =
+          (T[]) Array.newInstance(definitionToClass(arrVal.getDefinedType()),
+              arrVal.size());
       int i = 0;
       for (Value<?> val : arrVal) {
         result[i++] = parseToObject(val);
@@ -310,8 +311,8 @@ public class Resurrector {
       result += JEFEntity.toJEFEntityHeader(entry.getValue()) + "\n";
     }
 
-    String entities = JEFEntity.getValueFromObject(map, -1, useSpaces,
-        spacesPerTab);
+    String entities =
+        JEFEntity.getValueFromObject(map, -1, useSpaces, spacesPerTab);
     result += entities.substring(1, entities.length() - 2);
     return result;
   }

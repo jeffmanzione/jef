@@ -188,8 +188,8 @@ public abstract class Definition {
       if (val.getType() == ValueType.LIST) {
         ListValue listVal = (ListValue) val;
         for (Value<?> value : listVal) {
-          ValidationResponse innerResponse = check(
-              ((ListDefinition) def).getType(), value);
+          ValidationResponse innerResponse =
+              check(((ListDefinition) def).getType(), value);
           if (innerResponse.hasErrors()) {
             response.addException(new DoesNotConformToDefintionException(value,
                 "Expected " + ((ListDefinition) def).getType() + " but was "
@@ -205,8 +205,8 @@ public abstract class Definition {
       if (val.getType() == ValueType.ARRAY) {
         ArrayValue arrVal = (ArrayValue) val;
         for (Value<?> value : arrVal) {
-          ValidationResponse innerResponse = check(
-              ((ArrayDefinition) def).getType(), value);
+          ValidationResponse innerResponse =
+              check(((ArrayDefinition) def).getType(), value);
           if (innerResponse.hasErrors()) {
             response.addException(new DoesNotConformToDefintionException(value,
                 "Expected " + ((ArrayDefinition) def).getType() + " but was "
@@ -266,8 +266,8 @@ public abstract class Definition {
     }
   }
 
-  protected abstract void validateInnerTypes (
-      Map<String, Definition> definitions);
+  protected abstract void
+      validateInnerTypes (Map<String, Definition> definitions);
 
   @Override
   public boolean equals (Object obj) {

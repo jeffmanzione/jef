@@ -218,8 +218,8 @@ public abstract class JEFEntity<KEY> {
       return val;
     }
 
-    Object output = Array.newInstance(fieldType.getComponentType(),
-        Array.getLength(val));
+    Object output =
+        Array.newInstance(fieldType.getComponentType(), Array.getLength(val));
     for (int i = 0; i < Array.getLength(output); i++) {
       Object elt = Array.get(val, i);
       Array.set(output, i,
@@ -423,8 +423,8 @@ public abstract class JEFEntity<KEY> {
       result += BuiltInResurrector.transformObject(obj)
           .toJEFEntityFormat(indents + 1, useSpaces, spacesPerTab);
     } else if (obj.getClass().isArray()) {
-      result += "[" + arrayToString(obj, indents + 1, useSpaces, spacesPerTab)
-          + "]";
+      result +=
+          "[" + arrayToString(obj, indents + 1, useSpaces, spacesPerTab) + "]";
     } else {
       result += obj.toString();
     }

@@ -202,8 +202,8 @@ public class JEFTokenizer implements Tokenizer {
   private static List<String>    splitters = Arrays.asList("\'", "\"", "[", "]",
       "{", "}", "(", ")", "=", "<", ">", "\n", ",", "$", "?");
 
-  private static List<String>    preline   = Arrays.asList("[", "{", "(", "<",
-      ",", "=", ":");
+  private static List<String>    preline   =
+      Arrays.asList("[", "{", "(", "<", ",", "=", ":");
 
   private static List<TokenType> closers   = Arrays.asList(TokenType.RBRCE,
       TokenType.RBRAC, TokenType.RPAREN, TokenType.GTHAN);

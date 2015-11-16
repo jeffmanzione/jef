@@ -21,7 +21,8 @@ public final class BuiltInResurrector {
   private static Map<Class<?>, Transformer<?>> classesToTransformers;
 
   static {
-    classesToTransformers = new HashMap<Class<?>, BuiltInResurrector.Transformer<?>>();
+    classesToTransformers =
+        new HashMap<Class<?>, BuiltInResurrector.Transformer<?>>();
     transformers = new HashMap<String, BuiltInResurrector.Transformer<?>>();
     addTransformer(new Transformer<Color>(ValueType.TUPLE,
         ColorDefinition.instance(), Color.class) {
@@ -66,8 +67,8 @@ public final class BuiltInResurrector {
     classesToTransformers.put(transformer.externalClass, transformer);
   }
 
-  public static void addTransformer (
-      BuiltInResurrector.Transformer<?> transformer) {
+  public static void
+      addTransformer (BuiltInResurrector.Transformer<?> transformer) {
     transformers.put(transformer.id, transformer);
     putClassToTransformer(transformer);
   }
