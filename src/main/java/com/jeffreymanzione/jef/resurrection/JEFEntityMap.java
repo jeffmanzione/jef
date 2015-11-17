@@ -176,7 +176,7 @@ public class JEFEntityMap extends JEFEntity<String> {
         typeName = " " + toTypeName(classes.get(entry.getKey()));
       }
       result += indent + name + " =" + typeName + " " + getValueFromObject(
-          entry.getValue(), indents, useSpaces, spacesPerTab) + "\n";
+          entry.getValue(), null, indents, useSpaces, spacesPerTab) + "\n";
     }
 
     return result;

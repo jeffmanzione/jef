@@ -8,7 +8,7 @@ import com.jeffreymanzione.jef.resurrection.annotations.JEFField.Base;
 @JEFClass(name = "Test1")
 public class Test1 extends JEFEntityMap {
   
-  @JEFField(base = Base.OCTAL)
+  @JEFField(base = Base.HEXATRIGESIMAL)
   private int    int1;
   
   private double float1;

@@ -241,9 +241,10 @@ public abstract class JEFEntity<KEY> {
     }
   }
 
-  private static String listToString (List<Object> list, int indents,
-      boolean useSpaces, int spacesPerTab) throws IllegalArgumentException,
-          IllegalAccessException, CouldNotTranformValueException {
+  private static String listToString (List<Object> list, JEFField annot,
+      int indents, boolean useSpaces, int spacesPerTab)
+          throws IllegalArgumentException, IllegalAccessException,
+          CouldNotTranformValueException {
 
     String indent = getIndent(indents, useSpaces, spacesPerTab);
     StringBuilder result = new StringBuilder();
@@ -264,8 +265,8 @@ public abstract class JEFEntity<KEY> {
         result.append("\n" + indent);
       }
 
-      result
-          .append(getValueFromObject(first, indents, useSpaces, spacesPerTab));
+      result.append(
+          getValueFromObject(first, annot, indents, useSpaces, spacesPerTab));
 
       for (int i = 1; i < list.size(); i++) {
         Object entry = list.get(i);
@@ -275,7 +276,7 @@ public abstract class JEFEntity<KEY> {
           result.append(", ");
         }
         result.append(
-            getValueFromObject(entry, indents, useSpaces, spacesPerTab));
+            getValueFromObject(entry, annot, indents, useSpaces, spacesPerTab));
       }
 
       if (shouldNest) {
@@ -285,7 +286,7 @@ public abstract class JEFEntity<KEY> {
     return result.toString();
   }
 
-  private static String arrayToString (Object arr, int indents,
+  private static String arrayToString (Object arr, JEFField annot, int indents,
       boolean useSpaces, int spacesPerTab) throws IllegalArgumentException,
           IllegalAccessException, CouldNotTranformValueException {
     List<String> elements = new ArrayList<>();
@@ -294,10 +295,12 @@ public abstract class JEFEntity<KEY> {
       Object obj = Array.get(arr, i);
       if (obj.getClass().isArray()) {
         elements.add("["
-            + arrayToString(obj, indents + 1, useSpaces, spacesPerTab) + "]");
+            + arrayToString(obj, annot, indents + 1, useSpaces, spacesPerTab)
+            + "]");
         shouldNest = true;
       } else {
-        elements.add(getValueFromObject(obj, indents, useSpaces, spacesPerTab));
+        elements.add(
+            getValueFromObject(obj, annot, indents, useSpaces, spacesPerTab));
         if (obj instanceof JEFEntity
             || List.class.isAssignableFrom(obj.getClass())
             || Map.class.isAssignableFrom(obj.getClass())) {
@@ -363,19 +366,16 @@ public abstract class JEFEntity<KEY> {
           throws IllegalArgumentException, IllegalAccessException,
           CouldNotTranformValueException {
     field.setAccessible(true);
-    if (field.isAnnotationPresent(JEFField.class)) {
-      JEFField annot = field.getAnnotation(JEFField.class);
-      if (annot.base() != Base.NOT_AN_INTEGER) {
-        return annot.base().convertToString((Number) field.get(obj));
-      }
-    }
-    return getValueFromObject(field.get(obj), indents, useSpaces, spacesPerTab);
+
+    return getValueFromObject(field.get(obj),
+        field.getAnnotation(JEFField.class), indents, useSpaces, spacesPerTab);
   }
 
   @SuppressWarnings("unchecked")
-  protected static String getValueFromObject (Object obj, int indents,
-      boolean useSpaces, int spacesPerTab) throws IllegalArgumentException,
-          IllegalAccessException, CouldNotTranformValueException {
+  protected static String getValueFromObject (Object obj, JEFField annot,
+      int indents, boolean useSpaces, int spacesPerTab)
+          throws IllegalArgumentException, IllegalAccessException,
+          CouldNotTranformValueException {
     String tab = getTab(useSpaces, spacesPerTab);
     String indent = getIndent(indents, useSpaces, spacesPerTab);
     String result = "";
@@ -388,8 +388,12 @@ public abstract class JEFEntity<KEY> {
           spacesPerTab) + indent;
 
     } else if (classIsPrimitive(obj.getClass())) {
-      result += obj.toString();
-
+      if (obj instanceof Number && annot != null
+          && annot.base() != Base.NOT_AN_INTEGER) {
+        result += annot.base().convertToString((Number) obj);
+      } else {
+        result += obj.toString();
+      }
     } else if (obj instanceof String) {
       result += "'" + obj.toString() + "'";
 
@@ -400,8 +404,8 @@ public abstract class JEFEntity<KEY> {
       result = "$" + obj.toString();
 
     } else if (obj instanceof List) {
-      result = "<" + listToString((List<Object>) obj, indents + 1, useSpaces,
-          spacesPerTab) + ">";
+      result = "<" + listToString((List<Object>) obj, annot, indents + 1,
+          useSpaces, spacesPerTab) + ">";
     } else if (obj instanceof Map) {
       result += "{\n";
       for (Entry<String, Object> entry : ((Map<String, Object>) obj)
@@ -414,7 +418,7 @@ public abstract class JEFEntity<KEY> {
         result += indent + (indents < 0 ? "" : tab) + entry.getKey() + " ="
             + typeName + " ";
 
-        String map = getValueFromObject(entry.getValue(), indents + 1,
+        String map = getValueFromObject(entry.getValue(), annot, indents + 1,
             useSpaces, spacesPerTab);
         result += map + "\n";
       }
@@ -424,11 +428,13 @@ public abstract class JEFEntity<KEY> {
           .toJEFEntityFormat(indents + 1, useSpaces, spacesPerTab);
     } else if (obj.getClass().isArray()) {
       result +=
-          "[" + arrayToString(obj, indents + 1, useSpaces, spacesPerTab) + "]";
+          "[" + arrayToString(obj, annot, indents + 1, useSpaces, spacesPerTab)
+              + "]";
     } else {
       result += obj.toString();
     }
     return result;
+
   }
 
   private static boolean classIsPrimitive (Class<?> cls) {

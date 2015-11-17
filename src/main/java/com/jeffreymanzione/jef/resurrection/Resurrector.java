@@ -312,7 +312,7 @@ public class Resurrector {
     }
 
     String entities =
-        JEFEntity.getValueFromObject(map, -1, useSpaces, spacesPerTab);
+        JEFEntity.getValueFromObject(map, null, -1, useSpaces, spacesPerTab);
     result += entities.substring(1, entities.length() - 2);
     return result;
   }

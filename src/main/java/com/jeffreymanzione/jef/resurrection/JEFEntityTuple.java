@@ -111,8 +111,8 @@ public abstract class JEFEntityTuple extends JEFEntity<Integer> {
     String result;
     result = "(";
     try {
-      result += JEFEntity.getValueFromObject(this.get((Integer) 0), indents,
-          useSpaces, spacesPerTab);
+      result += JEFEntity.getValueFromObject(this.get((Integer) 0), null,
+          indents, useSpaces, spacesPerTab);
     } catch (CouldNotUpdateEntityException e) {
       result += "!!!";
       e.printStackTrace();
@@ -120,8 +120,8 @@ public abstract class JEFEntityTuple extends JEFEntity<Integer> {
     for (int i = 1; i < size(); i++) {
       result += ", ";
       try {
-        result += JEFEntity.getValueFromObject(this.get((Integer) i), indents,
-            useSpaces, spacesPerTab);
+        result += JEFEntity.getValueFromObject(this.get((Integer) i), null,
+            indents, useSpaces, spacesPerTab);
       } catch (CouldNotUpdateEntityException e) {
         result += "!!!";
         e.printStackTrace();
